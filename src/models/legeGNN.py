@@ -15,7 +15,6 @@ class GNN(torch.nn.Module):
 
         for i in range(2):
             besked = self.beskednetværk[i](x)
-            # x = adj @ besked
             x = torch.bmm(adj, besked)
 
         x = x.sum(dim=1)
@@ -25,7 +24,6 @@ class GNN(torch.nn.Module):
 
 if __name__ == "__main__":
     gnn = GNN()
-    # gnn(kuldioxid)
 
 
 

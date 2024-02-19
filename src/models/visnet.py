@@ -47,6 +47,8 @@ class VisNetBase(torch.nn.Module):
         self.prior_model = Atomref(atomref=atomref, max_z=max_z)
         self.hidden_channels = hidden_channels
         self.register_buffer('std', torch.tensor(std))
+        self.cutoff = cutoff
+        self.max_num_neighbors = max_num_neighbors
 
         self.reset_parameters()
 
@@ -78,7 +80,7 @@ class VisNetBase(torch.nn.Module):
         return x, edge_attr, edge_index
 
 
-class ViSNet(torch.nn.Module):
+class VisNetDownstream(torch.nn.Module):
     def __init__(self, visnetbase: VisNetBase,
                  cutoff: float = 5.0,
                  max_num_neighbors: int = 32,
@@ -130,15 +132,13 @@ class ViSNet(torch.nn.Module):
 
 
 class VisNetSelvvejledt(torch.nn.Module):
-    def __init__(self, visnetbase: VisNetBase,
-                 cutoff: float = 5.0,
-                 max_num_neighbors: int = 32):
+    def __init__(self, visnetbase: VisNetBase):
         super().__init__()
         self.visnetbase = visnetbase
         self.edge_out = torch.nn.Linear(visnetbase.hidden_channels, 1)
         self.maskeringsandel = 0.15
         self.maskemager = Maskemager()
-        self.distance = Distance(cutoff, max_num_neighbors=max_num_neighbors)
+        self.distance = Distance(visnetbase.cutoff, max_num_neighbors=visnetbase.max_num_neighbors)
     def forward(
         self,
         z: Tensor,

@@ -15,6 +15,69 @@ from torch_geometric.data import (
 from torch_geometric.utils import one_hot, scatter
 import torch_geometric
 
+
+class QM9LOL(torch_geometric.datasets.QM9):
+    def __init__(self, root: str, maske: torch.Tensor,
+                 transform: Optional[Callable] = None,
+                 pre_transform: Optional[Callable] = None,
+                 pre_filter: Optional[Callable] = None):
+        super().__init__(root, transform, pre_transform, pre_filter)
+        self.data, old_slices = torch.load(self.processed_paths[0])
+        # maske = torch.load(os.path.join(self.processed_dir, "masker.pt"))[task]
+        # self.slices =
+        for lol in old_slices.values():
+            print(lol.shape)
+        for slice_type in old_slices.values():
+            slice_type = slice_type[maske]
+
+
+    # def process(self):
+    #     super().process()
+    #     n = len(self) + 1
+    #     fordeling = torch.tensor([0.9, 0.005, 0.045, 0.05])
+    #     a = torch.multinomial(fordeling, n)
+    #     tasks = ['pretrain', 'train', 'val', 'test']
+    #     masker = {}
+    #     for i in range(4):
+    #         task = tasks[i]
+    #         maske = a == i
+    #         maske[-1] = True
+    #         masker[task] = maske
+    #     torch.save(masker, "masker.pt")
+    #
+    # @property
+    # def processed_file_names(self) -> List[str]:
+    #     return ['data_v3.pt', 'masker.pt']
+
+
+def make_masker(maske_path, fordeling, n):
+    # n = 130831
+    if not fordeling:
+        fordeling = torch.tensor([0.9, 0.005, 0.045, 0.05])
+    a = torch.multinomial(fordeling, n, replacement=True)
+    tasks = ['pretrain', 'train', 'val', 'test']
+    idxs = {}
+    for i in range(4):
+        task = tasks[i]
+        idxs[task] = torch.where(a == i)[0]
+        # maske = a == i
+        # maske[-1] = True
+        # idxs[task] = maske
+    torch.save(idxs, maske_path)
+    return idxs
+
+
+def byg_QM9(root, task, fordeling: torch.Tensor = None):
+    dataset = torch_geometric.datasets.QM9(root)
+    maske_path = os.path.join(root, "processed", "masker.pt")
+    if os.path.exists(maske_path):
+        idxs = torch.load(maske_path)
+    else:
+        idxs = make_masker(maske_path, fordeling, len(dataset))
+    dataset = torch.utils.data.Subset(dataset, idxs[task])
+    return dataset
+
+
 class QM9Selvvejledt(torch_geometric.datasets.QM9):
     def process(self):
         try:

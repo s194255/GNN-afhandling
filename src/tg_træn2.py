@@ -1,11 +1,14 @@
-from src.models import ViSNet, VisNetSelvvejledt, VisNetBase
+from src.models import VisNetDownstream, VisNetSelvvejledt, VisNetBase
+from src.data.QM9 import QM9LOL, byg_QM9
 import torch_geometric
 import torch
 from tqdm import tqdm
 import random
 import matplotlib.pyplot as plt
 
-dataset = torch_geometric.datasets.QM9("../QM9")
+dataset = byg_QM9("data/QM9", "pretrain")
+# dataset = QM9LOL("data/QM9", "pretrain")
+# dataset = torch_geometric.datasets.QM9("data/QM9")
 # dataset.slices = random.sample(dataset.slices, k=100)
 # dataloader = torch_geometric.loader.DataLoader(dataset, shuffle=True, batch_size=8)
 subset_indices = random.sample(list(range(len(dataset))), k=50)
