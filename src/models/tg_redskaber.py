@@ -6,7 +6,7 @@ from torch import Tensor
 from torch.nn import Embedding, LayerNorm, Linear, Parameter
 
 from torch_geometric.nn import MessagePassing, radius_graph
-from torch_geometric.utils import scatter, subgraph
+from torch_geometric.utils import scatter
 from src.models.radius import radius_graph
 
 
@@ -848,7 +848,6 @@ class ViSNetBlock(torch.nn.Module):
             vec (torch.Tensor): The vector features of the nodes.
         """
         x = self.embedding(z)
-        # edge_index, edge_weight, edge_vec = self.distance(pos, batch)
         edge_attr = self.distance_expansion(edge_weight)
         mask = edge_index[0] != edge_index[1]
         edge_vec[mask] = edge_vec[mask] / torch.norm(edge_vec[mask],
@@ -858,7 +857,6 @@ class ViSNetBlock(torch.nn.Module):
         vec = torch.zeros(x.size(0), ((self.lmax + 1)**2) - 1, x.size(1),
                           dtype=x.dtype, device=x.device)
         edge_attr = self.edge_embedding(edge_index, edge_attr, x)
-        # x, edge_attr = self.maskemager(x, edge_attr, edge_index, maskeringsandel)
         if masker:
             x[masker['knuder']] = torch.zeros(x.shape[1])
             edge_attr[masker['kanter']] = torch.zeros(edge_attr.shape[1])

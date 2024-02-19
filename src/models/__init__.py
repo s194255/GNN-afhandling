@@ -1,1 +1,1 @@
-from src.models.visnet import ViSNet, VisNetSelvvejledt
+from src.models.visnet import ViSNet, VisNetSelvvejledt, VisNetBase
