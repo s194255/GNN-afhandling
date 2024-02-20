@@ -1042,3 +1042,4 @@ class Atomref(torch.nn.Module):
         """
         return x + self.atomref(z)
 
+

@@ -1,4 +1,1 @@
-from src.models.pl.visnetselvvejledt_pl import (VisNetDownstream,
-                                                VisNetSelvvejledt,
-                                                VisNetBase,
-                                                VisNetSelvvejledtPL)
+from src.models.visnet import VisNetDownstream, VisNetSelvvejledt, VisNetBase

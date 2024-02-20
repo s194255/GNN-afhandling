@@ -4,84 +4,70 @@ import torch
 from torch import Tensor
 from torch.autograd import grad
 from torch_geometric.utils import scatter, subgraph
+import lightning as L
+from torch_geometric.data import Data
+from torch_geometric.loader import DataLoader
 
-from src.models.tg_redskaber import ViSNetBlock, EquivariantScalar, Atomref, Distance
+from src.models.tg_kilde import Distance
+from src.models.redskaber import Maskemager, get_dataloader, VisNetBase
 
-class VisNetBase(torch.nn.Module):
-    def __init__(
-        self,
-        lmax: int = 1,
-        vecnorm_type: Optional[str] = None,
-        trainable_vecnorm: bool = False,
-        num_heads: int = 8,
-        num_layers: int = 6,
-        hidden_channels: int = 128,
-        out_channels: int = 19,
-        num_rbf: int = 32,
-        trainable_rbf: bool = False,
-        max_z: int = 100,
-        cutoff: float = 5.0,
-        max_num_neighbors: int = 32,
-        vertex: bool = False,
-        atomref: Optional[Tensor] = None,
-        std: float = 1.0,
-    ) -> None:
+
+class VisNetSelvvejledt(L.LightningModule):
+    def __init__(self, debug: bool):
         super().__init__()
-
-        self.representation_model = ViSNetBlock(
-            lmax=lmax,
-            vecnorm_type=vecnorm_type,
-            trainable_vecnorm=trainable_vecnorm,
-            num_heads=num_heads,
-            num_layers=num_layers,
-            hidden_channels=hidden_channels,
-            num_rbf=num_rbf,
-            trainable_rbf=trainable_rbf,
-            max_z=max_z,
-            cutoff=cutoff,
-            max_num_neighbors=max_num_neighbors,
-            vertex=vertex,
-        )
-
-        self.output_model = EquivariantScalar(hidden_channels=hidden_channels, out_channels=out_channels)
-        self.prior_model = Atomref(atomref=atomref, max_z=max_z)
-        self.hidden_channels = hidden_channels
-        self.register_buffer('std', torch.tensor(std))
-        self.cutoff = cutoff
-        self.max_num_neighbors = max_num_neighbors
-
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        r"""Resets the parameters of the module."""
-        self.representation_model.reset_parameters()
-        self.output_model.reset_parameters()
-        if self.prior_model is not None:
-            self.prior_model.reset_parameters()
+        self.visnetbase = VisNetBase()
+        self.edge_out = torch.nn.Linear(self.visnetbase.hidden_channels, 1)
+        self.maskeringsandel = 0.15
+        self.maskemager = Maskemager()
+        self.distance = Distance(self.visnetbase.cutoff,
+                                 max_num_neighbors=self.visnetbase.max_num_neighbors)
+        self.criterion = torch.nn.MSELoss(reduction='mean')
+        self.debug = debug
+        self.save_hyperparameters()
 
     def forward(
         self,
         z: Tensor,
         pos: Tensor,
         batch: Tensor,
-        edge_index: Tensor,
-        edge_weight: Tensor,
-        edge_vec: Tensor,
-        masker: Tensor = None
-    ) -> Tuple[Tensor, Tensor, Tensor]:
-        x, v, edge_attr = self.representation_model(z, pos, batch,
-                                                    edge_index, edge_weight, edge_vec, masker)
-        x = self.output_model.pre_reduce(x, v)
-        x = x * self.std
+    ) -> Tuple[Tensor, Tensor]:
+        edge_index, edge_weight, edge_vec = self.distance(pos, batch)
+        masker = self.maskemager(z.shape[0], edge_index, self.maskeringsandel)
+        x, edge_attr, edge_index = self.visnetbase(z, pos, batch, edge_index,
+                                                   edge_weight, edge_vec, masker)
+        edge_attr = self.edge_out(edge_attr)
+        edge_attr = edge_attr[masker['kanter']]
+        edge_index = edge_index[:, masker['kanter']]
+        y = pos[edge_index[0, :], :] - pos[edge_index[1, :], :]
+        y = y.square().sum(dim=1, keepdim=True)
+        return edge_attr, y
 
-        if self.prior_model is not None:
-            x = self.prior_model(x, z)
+    def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+        pred, target = self(data.z, data.pos, data.batch)
+        loss = self.criterion(pred, target)
+        self.log("loss", loss.item())
+        return loss
 
-        return x, edge_attr, edge_index
+    def train_dataloader(self) -> DataLoader:
+        return get_dataloader('pretrain', self.debug)
+
+    def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+        pred, target = self(data.z, data.pos, data.batch)
+        loss = self.criterion(pred, target)
+        self.log("loss", loss.item())
+        return loss
+
+    def val_dataloader(self) -> DataLoader:
+        return get_dataloader('val', self.debug)
+
+    def configure_optimizers(self) -> torch.optim.Optimizer:
+        optimizer = torch.optim.Adam(self.parameters(), lr=0.001)
+        return optimizer
 
 
-class VisNetDownstream(torch.nn.Module):
-    def __init__(self, visnetbase: VisNetBase,
+class VisNetDownstream(L.LightningModule):
+    def __init__(self, debug: bool,
+                 selvvejledt_ckpt: str = None,
                  cutoff: float = 5.0,
                  max_num_neighbors: int = 32,
                  reduce_op: str = "sum",
@@ -90,26 +76,29 @@ class VisNetDownstream(torch.nn.Module):
                  derivative: bool = False,
                  ):
         super().__init__()
-        self.visnetbase = visnetbase
-        self.edge_out = torch.nn.Linear(visnetbase.hidden_channels, 1)
+        self.init_visnetbase(selvvejledt_ckpt)
+        self.edge_out = torch.nn.Linear(self.visnetbase.hidden_channels, 1)
         self.distance = Distance(cutoff, max_num_neighbors=max_num_neighbors)
         self.reduce_op = reduce_op
         self.register_buffer('mean', torch.tensor(mean))
         self.register_buffer('std', torch.tensor(std))
         self.derivative = derivative
+        self.criterion = torch.nn.MSELoss(reduction='mean')
+        self.debug = debug
+        self.save_hyperparameters()
 
     def forward(
-        self,
-        z: Tensor,
-        pos: Tensor,
-        batch: Tensor,
+            self,
+            z: Tensor,
+            pos: Tensor,
+            batch: Tensor,
     ) -> Tuple[Tensor, Optional[Tensor]]:
         if self.derivative:
             pos.requires_grad_(True)
 
         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
         x, _, _ = self.visnetbase(z, pos, batch, edge_index,
-                                                   edge_weight, edge_vec)
+                                  edge_weight, edge_vec)
         y = scatter(x, batch, dim=0, reduce=self.reduce_op)
         y = y + self.mean
 
@@ -129,46 +118,43 @@ class VisNetDownstream(torch.nn.Module):
 
         return y, None
 
+    def init_visnetbase(self, selvvejledt_sti: str = None):
+        if selvvejledt_sti:
+            selvvejledt = VisNetSelvvejledt.load_from_checkpoint(selvvejledt_sti)
+            self.visnetbase = selvvejledt.visnetbase
+        else:
+            self.visnetbase = VisNetBase()
 
+    def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+        pred_y, pred_dy = self(data.z, data.pos, data.batch)
+        loss = self.criterion(pred_y, data.y)
+        self.log("loss", loss.item())
+        return loss
 
-class VisNetSelvvejledt(torch.nn.Module):
-    def __init__(self, visnetbase: VisNetBase):
-        super().__init__()
-        self.visnetbase = visnetbase
-        self.edge_out = torch.nn.Linear(visnetbase.hidden_channels, 1)
-        self.maskeringsandel = 0.15
-        self.maskemager = Maskemager()
-        self.distance = Distance(visnetbase.cutoff, max_num_neighbors=visnetbase.max_num_neighbors)
-    def forward(
-        self,
-        z: Tensor,
-        pos: Tensor,
-        batch: Tensor,
-    ) -> Tuple[Tensor, Tensor]:
-        edge_index, edge_weight, edge_vec = self.distance(pos, batch)
-        masker = self.maskemager(z.shape[0], edge_index, self.maskeringsandel)
-        x, edge_attr, edge_index = self.visnetbase(z, pos, batch, edge_index,
-                                                   edge_weight, edge_vec, masker)
-        edge_attr = self.edge_out(edge_attr)
-        edge_attr = edge_attr[masker['kanter']]
-        edge_index = edge_index[:, masker['kanter']]
-        y = pos[edge_index[0, :], :] - pos[edge_index[1, :], :]
-        y = y.square().sum(dim=1, keepdim=True)
-        return edge_attr, y
+    def train_dataloader(self) -> DataLoader:
+        return get_dataloader('train', self.debug)
 
+    def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+        pred_y, pred_dy = self(data.z, data.pos, data.batch)
+        loss = self.criterion(pred_y, data.y)
+        self.log("loss", loss.item())
+        return loss
 
-class Maskemager(torch.nn.Module):
+    def val_dataloader(self) -> DataLoader:
+        return get_dataloader('val', self.debug)
 
-    def forward(self, n_knuder: int,
-                edge_index: Tensor,
-                maskeringsandel: float) -> Dict[str, Tensor]:
-        randperm = torch.randperm(n_knuder)
-        k = int(maskeringsandel*n_knuder)
-        udvalgte_knuder = randperm[:k]
-        edge_index2, _, kantmaske = subgraph(udvalgte_knuder, edge_index, return_edge_mask=True)
-        idxs = torch.arange(n_knuder)
-        knudemaske = torch.isin(idxs, edge_index2)
-        return {'knuder': knudemaske, 'kanter': kantmaske}
+    def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+        pred_y, pred_dy = self(data.z, data.pos, data.batch)
+        loss = self.criterion(pred_y, data.y)
+        self.log("loss", loss.item())
+        return loss
+
+    def test_dataloader(self) -> DataLoader:
+        return get_dataloader('test', self.debug)
+
+    def configure_optimizers(self) -> torch.optim.Optimizer:
+        optimizer = torch.optim.Adam(self.parameters(), lr=0.001)
+        return optimizer
 
 
 
