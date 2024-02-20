@@ -77,8 +77,8 @@ class VisNetDownstream(L.LightningModule):
                  ):
         super().__init__()
         self.init_visnetbase(selvvejledt_ckpt)
-        self.edge_out = torch.nn.Linear(self.visnetbase.hidden_channels, 1)
         self.distance = Distance(cutoff, max_num_neighbors=max_num_neighbors)
+        self.hoved = torch.nn.Linear(19, 19)
         self.reduce_op = reduce_op
         self.register_buffer('mean', torch.tensor(mean))
         self.register_buffer('std', torch.tensor(std))
@@ -99,6 +99,8 @@ class VisNetDownstream(L.LightningModule):
         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
         x, _, _ = self.visnetbase(z, pos, batch, edge_index,
                                   edge_weight, edge_vec)
+        # GØRE: Lav et hoved
+        x = self.hoved(x)
         y = scatter(x, batch, dim=0, reduce=self.reduce_op)
         y = y + self.mean
 
@@ -127,7 +129,7 @@ class VisNetDownstream(L.LightningModule):
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred_y, pred_dy = self(data.z, data.pos, data.batch)
-        loss = self.criterion(pred_y, data.y)
+        loss = self.criterion(pred_y[:, 1], data.y[:, 1])
         self.log("loss", loss.item(), batch_size=data.batch_size)
         return loss
 
@@ -136,8 +138,8 @@ class VisNetDownstream(L.LightningModule):
 
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred_y, pred_dy = self(data.z, data.pos, data.batch)
-        loss = self.criterion(pred_y, data.y)
-        self.log("loss", loss.item(), batch_size=data.batch_size)
+        loss = self.criterion(pred_y[:, 1], data.y[:, 1])
+        self.log("loss", loss.item(), batch_size=data.batch_size, on_epoch=True)
         return loss
 
     def val_dataloader(self) -> DataLoader:
@@ -145,8 +147,8 @@ class VisNetDownstream(L.LightningModule):
 
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred_y, pred_dy = self(data.z, data.pos, data.batch)
-        loss = self.criterion(pred_y, data.y)
-        self.log("MSE", loss.item(), batch_size=data.batch_size)
+        loss = self.criterion(pred_y[:, 1], data.y[:, 1])
+        self.log("MSE", loss.item(), batch_size=data.batch_size, on_epoch=True)
         return loss
 
     def test_dataloader(self) -> DataLoader:
