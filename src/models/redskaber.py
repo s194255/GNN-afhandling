@@ -105,10 +105,11 @@ def get_dataloader(task: str, debug: bool) -> DataLoader:
     batch_size = 128
     num_workers = 23
     if debug:
-        subset_indices = random.sample(list(range(len(dataset))), k=50)
+        subset_indices = random.sample(list(range(len(dataset))), k=int(0.1*len(dataset)))
+        # subset_indices = random.sample(list(range(len(dataset))), k=50)
         dataset = torch.utils.data.Subset(dataset, subset_indices)
-        batch_size = 8
-        num_workers = 0
+        # batch_size = 8
+        # num_workers = 0
     dataloader = DataLoader(dataset, batch_size=batch_size,
                             shuffle=shuffle_options[task], num_workers=num_workers)
     return dataloader

@@ -10,7 +10,9 @@ def med_selvtræn():
                         callbacks=[checkpoint_callback])
     trainer.fit(model=selvvejledt)
 
-    downstream = VisNetDownstream(debug=DEBUG, selvvejledt_ckpt=trainer.checkpoint_callback.best_model_path)
+    # downstream = VisNetDownstream(debug=DEBUG, selvvejledt_ckpt=trainer.checkpoint_callback.best_model_path)
+    downstream = VisNetDownstream(debug=DEBUG)
+    downstream.indæs_selvvejledt_rygrad(VisNetSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path))
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=EPOKER_EFTERFØLGENDE,

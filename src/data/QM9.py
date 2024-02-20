@@ -51,18 +51,14 @@ class QM9LOL(torch_geometric.datasets.QM9):
 
 
 def make_masker(maske_path, fordeling, n):
-    # n = 130831
     if not fordeling:
-        fordeling = torch.tensor([0.9, 0.005, 0.045, 0.05])
+        fordeling = torch.tensor([0.9025, 0.0025, 0.045, 0.05])
     a = torch.multinomial(fordeling, n, replacement=True)
     tasks = ['pretrain', 'train', 'val', 'test']
     idxs = {}
     for i in range(4):
         task = tasks[i]
         idxs[task] = torch.where(a == i)[0]
-        # maske = a == i
-        # maske[-1] = True
-        # idxs[task] = maske
     torch.save(idxs, maske_path)
     return idxs
 

@@ -67,7 +67,6 @@ class VisNetSelvvejledt(L.LightningModule):
 
 class VisNetDownstream(L.LightningModule):
     def __init__(self, debug: bool,
-                 selvvejledt_ckpt: str = None,
                  cutoff: float = 5.0,
                  max_num_neighbors: int = 32,
                  reduce_op: str = "sum",
@@ -76,7 +75,8 @@ class VisNetDownstream(L.LightningModule):
                  derivative: bool = False,
                  ):
         super().__init__()
-        self.init_visnetbase(selvvejledt_ckpt)
+        # self.init_visnetbase(selvvejledt_ckpt)
+        self.visnetbase = VisNetBase()
         self.distance = Distance(cutoff, max_num_neighbors=max_num_neighbors)
         self.hoved = torch.nn.Linear(19, 19)
         self.reduce_op = reduce_op
@@ -86,6 +86,10 @@ class VisNetDownstream(L.LightningModule):
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.debug = debug
         self.save_hyperparameters()
+
+    def indæs_selvvejledt_rygrad(self, selvvejledt: VisNetSelvvejledt):
+        state_dict = selvvejledt.visnetbase.state_dict()
+        self.visnetbase.load_state_dict(state_dict)
 
     def forward(
             self,
@@ -99,7 +103,6 @@ class VisNetDownstream(L.LightningModule):
         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
         x, _, _ = self.visnetbase(z, pos, batch, edge_index,
                                   edge_weight, edge_vec)
-        # GØRE: Lav et hoved
         x = self.hoved(x)
         y = scatter(x, batch, dim=0, reduce=self.reduce_op)
         y = y + self.mean
@@ -119,13 +122,6 @@ class VisNetDownstream(L.LightningModule):
             return y, -dy
 
         return y, None
-
-    def init_visnetbase(self, selvvejledt_sti: str = None):
-        if selvvejledt_sti:
-            selvvejledt = VisNetSelvvejledt.load_from_checkpoint(selvvejledt_sti)
-            self.visnetbase = selvvejledt.visnetbase
-        else:
-            self.visnetbase = VisNetBase()
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred_y, pred_dy = self(data.z, data.pos, data.batch)
