@@ -8,6 +8,8 @@ from torch.nn import Embedding, LayerNorm, Linear, Parameter
 from torch_geometric.nn import MessagePassing, radius_graph
 from torch_geometric.utils import scatter
 
+import lightning as L
+
 
 class CosineCutoff(torch.nn.Module):
     r"""Appies a cosine cutoff to the input distances.
@@ -718,7 +720,7 @@ class ViS_MP_Vertex(ViS_MP):
         return f1 * w_dot + f2 * t_dot
 
 
-class ViSNetBlock(torch.nn.Module):
+class ViSNetBlock(L.LightningModule):
     r"""The representation module of the equivariant vector-scalar
     interactive graph neural network (ViSNet) from the `"Enhancing Geometric
     Representations for Molecules with Equivariant Vector-Scalar Interactive
@@ -857,8 +859,8 @@ class ViSNetBlock(torch.nn.Module):
                           dtype=x.dtype, device=x.device)
         edge_attr = self.edge_embedding(edge_index, edge_attr, x)
         if masker:
-            x[masker['knuder']] = torch.zeros(x.shape[1])
-            edge_attr[masker['kanter']] = torch.zeros(edge_attr.shape[1])
+            x[masker['knuder']] = torch.zeros(x.shape[1], device=self.device)
+            edge_attr[masker['kanter']] = torch.zeros(edge_attr.shape[1], device=self.device)
 
         for attn in self.vis_mp_layers[:-1]:
             dx, dvec, dedge_attr = attn(x, vec, edge_index, edge_weight,

@@ -26,7 +26,7 @@ class Maskemager(L.LightningModule):
         return {'knuder': knudemaske, 'kanter': kantmaske}
 
 
-class VisNetBase(torch.nn.Module):
+class VisNetBase(L.LightningModule):
     def __init__(
         self,
         lmax: int = 1,
