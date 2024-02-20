@@ -102,7 +102,7 @@ class VisNetBase(L.LightningModule):
 def get_dataloader(task: str, debug: bool) -> DataLoader:
     shuffle_options = {'pretrain': True, 'train': True, 'val': False, 'test': False}
     dataset = byg_QM9("data/QM9", task)
-    batch_size = 512
+    batch_size = 128
     num_workers = 23
     if debug:
         subset_indices = random.sample(list(range(len(dataset))), k=50)
