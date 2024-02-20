@@ -9,13 +9,15 @@ from torch_geometric.utils import subgraph
 from src.data.QM9 import byg_QM9
 from src.models.tg_kilde import ViSNetBlock, EquivariantScalar, Atomref
 
+import lightning as L
 
-class Maskemager(torch.nn.Module):
+
+class Maskemager(L.LightningModule):
 
     def forward(self, n_knuder: int,
                 edge_index: Tensor,
                 maskeringsandel: float) -> Dict[str, Tensor]:
-        randperm = torch.randperm(n_knuder)
+        randperm = torch.randperm(n_knuder, device=self.device)
         k = int(maskeringsandel*n_knuder)
         udvalgte_knuder = randperm[:k]
         edge_index2, _, kantmaske = subgraph(udvalgte_knuder, edge_index, return_edge_mask=True)
