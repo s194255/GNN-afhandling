@@ -146,7 +146,7 @@ class VisNetDownstream(L.LightningModule):
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred_y, pred_dy = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred_y, data.y)
-        self.log("loss", loss.item())
+        self.log("MSE", loss.item())
         return loss
 
     def test_dataloader(self) -> DataLoader:
