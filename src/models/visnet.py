@@ -45,7 +45,7 @@ class VisNetSelvvejledt(L.LightningModule):
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred, target = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred, target)
-        self.log("loss", loss.item())
+        self.log("loss", loss.item(), batch_size=data.batch_size)
         return loss
 
     def train_dataloader(self) -> DataLoader:
@@ -54,7 +54,7 @@ class VisNetSelvvejledt(L.LightningModule):
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred, target = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred, target)
-        self.log("loss", loss.item())
+        self.log("loss", loss.item(), batch_size=data.batch_size)
         return loss
 
     def val_dataloader(self) -> DataLoader:
@@ -128,7 +128,7 @@ class VisNetDownstream(L.LightningModule):
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred_y, pred_dy = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred_y, data.y)
-        self.log("loss", loss.item())
+        self.log("loss", loss.item(), batch_size=data.batch_size)
         return loss
 
     def train_dataloader(self) -> DataLoader:
@@ -137,7 +137,7 @@ class VisNetDownstream(L.LightningModule):
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred_y, pred_dy = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred_y, data.y)
-        self.log("loss", loss.item())
+        self.log("loss", loss.item(), batch_size=data.batch_size)
         return loss
 
     def val_dataloader(self) -> DataLoader:
@@ -146,7 +146,7 @@ class VisNetDownstream(L.LightningModule):
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred_y, pred_dy = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred_y, data.y)
-        self.log("MSE", loss.item())
+        self.log("MSE", loss.item(), batch_size=data.batch_size)
         return loss
 
     def test_dataloader(self) -> DataLoader:
