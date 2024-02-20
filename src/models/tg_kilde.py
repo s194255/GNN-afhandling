@@ -7,7 +7,6 @@ from torch.nn import Embedding, LayerNorm, Linear, Parameter
 
 from torch_geometric.nn import MessagePassing, radius_graph
 from torch_geometric.utils import scatter
-from src.models.radius import radius_graph
 
 
 class CosineCutoff(torch.nn.Module):
