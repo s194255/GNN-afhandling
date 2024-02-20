@@ -30,8 +30,8 @@ def uden_selvtræn():
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
     parser.add_argument('--debug', action='store_true', help='Aktiver debug-tilstand')
-    parser.add_argument('--epoker_selvtræn', type=int, default=1, help='Antal epoker til selvtræning')
-    parser.add_argument('--epoker_efterfølgende', type=int, default=1, help='Antal epoker til efterfølgende træning')
+    parser.add_argument('--epoker_selvtræn', type=int, default=50, help='Antal epoker til selvtræning')
+    parser.add_argument('--epoker_efterfølgende', type=int, default=5, help='Antal epoker til efterfølgende træning')
     args = parser.parse_args()
     return args
 
