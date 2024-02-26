@@ -8,20 +8,19 @@ import lightning as L
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 
-from src.models.tg_kilde import Distance, VisNetBase
+from src.models.tg_kilde import Distance, ViSNetBlock, EquivariantScalar
 from src.models.redskaber import Maskemager, get_dataloader
-# from src.models.tg_kilde import VisNetBase
 
 
 class VisNetSelvvejledt(L.LightningModule):
     def __init__(self, debug: bool):
         super().__init__()
-        self.visnetbase = VisNetBase()
-        self.edge_out = torch.nn.Linear(self.visnetbase.hidden_channels, 1)
+        self.rygrad = ViSNetBlock()
+        self.hoved = torch.nn.Linear(self.rygrad.hidden_channels, 1)
         self.maskeringsandel = 0.15
         self.maskemager = Maskemager()
-        self.distance = Distance(self.visnetbase.cutoff,
-                                 max_num_neighbors=self.visnetbase.max_num_neighbors)
+        self.distance = Distance(self.rygrad.cutoff,
+                                 max_num_neighbors=self.rygrad.max_num_neighbors)
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.debug = debug
         self.save_hyperparameters()
@@ -34,9 +33,9 @@ class VisNetSelvvejledt(L.LightningModule):
     ) -> Tuple[Tensor, Tensor]:
         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
         masker = self.maskemager(z.shape[0], edge_index, self.maskeringsandel)
-        x, edge_attr, edge_index = self.visnetbase(z, pos, batch, edge_index,
-                                                   edge_weight, edge_vec, masker)
-        edge_attr = self.edge_out(edge_attr)
+        x, v, edge_attr = self.rygrad(z, pos, batch,
+                                      edge_index, edge_weight, edge_vec)
+        edge_attr = self.hoved(edge_attr)
         edge_attr = edge_attr[masker['kanter']]
         edge_index = edge_index[:, masker['kanter']]
         y = pos[edge_index[0, :], :] - pos[edge_index[1, :], :]
@@ -74,12 +73,13 @@ class VisNetDownstream(L.LightningModule):
                  mean: float = 0.0,
                  std: float = 1.0,
                  derivative: bool = False,
+                 hidden_channels: int = 128,
+                 out_channels: int = 19,
                  ):
         super().__init__()
-        # self.init_visnetbase(selvvejledt_ckpt)
-        self.visnetbase = VisNetBase()
+        self.rygrad = ViSNetBlock()
         self.distance = Distance(cutoff, max_num_neighbors=max_num_neighbors)
-        self.hoved = torch.nn.Linear(19, 19)
+        self.hoved = EquivariantScalar(hidden_channels=hidden_channels, out_channels=out_channels)
         self.reduce_op = reduce_op
         self.register_buffer('mean', torch.tensor(mean))
         self.register_buffer('std', torch.tensor(std))
@@ -89,8 +89,8 @@ class VisNetDownstream(L.LightningModule):
         self.save_hyperparameters()
 
     def indæs_selvvejledt_rygrad(self, selvvejledt: VisNetSelvvejledt):
-        state_dict = selvvejledt.visnetbase.state_dict()
-        self.visnetbase.load_state_dict(state_dict)
+        state_dict = selvvejledt.rygrad.state_dict()
+        self.rygrad.load_state_dict(state_dict)
 
     def forward(
             self,
@@ -102,9 +102,11 @@ class VisNetDownstream(L.LightningModule):
             pos.requires_grad_(True)
 
         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
-        x, _, _ = self.visnetbase(z, pos, batch, edge_index,
-                                  edge_weight, edge_vec)
-        x = self.hoved(x)
+        x, v, edge_attr = self.rygrad(z, pos, batch,
+                                      edge_index, edge_weight, edge_vec)
+        x = self.hoved(x, v)
+        x = x * self.std
+        # GØRE: EVENTUELT REIMPLEMENTÉR PRIORMODEL
         y = scatter(x, batch, dim=0, reduce=self.reduce_op)
         y = y + self.mean
 
