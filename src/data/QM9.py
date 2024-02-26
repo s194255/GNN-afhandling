@@ -35,41 +35,11 @@ class QM9Bygger:
         num_workers = 23
         if debug:
             subset_indices = random.sample(list(range(len(task_dataset))), k=min(50, len(task_dataset)))
-            dataset = torch.utils.data.Subset(task_dataset, subset_indices)
+            task_dataset = torch.utils.data.Subset(task_dataset, subset_indices)
             batch_size = 8
             num_workers = 0
-        dataloader = DataLoader(dataset, batch_size=batch_size,
+        dataloader = DataLoader(task_dataset, batch_size=batch_size,
                                 shuffle=shuffle_options[task], num_workers=num_workers)
         return dataloader
 
-def make_masker(maske_path, fordeling, n):
-    a = torch.multinomial(fordeling, n, replacement=True)
-    tasks = ['pretrain', 'train', 'val', 'test']
-    data_splits = {'fordeling': fordeling}
-    for i in range(4):
-        task = tasks[i]
-        data_splits[task] = torch.where(a == i)[0]
-    torch.save(data_splits, maske_path)
-    return data_splits
-
-
-def byg_QM9(root, task, fordeling: torch.Tensor = None):
-    if not fordeling:
-        fordeling = torch.tensor([0.9025, 0.0025, 0.045, 0.05])
-    dataset = torch_geometric.datasets.QM9(root)
-    data_split_path = os.path.join(root, "processed", "data_split.pt")
-    if os.path.exists(data_split_path):
-        idxs = torch.load(data_split_path)
-    else:
-        idxs = make_masker(data_split_path, fordeling, len(dataset))
-    dataset = torch.utils.data.Subset(dataset, idxs[task])
-    return dataset
-
-def data_split_ok(data_split_path: str, fordeling: torch.Tensor) -> bool:
-    if not os.path.exists(data_split_path):
-        return False
-    data_split = torch.load(data_split_path)
-    if data_split['fordeling'] != fordeling:
-        return False
-    return True
 
