@@ -8,8 +8,9 @@ import lightning as L
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 
-from src.models.tg_kilde import Distance
-from src.models.redskaber import Maskemager, get_dataloader, VisNetBase
+from src.models.tg_kilde import Distance, VisNetBase
+from src.models.redskaber import Maskemager, get_dataloader
+# from src.models.tg_kilde import VisNetBase
 
 
 class VisNetSelvvejledt(L.LightningModule):
