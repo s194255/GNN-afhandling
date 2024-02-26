@@ -32,7 +32,7 @@ class QM9Bygger:
         task_dataset = torch.utils.data.Subset(self.mother_dataset, self.data_splits[task])
         shuffle_options = {'pretrain': True, 'train': True, 'val': False, 'test': False}
         batch_size = 128
-        num_workers = 23
+        num_workers = 8
         if debug:
             subset_indices = random.sample(list(range(len(task_dataset))), k=min(50, len(task_dataset)))
             task_dataset = torch.utils.data.Subset(task_dataset, subset_indices)
