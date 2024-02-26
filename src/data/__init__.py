@@ -1,1 +1,1 @@
-from src.data.QM9 import QM9Selvvejledt
+from src.data.QM9 import QM9Bygger

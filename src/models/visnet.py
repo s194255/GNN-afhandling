@@ -9,20 +9,23 @@ from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 
 from src.models.tg_kilde import Distance, ViSNetBlock, EquivariantScalar
-from src.models.redskaber import Maskemager, get_dataloader
+from src.models.redskaber import Maskemager
+from src.data import QM9Bygger
 
 
 class VisNetSelvvejledt(L.LightningModule):
-    def __init__(self, debug: bool):
+    def __init__(self, debug: bool, eftertræningsandel: float = 0.0025):
         super().__init__()
         self.rygrad = ViSNetBlock()
         self.hoved = torch.nn.Linear(self.rygrad.hidden_channels, 1)
         self.maskeringsandel = 0.15
         self.maskemager = Maskemager()
+        self.QM9Bygger = QM9Bygger(eftertræningsandel)
         self.distance = Distance(self.rygrad.cutoff,
                                  max_num_neighbors=self.rygrad.max_num_neighbors)
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.debug = debug
+
         self.save_hyperparameters()
 
     def forward(
@@ -49,7 +52,7 @@ class VisNetSelvvejledt(L.LightningModule):
         return loss
 
     def train_dataloader(self) -> DataLoader:
-        return get_dataloader('pretrain', self.debug)
+        return self.QM9Bygger('pretrain', self.debug)
 
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred, target = self(data.z, data.pos, data.batch)
@@ -58,7 +61,7 @@ class VisNetSelvvejledt(L.LightningModule):
         return loss
 
     def val_dataloader(self) -> DataLoader:
-        return get_dataloader('val', self.debug)
+        return self.QM9Bygger('val', self.debug)
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
         optimizer = torch.optim.Adam(self.parameters(), lr=0.001)
@@ -67,6 +70,7 @@ class VisNetSelvvejledt(L.LightningModule):
 
 class VisNetDownstream(L.LightningModule):
     def __init__(self, debug: bool,
+                 eftertræningsandel: float = 0.0025,
                  cutoff: float = 5.0,
                  max_num_neighbors: int = 32,
                  reduce_op: str = "sum",
@@ -80,6 +84,7 @@ class VisNetDownstream(L.LightningModule):
         self.rygrad = ViSNetBlock()
         self.distance = Distance(cutoff, max_num_neighbors=max_num_neighbors)
         self.hoved = EquivariantScalar(hidden_channels=hidden_channels, out_channels=out_channels)
+        self.QM9Bygger = QM9Bygger(eftertræningsandel)
         self.reduce_op = reduce_op
         self.register_buffer('mean', torch.tensor(mean))
         self.register_buffer('std', torch.tensor(std))
@@ -133,7 +138,7 @@ class VisNetDownstream(L.LightningModule):
         return loss
 
     def train_dataloader(self) -> DataLoader:
-        return get_dataloader('train', self.debug)
+        return self.QM9Bygger('train', self.debug)
 
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred_y, pred_dy = self(data.z, data.pos, data.batch)
@@ -142,7 +147,7 @@ class VisNetDownstream(L.LightningModule):
         return loss
 
     def val_dataloader(self) -> DataLoader:
-        return get_dataloader('val', self.debug)
+        return self.QM9Bygger('val', self.debug)
 
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred_y, pred_dy = self(data.z, data.pos, data.batch)
@@ -151,7 +156,7 @@ class VisNetDownstream(L.LightningModule):
         return loss
 
     def test_dataloader(self) -> DataLoader:
-        return get_dataloader('test', self.debug)
+        return self.QM9Bygger('test', self.debug)
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
         optimizer = torch.optim.Adam(self.parameters(), lr=0.001)

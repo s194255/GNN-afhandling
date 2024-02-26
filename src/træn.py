@@ -3,7 +3,7 @@ from src.models import VisNetSelvvejledt, VisNetDownstream
 import argparse
 
 def med_selvtræn():
-    selvvejledt = VisNetSelvvejledt(debug=DEBUG)
+    selvvejledt = VisNetSelvvejledt(debug=DEBUG, eftertræningsandel=0.0025)
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=EPOKER_SELVTRÆN,
