@@ -96,7 +96,8 @@ class VisNetDownstream(VisNetBase):
                  ):
         super().__init__(*args, **kwargs)
 
-        self.hoved = EquivariantScalar(hidden_channels=hidden_channels, out_channels=out_channels)
+        # self.hoved = EquivariantScalar(hidden_channels=hidden_channels, out_channels=out_channels)
+        self.hoved = torch.nn.Linear(in_features=hidden_channels, out_features=out_channels)
         self.reduce_op = reduce_op
         self.register_buffer('mean', torch.tensor(mean))
         self.register_buffer('std', torch.tensor(std))
@@ -117,7 +118,8 @@ class VisNetDownstream(VisNetBase):
                                       edge_index, edge_weight, edge_vec)
         if torch.any(torch.isnan(x)):
             print("nan efter ryggrad")
-        x = self.hoved(x, v)
+        # x = self.hoved(x, v)
+        x = self.hoved(x)
         if torch.any(torch.isnan(x)):
             print("nan efter hoved")
         x = x * self.std
