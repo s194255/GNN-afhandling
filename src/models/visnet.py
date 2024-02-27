@@ -34,7 +34,7 @@ class VisNetBase(L.LightningModule):
         return self.QM9Bygger('test', self.debug)
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
-        optimizer = torch.optim.Adam(self.parameters(), lr=0.0001)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=0.0001)
         return optimizer
 
     def indæs_selvvejledt_rygrad(self, visetbase):
