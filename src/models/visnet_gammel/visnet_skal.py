@@ -1,17 +1,17 @@
-from typing import Optional, Tuple, Dict
+from typing import Optional, Tuple
 
 import torch
 from torch import Tensor
 from torch.autograd import grad
-from torch_geometric.utils import scatter, subgraph
+from torch_geometric.utils import scatter
 import lightning as L
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 
-from src.models.tg_kilde import Distance, ViSNetBlock, EquivariantScalar
+from src.models.visnet_gammel.visnet_kerne import Distance, ViSNetBlock
 from src.models.redskaber import Maskemager
 from src.data import QM9Bygger
-import sys
+
 
 class VisNetBase(L.LightningModule):
     def __init__(self, debug: bool,
@@ -35,7 +35,7 @@ class VisNetBase(L.LightningModule):
         return self.QM9Bygger('test', self.debug)
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=0.0001)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=0.000001)
         return optimizer
 
     def indæs_selvvejledt_rygrad(self, visetbase):

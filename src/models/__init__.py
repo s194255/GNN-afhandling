@@ -1,1 +1,1 @@
-from src.models.visnet import VisNetDownstream, VisNetSelvvejledt
+from src.models.visnet_gammel import VisNetDownstream, VisNetSelvvejledt
