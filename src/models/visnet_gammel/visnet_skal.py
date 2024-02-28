@@ -50,7 +50,6 @@ class VisNetSelvvejledt(VisNetBase):
         self.hoved = torch.nn.Linear(self.rygrad.hidden_channels, 1)
         self.maskeringsandel = 0.15
         self.maskemager = Maskemager()
-
         self.save_hyperparameters()
 
     def forward(
