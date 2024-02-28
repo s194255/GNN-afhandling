@@ -29,19 +29,22 @@ def med_selvtræn(eftertræningsandel):
                               dataloaders=qm9Bygger2('pretrain', debug=args.debug))
     return resultater
 
-def uden_selvtræn():
+def uden_selvtræn(eftertræningsandel):
     downstream = VisNetDownstream(debug=args.debug)
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=args.epoker_efterfølgende,
                         callbacks=[checkpoint_callback])
-    trainer.fit(downstream)
-    resultater = trainer.test(ckpt_path="best")
+    trainer.fit(downstream,
+                train_dataloaders=qm9Bygger2('train', debug=args.debug, eftertræningsandel=eftertræningsandel),
+                val_dataloaders=qm9Bygger2('val', debug=args.debug))
+    resultater = trainer.test(ckpt_path="best",
+                              dataloaders=qm9Bygger2('pretrain', debug=args.debug))
     return resultater
 
 def eksperiment(eftertræningsandel: float):
     res_med_selvtræn = med_selvtræn(eftertræningsandel)
-    res_uden_selvtræn = uden_selvtræn()
+    res_uden_selvtræn = uden_selvtræn(eftertræningsandel)
     return res_med_selvtræn[0]['MSE'], res_uden_selvtræn[0]['MSE']
 
 def parserargs():
