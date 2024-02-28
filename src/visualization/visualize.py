@@ -1,18 +1,22 @@
 import matplotlib.pyplot as plt
 import pickle
+import numpy as np
 
-print("nu læser jeg")
 with open("reports/figures/res.pickle", "rb") as f:
     data = pickle.load(f)
-print("nu er jeg færdig med at læse")
+
+x = np.linspace(0.0025, 0.8, num=len(data['med']))
 
 colors = ['r', 'b']
+
+
 
 plt.figure()
 
 for idx, (key, tensor) in enumerate(data.items()):
-    plt.plot(tensor, color=colors[idx], label=key)
+    plt.plot(x, tensor, color=colors[idx], label=key)
 
+plt.xlabel("andel træningdata til downstream")
 plt.legend()
 print("nu skal jeg til at vise")
 plt.show()

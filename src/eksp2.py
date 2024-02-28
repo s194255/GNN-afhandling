@@ -3,22 +3,30 @@ from src.models import VisNetSelvvejledt, VisNetDownstream
 import argparse
 import torch
 import pickle
-def med_selvtræn(eftertræningsandel):
-    selvvejledt = VisNetSelvvejledt(debug=args.debug, eftertræningsandel=eftertræningsandel)
+from src.data import QM9Bygger2
+
+def fortræn():
+    selvvejledt = VisNetSelvvejledt(debug=args.debug)
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=args.epoker_selvtræn,
                         callbacks=[checkpoint_callback])
-    trainer.fit(model=selvvejledt)
-
+    trainer.fit(selvvejledt,
+                train_dataloaders=qm9Bygger2('pretrain', debug=args.debug),
+                val_dataloaders=qm9Bygger2('val', debug=args.debug))
+    return VisNetSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
+def med_selvtræn(eftertræningsandel):
     downstream = VisNetDownstream(debug=args.debug)
-    downstream.indæs_selvvejledt_rygrad(VisNetSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path))
+    downstream.indæs_selvvejledt_rygrad(selvvejledt)
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=args.epoker_efterfølgende,
                         callbacks=[checkpoint_callback])
-    trainer.fit(downstream)
-    resultater = trainer.test(ckpt_path="best")
+    trainer.fit(downstream,
+                train_dataloaders=qm9Bygger2('train', debug=args.debug, eftertræningsandel=eftertræningsandel),
+                val_dataloaders=qm9Bygger2('val', debug=args.debug))
+    resultater = trainer.test(ckpt_path="best",
+                              dataloaders=qm9Bygger2('pretrain', debug=args.debug))
     return resultater
 
 def uden_selvtræn():
@@ -48,6 +56,8 @@ def parserargs():
 if __name__ == "__main__":
     args = parserargs()
     eftertræningsandele = torch.linspace(0.0025, 0.8, steps=args.trin)
+    qm9Bygger2 = QM9Bygger2()
+    selvvejledt = fortræn()
     resser_med_selvtræn = []
     resser_uden_selvtræn = []
     for i in range(args.trin):

@@ -117,14 +117,8 @@ class VisNetDownstream(VisNetBase):
         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
         x, v, edge_attr = self.rygrad(z, pos, batch,
                                       edge_index, edge_weight, edge_vec)
-        if torch.any(torch.isnan(x)):
-            print("nan efter ryggrad")
-            sys.exit()
         # x = self.hoved(x, v)
         x = self.hoved(x)
-        if torch.any(torch.isnan(x)):
-            print("nan efter hoved")
-            sys.exit()
         x = x * self.std
         # GØRE: EVENTUELT REIMPLEMENTÉR PRIORMODEL
         y = scatter(x, batch, dim=0, reduce=self.reduce_op)
