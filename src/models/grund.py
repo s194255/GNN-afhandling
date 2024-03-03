@@ -35,16 +35,19 @@ class GrundSelvvejledt(Grundmodel):
 
     def __init__(self, *args,
                  maskeringsandel = 0.15,
+                 lambdaer = None,
                  **kwargs):
         super().__init__(*args, **kwargs)
+        if not lambdaer:
+            self.lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
         self.maskeringsandel = maskeringsandel
         self.maskemager = Maskemager()
         self.criterion = torch.nn.MSELoss(reduction='mean')
         # self.criterion = torch.nn.L1Loss(reduction='mean')
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        loss = self(data.z, data.pos, data.batch)
-        # loss = self.criterion(pred, target)
+        tabsopslag = self(data.z, data.pos, data.batch)
+        loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in ['lokalt', 'globalt'])
         self.log("loss", loss.item(), batch_size=data.batch_size)
         print(loss.item())
         return loss

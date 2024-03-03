@@ -16,8 +16,10 @@ class Global(L.LightningModule):
     def __init__(self,
                  hidden_channels: int = 128,
                  out_channels: int = 4,
+                 reduce_op: str = "sum",
                  ):
         super().__init__()
+        self.reduce_op = reduce_op
         self.motor = torch.nn.Sequential(
             torch.nn.Linear(hidden_channels, hidden_channels),
             torch.nn.ReLU(),
@@ -25,10 +27,13 @@ class Global(L.LightningModule):
         )
         self.criterion = torch.nn.CrossEntropyLoss()
 
-    def forward(self, x: torch.Tensor, no) -> torch.Tensor:
+    def forward(self, z, pos, batch, x, v, noise_idx, noise_scale) -> torch.Tensor:
+        x = scatter(x, batch, dim=0, reduce=self.reduce_op)
         x = self.motor(x)
+        target = noise_idx*torch.ones(x.shape[0], device=self.device, dtype=torch.long)
+        loss = self.criterion(x, target)
 
-        return x
+        return loss
 
 
 
@@ -50,12 +55,13 @@ class Lokal(L.LightningModule):
         self.register_buffer('std', torch.tensor(std))
         self.reduce_op = reduce_op
         self.derivative = derivative
+        self.criterion = torch.nn.MSELoss(reduction='mean')
 
     def reset_parameters(self):
         self.motor.reset_parameters()
         self.prior_model.reset_parameters()
 
-    def forward(self, z, pos, batch, x, v):
+    def forward(self, z, pos, batch, x, v, noise_idx, noise_scale, target):
         x = self.motor(x, v)
         x = x * self.std
 
@@ -77,7 +83,8 @@ class Lokal(L.LightningModule):
             if dy is None:
                 raise RuntimeError(
                     "Autograd returned None for the force prediction.")
-            return y, -dy
+            loss = noise_scale * self.criterion(1 / noise_scale * dy, target)
+            return loss
 
         return y, None
 
@@ -103,13 +110,15 @@ class Hoved(L.LightningModule):
             derivative=derivative,
         )
         self.globall = Global(
-            hidden_channels=hidden_channels
+            hidden_channels=hidden_channels,
+            reduce_op=reduce_op
         )
 
-    def forward(self, z, pos, batch, x, v, noise_idx, noise_scale):
-        noise_idx = random.choice(np.arange(len(self.noise_scales)))
-        # lokal_udgangsdata = self.lokal(z, pos, batch, x, v)
-        global_udgangsdata = self.globall(x, noise_idx)
+    def forward(self, z, pos, batch, x, v, noise_idx, noise_scale, target):
+        tabsopslag = {}
+        tabsopslag['lokalt'] = self.lokal(z, pos, batch, x, v, noise_idx, noise_scale, target)
+        tabsopslag['globalt'] = self.globall(z, pos, batch, x, v, noise_idx, noise_scale)
+        return tabsopslag
 
 
 
@@ -181,9 +190,10 @@ class VisNetSelvvejledt(GrundSelvvejledt):
         edge_index, edge_weight, edge_vec = self.distance(pos_til, batch)
         x, v, edge_attr = self.rygrad(z, pos_til, batch,
                                       edge_index, edge_weight, edge_vec)
-        y, dy = self.hoved(z, pos_til, batch, x, v, noise_idx, noise_scale)
+        tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idx, noise_scale, target)
+        return tabsopslag
         # target = 100*torch.ones(y.shape, device=self.device)
-        loss = noise_scale*self.criterion(1/noise_scale*dy, target)
+        # loss = noise_scale*self.criterion(1/noise_scale*dy, target)
 
-        return loss
+        # return loss
 
