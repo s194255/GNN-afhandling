@@ -1,4 +1,5 @@
-from typing import Optional, Tuple
+import random
+from typing import Optional, Tuple, Any
 
 import lightning as L
 import torch
@@ -7,12 +8,31 @@ from torch.autograd import grad
 from torch_geometric.utils import scatter
 
 from src.models.visnet_ny.kerne import EquivariantScalar, Atomref, ViSNetBlock, Distance
+from src.models.visnet_ny.riemannGaussian import RiemannGaussian
 from src.models.grund import GrundSelvvejledt
+import numpy as np
 
-from torch_geometric.data import Data
-from torch_geometric.loader import DataLoader
+class Global(L.LightningModule):
+    def __init__(self,
+                 hidden_channels: int = 128,
+                 out_channels: int = 4,
+                 ):
+        super().__init__()
+        self.motor = torch.nn.Sequential(
+            torch.nn.Linear(hidden_channels, hidden_channels),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_channels, out_channels)
+        )
+        self.criterion = torch.nn.CrossEntropyLoss()
 
-class Hoved(L.LightningModule):
+    def forward(self, x: torch.Tensor, no) -> torch.Tensor:
+        x = self.motor(x)
+
+        return x
+
+
+
+class Lokal(L.LightningModule):
 
     def __init__(self,
                  hidden_channels: int = 128,
@@ -61,6 +81,37 @@ class Hoved(L.LightningModule):
 
         return y, None
 
+class Hoved(L.LightningModule):
+
+    def __init__(self,
+                 hidden_channels: int = 128,
+                 atomref: Optional[Tensor] = None,
+                 max_z: int = 100,
+                 reduce_op: str = "sum",
+                 mean: float = 0.0,
+                 std: float = 1.0,
+                 derivative: bool = False,
+                 ):
+        super().__init__()
+        self.lokal = Lokal(
+            hidden_channels=hidden_channels,
+            atomref=atomref,
+            max_z=max_z,
+            reduce_op=reduce_op,
+            mean=mean,
+            std=std,
+            derivative=derivative,
+        )
+        self.globall = Global(
+            hidden_channels=hidden_channels
+        )
+
+    def forward(self, z, pos, batch, x, v, noise_idx, noise_scale):
+        noise_idx = random.choice(np.arange(len(self.noise_scales)))
+        # lokal_udgangsdata = self.lokal(z, pos, batch, x, v)
+        global_udgangsdata = self.globall(x, noise_idx)
+
+
 
 class VisNetSelvvejledt(GrundSelvvejledt):
     def __init__(self, *args,
@@ -106,8 +157,14 @@ class VisNetSelvvejledt(GrundSelvvejledt):
             reduce_op=reduce_op,
             mean=mean,
             std=std,
-            derivative=self.derivative
+            derivative=self.derivative,
+            hidden_channels=hidden_channels
         )
+
+        self.riemannGaussian = RiemannGaussian()
+        self.noise_scales = [0.01, 0.1, 1.0, 1.0]
+
+
 
     def forward(
             self,
@@ -116,12 +173,17 @@ class VisNetSelvvejledt(GrundSelvvejledt):
             batch: Tensor,
     ) -> Tuple[Tensor, Tensor]:
         # TODO: få masker ind
+        noise_idx = random.choice(np.arange(len(self.noise_scales)))
+        noise_scale = self.noise_scales[noise_idx]
+        pos_til, target = self.riemannGaussian(pos, noise_scale=noise_scale)
         if self.derivative:
-            pos.requires_grad_(True)
-        edge_index, edge_weight, edge_vec = self.distance(pos, batch)
-        x, v, edge_attr = self.rygrad(z, pos, batch,
+            pos_til.requires_grad_(True)
+        edge_index, edge_weight, edge_vec = self.distance(pos_til, batch)
+        x, v, edge_attr = self.rygrad(z, pos_til, batch,
                                       edge_index, edge_weight, edge_vec)
-        y, dy = self.hoved(z, pos, batch, x, v)
-        target = 100*torch.ones(y.shape, device=self.device)
-        return y, target
+        y, dy = self.hoved(z, pos_til, batch, x, v, noise_idx, noise_scale)
+        # target = 100*torch.ones(y.shape, device=self.device)
+        loss = noise_scale*self.criterion(1/noise_scale*dy, target)
+
+        return loss
 

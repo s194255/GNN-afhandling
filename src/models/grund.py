@@ -43,8 +43,8 @@ class GrundSelvvejledt(Grundmodel):
         # self.criterion = torch.nn.L1Loss(reduction='mean')
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        pred, target = self(data.z, data.pos, data.batch)
-        loss = self.criterion(pred, target)
+        loss = self(data.z, data.pos, data.batch)
+        # loss = self.criterion(pred, target)
         self.log("loss", loss.item(), batch_size=data.batch_size)
         print(loss.item())
         return loss
@@ -62,10 +62,10 @@ class GrundSelvvejledt(Grundmodel):
     #
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
-            pred, target = self(data.z, data.pos, data.batch)
-        loss = self.criterion(pred, target)
+            loss = self(data.z, data.pos, data.batch)
+        # loss = self.criterion(pred, target)
         self.log("loss", loss.item(), batch_size=data.batch_size)
-        print(pred)
+        # print(pred)
         return loss
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
