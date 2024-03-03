@@ -9,6 +9,7 @@ from torch_geometric.nn import MessagePassing, radius_graph
 from torch_geometric.utils import scatter
 
 import lightning as L
+from torch_geometric.loader import DataLoader
 
 
 class CosineCutoff(torch.nn.Module):
@@ -1019,7 +1020,7 @@ class ViSNet(L.LightningModule):
     ) -> None:
         super().__init__()
 
-        self.rygrad = ViSNetBlock(
+        self.motor = ViSNetBlock(
             lmax=lmax,
             vecnorm_type=vecnorm_type,
             trainable_vecnorm=trainable_vecnorm,
@@ -1038,7 +1039,7 @@ class ViSNet(L.LightningModule):
 
     def reset_parameters(self):
         r"""Resets the parameters of the module."""
-        self.rygrad.reset_parameters()
+        self.motor.reset_parameters()
 
 
     def forward(
@@ -1050,6 +1051,22 @@ class ViSNet(L.LightningModule):
         if self.derivative:
             pos.requires_grad_(True)
         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
-        x, v, edge_attr = self.rygrad(z, pos, batch,
-                                      edge_index, edge_weight, edge_vec)
+        x, v, edge_attr = self.motor(z, pos, batch,
+                                     edge_index, edge_weight, edge_vec)
         return x, v, edge_attr
+
+    # def train_dataloader(self) -> DataLoader:
+    #     return self.QM9Bygger('train', self.debug)
+    #
+    # def val_dataloader(self) -> DataLoader:
+    #     return self.QM9Bygger('val', self.debug)
+    # def test_dataloader(self) -> DataLoader:
+    #     return self.QM9Bygger('test', self.debug)
+    #
+    # def configure_optimizers(self) -> torch.optim.Optimizer:
+    #     optimizer = torch.optim.AdamW(self.parameters(), lr=0.000001)
+    #     return optimizer
+    #
+    # def indæs_selvvejledt_rygrad(self, visetbase):
+    #     state_dict = visetbase.motor.state_dict()
+    #     self.motor.load_state_dict(state_dict)

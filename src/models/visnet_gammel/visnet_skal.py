@@ -40,7 +40,7 @@ class VisNetBase(L.LightningModule):
         return optimizer
 
     def indæs_selvvejledt_rygrad(self, visetbase):
-        state_dict = visetbase.rygrad.state_dict()
+        state_dict = visetbase.motor.state_dict()
         self.rygrad.load_state_dict(state_dict)
 
 class VisNetSelvvejledt(VisNetBase):

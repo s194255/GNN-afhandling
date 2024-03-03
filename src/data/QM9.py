@@ -32,9 +32,9 @@ class QM9Bygger:
         batch_size = 4
         num_workers = 4
         if debug:
-            subset_indices = random.sample(list(range(len(dataset))), k=min(50, len(dataset)))
+            subset_indices = random.sample(list(range(len(dataset))), k=min(200, len(dataset)))
             dataset = torch.utils.data.Subset(dataset, subset_indices)
-            batch_size = 8
+            batch_size = 4
             num_workers = 0
         dataloader = DataLoader(dataset, batch_size=batch_size,
                                 shuffle=shuffle_options[task], num_workers=num_workers)

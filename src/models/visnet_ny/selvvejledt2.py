@@ -24,7 +24,7 @@ class Hoved(L.LightningModule):
                  derivative: bool = False,
                  ):
         super().__init__()
-        self.motor = EquivariantScalar(hidden_channels=hidden_channels)
+        self.motor = torch.nn.Linear(in_features=hidden_channels, out_features=3)
         self.prior_model = Atomref(atomref=atomref, max_z=max_z)
         self.register_buffer('mean', torch.tensor(mean))
         self.register_buffer('std', torch.tensor(std))
@@ -36,33 +36,13 @@ class Hoved(L.LightningModule):
         self.prior_model.reset_parameters()
 
     def forward(self, z, pos, batch, x, v):
-        x = self.motor(x, v)
+        x = self.motor(x)
         x = x * self.std
-
-        if self.prior_model is not None:
-            x = self.prior_model(x, z)
-
-        y = scatter(x, batch, dim=0, reduce=self.reduce_op)
-        y = y + self.mean
-
-        if self.derivative:
-            grad_outputs = [torch.ones_like(y)]
-            dy = grad(
-                [y],
-                [pos],
-                grad_outputs=grad_outputs,
-                create_graph=True,
-                retain_graph=True,
-            )[0]
-            if dy is None:
-                raise RuntimeError(
-                    "Autograd returned None for the force prediction.")
-            return y, -dy
-
-        return y, None
+        x = x + self.mean
+        return x
 
 
-class VisNetSelvvejledt(GrundSelvvejledt):
+class VisNetSelvvejledt2(GrundSelvvejledt):
     def __init__(self, *args,
                  atomref: Optional[Tensor] = None,
                  max_z: int = 100,
@@ -116,12 +96,10 @@ class VisNetSelvvejledt(GrundSelvvejledt):
             batch: Tensor,
     ) -> Tuple[Tensor, Tensor]:
         # TODO: få masker ind
-        if self.derivative:
-            pos.requires_grad_(True)
         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
         x, v, edge_attr = self.rygrad(z, pos, batch,
                                       edge_index, edge_weight, edge_vec)
-        y, dy = self.hoved(z, pos, batch, x, v)
-        target = 100*torch.ones(y.shape, device=self.device)
-        return y, target
+        x = self.hoved(z, pos, batch, x, v)
+        target = 100*torch.ones(x.shape, device=self.device)
+        return x, target
 
