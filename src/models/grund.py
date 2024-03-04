@@ -6,7 +6,10 @@ from src.models.redskaber import Maskemager, RiemannGaussian
 import torch
 from lightning.pytorch.utilities import grad_norm
 from torch import Tensor
-from typing import Tuple
+from typing import Tuple, Optional
+from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
+from src.models.hoveder.hoveddownstream import HovedDownstream
+import inspect
 
 class Grundmodel(L.LightningModule):
 
@@ -38,15 +41,32 @@ class GrundSelvvejledt(Grundmodel):
     def __init__(self, *args,
                  maskeringsandel = 0.15,
                  lambdaer = None,
+                 reduce_op: str = "sum",
+                 mean: float = 0.0,
+                 std: float = 1.0,
+                 hidden_channels: int = 128,
+                 max_z: int = 100,
+                 atomref: Optional[Tensor] = None,
                  **kwargs):
         super().__init__(*args, **kwargs)
+
         if not lambdaer:
             self.lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
+
+        self.noise_scales_options = torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000], device=self.device)
         self.maskeringsandel = maskeringsandel
         self.maskemager = Maskemager()
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.riemannGaussian = RiemannGaussian()
-        self.noise_scales_options = torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000], device=self.device)
+        self.hoved = HovedSelvvejledt(
+            atomref=atomref,
+            max_z=max_z,
+            reduce_op=reduce_op,
+            mean=mean,
+            std=std,
+            hidden_channels=hidden_channels,
+            out_channels=len(self.noise_scales_options)
+        )
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         tabsopslag = self(data.z, data.pos, data.batch)
@@ -106,5 +126,44 @@ class GrundSelvvejledt(Grundmodel):
                                       edge_index, edge_weight, edge_vec)
         tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
         return tabsopslag
+class GrundDownstream(Grundmodel):
+    def __init__(self, *args,
+                 hidden_channels: int = 128,
+                 out_channels: int = 19,
+                 reduce_op: str = 'sum',
+                 **kwargs):
+        super().__init__(*args, **kwargs)
+        self.hoved = HovedDownstream(
+            hidden_channels=hidden_channels,
+            out_channels=out_channels,
+            reduce_op=reduce_op
+        )
+        self.criterion = torch.nn.MSELoss()
+
+    def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+        pred = self(data.z, data.pos, data.batch)
+        loss = self.criterion(pred[:, 0], data.y[:, 0])
+        self.log("loss", loss.item())
+        print(loss.item())
+        return loss
+
+    def forward(
+        self,
+        z: Tensor,
+        pos: Tensor,
+        batch: Tensor,
+    ) -> Tuple[Tensor, Optional[Tensor]]:
+        edge_index, edge_weight, edge_vec = self.distance(pos, batch)
+        x, v, edge_attr = self.rygrad(z, pos, batch,
+                                      edge_index, edge_weight, edge_vec)
+        y = self.hoved(z, pos, batch, x, v)
+        return y
+
+    def configure_optimizers(self) -> torch.optim.Optimizer:
+        optimizer = torch.optim.AdamW(self.parameters(), lr=0.0001)
+        return optimizer
+
+
+
 
 

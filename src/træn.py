@@ -1,5 +1,5 @@
 import lightning as L
-from src.models import VisNetSelvvejledt, VisNetDownstream
+from src.models.visnet_ny import VisNetSelvvejledt, VisNetDownstream
 import argparse
 
 def med_selvtræn():
@@ -44,5 +44,5 @@ if __name__ == "__main__":
     EPOKER_EFTERFØLGENDE = args.epoker_efterfølgende
 
 
-    med_selvtræn()
+    # med_selvtræn()
     uden_selvtræn()

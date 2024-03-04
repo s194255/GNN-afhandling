@@ -4,27 +4,10 @@ from src.models import visnet_ny
 import torch
 print("færdig ...")
 
-# torch.autograd.set_detect_anomaly(True)
-
-# with torch.no_grad():
-model = visnet_ny.VisNetSelvvejledt(debug=True)
+# model = visnet_ny.VisNetSelvvejledt(debug=True)
 # model = visnet_ny.VisNetSelvvejledt2(debug=True)
-# model.eval()
-# model = src.models.visnet_ny.visnet_ny_skal.ViSNet(derivative=True)
-# model = visnet_ny.VisNetDownstream()
-# criterion = torch.nn.MSELoss(reduction='mean')
-# optimizer = torch.optim.Adam(model.parameters(), lr=0.000)
-# dataloader = QM9Bygger2()('pretrain', True)
-# for data in dataloader:
-#     pred, target = model(data.z, data.pos, data.batch)
-#     loss = criterion(pred, target)
-#     loss.backward()
-#     # for name, param in model.named_parameters():
-#     #     if param.grad is not None:
-#     #         print(f'Parameter: {name}, Gradient shape: {param.grad.shape}, Number of elements: {param.grad.numel()}, grad: {param.grad}')
-#     optimizer.step()
-#     optimizer.zero_grad()
-#     print(loss.item())
+model = visnet_ny.VisNetDownstream(debug=True, reduce_op='sum', eftertræningsandel=0.20)
+
 
 checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
@@ -36,4 +19,4 @@ trainer = L.Trainer(max_epochs=4,
                     gradient_clip_val=0.1,
                     )
 trainer.fit(model)
-trainer.test(model=model, ckpt_path='best')
+# trainer.test(model=model, ckpt_path='best')
