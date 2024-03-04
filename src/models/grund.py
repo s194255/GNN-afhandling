@@ -2,9 +2,11 @@ import lightning as L
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 from src.data import QM9Bygger
-from src.models.redskaber import Maskemager
+from src.models.redskaber import Maskemager, RiemannGaussian
 import torch
 from lightning.pytorch.utilities import grad_norm
+from torch import Tensor
+from typing import Tuple
 
 class Grundmodel(L.LightningModule):
 
@@ -43,11 +45,13 @@ class GrundSelvvejledt(Grundmodel):
         self.maskeringsandel = maskeringsandel
         self.maskemager = Maskemager()
         self.criterion = torch.nn.MSELoss(reduction='mean')
+        self.riemannGaussian = RiemannGaussian()
+        self.noise_scales_options = torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000], device=self.device)
         # self.criterion = torch.nn.L1Loss(reduction='mean')
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         tabsopslag = self(data.z, data.pos, data.batch)
-        loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in ['lokalt', 'globalt'])
+        loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
         self.log("loss", loss.item(), batch_size=data.batch_size)
         print(loss.item())
         return loss
@@ -65,14 +69,15 @@ class GrundSelvvejledt(Grundmodel):
     #
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
-            loss = self(data.z, data.pos, data.batch)
+            tabsopslag = self(data.z, data.pos, data.batch)
         # loss = self.criterion(pred, target)
+        loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
         self.log("loss", loss.item(), batch_size=data.batch_size)
         # print(pred)
         return loss
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=0.1)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=0.0001)
         return optimizer
 
     def on_before_optimizer_step(self, optimizer):
@@ -82,5 +87,24 @@ class GrundSelvvejledt(Grundmodel):
         norms_list = []
         for norm in norms.values():
             norms_list.append(norm.item())
-        print(max(norms_list))
-        print(min(norms_list))
+        print(f"største gradientværdi = {max(norms_list)}")
+        print(f"mindste gradientværdi = {min(norms_list)}")
+
+    def forward(
+            self,
+            z: Tensor,
+            pos: Tensor,
+            batch: Tensor,
+    ) -> Tuple[Tensor, Tensor]:
+        noise_idxs = torch.randint(low=0, high=len(self.noise_scales_options), size=torch.unique(batch).shape, device=self.device)
+        noise_scales = torch.gather(self.noise_scales_options, 0, noise_idxs)
+        pos_til, target = self.riemannGaussian(pos, batch, noise_idxs, noise_scales)
+        if self.derivative:
+            pos_til.requires_grad_(True)
+        edge_index, edge_weight, edge_vec = self.distance(pos_til, batch)
+        x, v, edge_attr = self.rygrad(z, pos_til, batch,
+                                      edge_index, edge_weight, edge_vec)
+        tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
+        return tabsopslag
+
+

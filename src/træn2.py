@@ -1,10 +1,7 @@
+print("importerer ...")
 import lightning as L
-import torch
-
-import src.models.visnet_ny.selvvejldt
 from src.models import visnet_ny
-from src.data import QM9Bygger2
-
+print("færdig ...")
 
 
 

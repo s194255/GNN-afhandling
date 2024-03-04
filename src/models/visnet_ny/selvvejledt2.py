@@ -1,18 +1,14 @@
-from typing import Optional, Tuple
+from typing import Optional
 
 import lightning as L
 import torch
 from torch import Tensor
-from torch.autograd import grad
-from torch_geometric.utils import scatter
 
-from src.models.visnet_ny.kerne import EquivariantScalar, Atomref, ViSNetBlock, Distance
+from src.models.visnet_ny.kerne import Atomref, ViSNetBlock, Distance
 from src.models.grund import GrundSelvvejledt
+from src.models.visnet_ny.selvvejldt import Global
 
-from torch_geometric.data import Data
-from torch_geometric.loader import DataLoader
-
-class Hoved(L.LightningModule):
+class Lokal(L.LightningModule):
 
     def __init__(self,
                  hidden_channels: int = 128,
@@ -30,16 +26,54 @@ class Hoved(L.LightningModule):
         self.register_buffer('std', torch.tensor(std))
         self.reduce_op = reduce_op
         self.derivative = derivative
+        self.criterion = torch.nn.MSELoss(reduction='none')
 
     def reset_parameters(self):
         self.motor.reset_parameters()
         self.prior_model.reset_parameters()
 
-    def forward(self, z, pos, batch, x, v):
+    def forward(self, z, pos, batch, x, v, noise_idx, noise_scale, target):
         x = self.motor(x)
         x = x * self.std
         x = x + self.mean
-        return x
+        noise_scale = torch.gather(noise_scale, 0, batch)
+        loss = noise_scale ** 2 * self.criterion(1 / noise_scale.view(-1, 1) * x, target).sum(dim=1)
+        loss = loss.mean()
+        return loss
+
+class Hoved(L.LightningModule):
+
+    def __init__(self,
+                 hidden_channels: int = 128,
+                 atomref: Optional[Tensor] = None,
+                 max_z: int = 100,
+                 reduce_op: str = "sum",
+                 mean: float = 0.0,
+                 std: float = 1.0,
+                 derivative: bool = False,
+                 out_channels: int = 4,
+                 ):
+        super().__init__()
+        self.lokal = Lokal(
+            hidden_channels=hidden_channels,
+            atomref=atomref,
+            max_z=max_z,
+            reduce_op=reduce_op,
+            mean=mean,
+            std=std,
+            derivative=derivative,
+        )
+        self.globall = Global(
+            hidden_channels=hidden_channels,
+            reduce_op=reduce_op,
+            out_channels=out_channels
+        )
+
+    def forward(self, z, pos, batch, x, v, noise_idx, noise_scale, target):
+        tabsopslag = {}
+        tabsopslag['lokalt'] = self.lokal(z, pos, batch, x, v, noise_idx, noise_scale, target)
+        tabsopslag['globalt'] = self.globall(z, pos, batch, x, v, noise_idx, noise_scale)
+        return tabsopslag
 
 
 class VisNetSelvvejledt2(GrundSelvvejledt):
@@ -86,20 +120,7 @@ class VisNetSelvvejledt2(GrundSelvvejledt):
             reduce_op=reduce_op,
             mean=mean,
             std=std,
-            derivative=self.derivative
+            hidden_channels=hidden_channels,
+            out_channels=len(self.noise_scales_options)
         )
-
-    def forward(
-            self,
-            z: Tensor,
-            pos: Tensor,
-            batch: Tensor,
-    ) -> Tuple[Tensor, Tensor]:
-        # TODO: få masker ind
-        edge_index, edge_weight, edge_vec = self.distance(pos, batch)
-        x, v, edge_attr = self.rygrad(z, pos, batch,
-                                      edge_index, edge_weight, edge_vec)
-        x = self.hoved(z, pos, batch, x, v)
-        target = 100*torch.ones(x.shape, device=self.device)
-        return x, target
 
