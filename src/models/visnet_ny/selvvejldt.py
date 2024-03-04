@@ -28,8 +28,7 @@ class Global(L.LightningModule):
     def forward(self, z, pos, batch, x, v, noise_idx, noise_scale) -> torch.Tensor:
         x = scatter(x, batch, dim=0, reduce=self.reduce_op)
         x = self.motor(x)
-        target = noise_idx*torch.ones(x.shape[0], device=self.device, dtype=torch.long)
-        loss = self.criterion(x, target)
+        loss = self.criterion(x, noise_idx)
 
         return loss
 
@@ -69,24 +68,21 @@ class Lokal(L.LightningModule):
         y = scatter(x, batch, dim=0, reduce=self.reduce_op)
         y = y + self.mean
 
-        if self.derivative:
-            grad_outputs = [torch.ones_like(y)]
-            dy = grad(
-                [y],
-                [pos],
-                grad_outputs=grad_outputs,
-                create_graph=True,
-                retain_graph=True,
-            )[0]
-            if dy is None:
-                raise RuntimeError(
-                    "Autograd returned None for the force prediction.")
-            noise_scale = torch.gather(noise_scale, 0, batch)
-            loss = noise_scale**2 * self.criterion(1 / noise_scale.view(-1, 1) * dy, target).sum(dim=1)
-            loss = loss.mean()
-            return loss
-
-        return y, None
+        grad_outputs = [torch.ones_like(y)]
+        dy = grad(
+            [y],
+            [pos],
+            grad_outputs=grad_outputs,
+            create_graph=True,
+            retain_graph=True,
+        )[0]
+        if dy is None:
+            raise RuntimeError(
+                "Autograd returned None for the force prediction.")
+        noise_scale = torch.gather(noise_scale, 0, batch)
+        loss = noise_scale**2 * self.criterion(1 / noise_scale.view(-1, 1) * dy, target).sum(dim=1)
+        loss = loss.mean()
+        return loss
 
 class Hoved(L.LightningModule):
 
@@ -172,6 +168,7 @@ class VisNetSelvvejledt(GrundSelvvejledt):
             hidden_channels=hidden_channels,
             out_channels=len(self.noise_scales_options)
         )
+
 
 
 

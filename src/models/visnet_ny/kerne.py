@@ -11,6 +11,7 @@ from torch_geometric.utils import scatter
 import lightning as L
 from torch_geometric.loader import DataLoader
 
+APPROX_ZERO_STD = 0.00001
 
 class CosineCutoff(torch.nn.Module):
     r"""Appies a cosine cutoff to the input distances.
@@ -331,7 +332,7 @@ class Distance(torch.nn.Module):
 
         if self.add_self_loops:
             mask = edge_index[0] != edge_index[1]
-            edge_weight = torch.zeros(edge_vec.size(0), device=edge_vec.device)
+            edge_weight = torch.randn(edge_vec.size(0), device=edge_vec.device) * APPROX_ZERO_STD
             edge_weight[mask] = torch.norm(edge_vec[mask], dim=-1)
         else:
             edge_weight = torch.norm(edge_vec, dim=-1)
@@ -813,8 +814,8 @@ class ViSNetBlock(L.LightningModule):
                                                      dim=1).unsqueeze(1)
         edge_vec = self.sphere(edge_vec)
         x = self.neighbor_embedding(z, x, edge_index, edge_weight, edge_attr)
-        vec = torch.zeros(x.size(0), ((self.lmax + 1)**2) - 1, x.size(1),
-                          dtype=x.dtype, device=x.device)
+        vec = torch.randn(x.size(0), ((self.lmax + 1) ** 2) - 1, x.size(1),
+                          dtype=x.dtype, device=x.device) * APPROX_ZERO_STD
         edge_attr = self.edge_embedding(edge_index, edge_attr, x)
         if masker:
             x[masker['knuder']] = torch.zeros(x.shape[1], device=self.device)

@@ -1,9 +1,10 @@
 print("importerer ...")
 import lightning as L
 from src.models import visnet_ny
+import torch
 print("færdig ...")
 
-
+# torch.autograd.set_detect_anomaly(True)
 
 # with torch.no_grad():
 model = visnet_ny.VisNetSelvvejledt(debug=True)
@@ -32,7 +33,7 @@ trainer = L.Trainer(max_epochs=4,
                     callbacks=[checkpoint_callback],
                     # track_grad_norm=2,
                     # detect_anomaly=True
-                    gradient_clip_val=0.00000001,
+                    gradient_clip_val=0.1,
                     )
 trainer.fit(model)
 trainer.test(model=model, ckpt_path='best')

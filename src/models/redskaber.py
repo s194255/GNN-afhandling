@@ -1,3 +1,4 @@
+import random
 from typing import Dict, Any
 
 import torch
@@ -5,6 +6,7 @@ from torch import Tensor
 from torch_geometric.utils import subgraph
 
 import lightning as L
+from torch_scatter import scatter_mean, scatter_add
 
 
 class Maskemager(L.LightningModule):
@@ -23,80 +25,59 @@ class Maskemager(L.LightningModule):
 class RiemannGaussian(L.LightningModule):
 
     def __init__(self,
-                 *args,
-                 num_steps = 10,
-                 step_size = 0.01,
-                 **kwargs
+                 T: int = 5,
                  ):
-        super().__init__(*args, **kwargs)
-        self.num_steps = num_steps
-        self.step_size = step_size
+        super().__init__()
+        self.T = T
 
-    def _riemann_gaussian_potential(self,
-                                    x_current: torch.Tensor,
-                                    x_cond: torch.Tensor,
-                                    noise_scale: float
-                                    ):
-        y_current = x_current - torch.mean(x_current)
-        y_cond = x_cond - torch.mean(x_cond)
-        tæller = torch.norm(y_current.T @ y_current - y_cond.T @ y_cond) ** 2
-        nævner = 4 * noise_scale ** 2
-        return torch.exp(-tæller / nævner)
-
-
-    def _calculate_gradient(self,
-                            x_current: torch.Tensor,
-                            x_cond: torch.Tensor,
-                            noise_scale: float
-                            ):
-        x_clone = x_current.clone().detach()  # Opret en kopi af `x`
-        x_clone.requires_grad = True
-        potential = self._riemann_gaussian_potential(x_clone, x_cond, noise_scale)
-        grad = torch.autograd.grad(potential, x_clone, create_graph=False)[0]
-        return grad
-
-    def _langevin_update(self,
-                         x_current: torch.Tensor,
-                         x_cond: torch.Tensor,
-                         noise_scale: float,
-                         ):
-        grad = self._calculate_gradient(x_current, x_cond, noise_scale)
-        noise = torch.randn_like(x_current) * noise_scale * torch.sqrt(torch.tensor(2.0 * self.step_size))
-        x = x_current + self.step_size * grad + noise
-        return x
-
-    def _get_target(self,
-                    x_current: torch.Tensor,
-                    x_cond: torch.Tensor,
-                    noise_scale: float
-                    ):
-        y_current = x_current - torch.mean(x_current)
-        y_cond = x_cond - torch.mean(x_cond)
-        target = (y_current @ y_current.T) @ y_current - (y_current @ y_cond.T) @ y_cond
-        target = -1/noise_scale**2 * target
-        alpha = torch.norm(y_current @ y_current.T) + torch.norm(y_current @ y_cond.T)
-        alpha = alpha/2
-        return 1/alpha*target
+    @torch.no_grad()
+    def get_s(self, pos_til, pos, batch, sigma):
+        v = pos.shape[-1]
+        center = scatter_mean(pos, batch, dim=-2)  # B * 3
+        perturbed_center = scatter_mean(pos_til, batch, dim=-2)  # B * 3
+        pos_c = pos - center[batch]
+        perturbed_pos_c = pos_til - perturbed_center[batch]
+        perturbed_pos_c_left = perturbed_pos_c.repeat_interleave(v, dim=-1)
+        perturbed_pos_c_right = perturbed_pos_c.repeat([1, v])
+        pos_c_left = pos_c.repeat_interleave(v, dim=-1)
+        ptp = scatter_add(perturbed_pos_c_left * perturbed_pos_c_right, batch, dim=-2).reshape(-1, v,
+                                                                                               v)  # B * 3 * 3
+        otp = scatter_add(pos_c_left * perturbed_pos_c_right, batch, dim=-2).reshape(-1, v, v)  # B * 3 * 3
+        ptp = ptp[batch]
+        otp = otp[batch]
+        # s = - 2 * (perturbed_pos_c.unsqueeze(1) @ ptp - pos_c.unsqueeze(1) @ otp).squeeze(1) / (
+        #         torch.norm(ptp, dim=(1, 2)) + torch.norm(otp, dim=(1, 2))).unsqueeze(-1).repeat([1, 3])
+        s = (perturbed_pos_c.unsqueeze(1) @ ptp - pos_c.unsqueeze(1) @ otp).squeeze(1)
+        s = -(1/sigma**2).view(-1, 1) * s
+        alpha = (torch.norm(ptp, dim=(1, 2)) + torch.norm(otp, dim=(1, 2)))/2
+        return s, alpha
+    @torch.no_grad()
     def forward(self,
-                x: torch.Tensor,
+                pos: torch.Tensor,
                 batch: torch.Tensor,
-                noise_idxs: torch.Tensor,
-                noise_scales: torch.Tensor,
-                **kwargs: Any
-                ) -> Any:
+                sigma: torch.Tensor,
+                ):
+        pos_til = pos.clone()
+        for t in range(1, self.T+1):
+            beta = (sigma**2)/(2**t)
+            s, alpha = self.get_s(pos_til, pos, batch, sigma)
+            pos_til = pos_til + (beta/alpha).view(-1, 1) * s + torch.sqrt(2*beta).view(-1, 1)*torch.randn_like(pos)
+        target = (1/alpha).view(-1, 1) * s
+        return pos_til, target
 
-        x = x.clone()
-        target = torch.empty(size=(x.shape[0], 3), dtype=x.dtype, device=self.device)
-        xout = torch.empty(x.shape, dtype=x.dtype, device=self.device)
-        for idx in torch.unique(batch):
-            x_cond = x[batch == idx]
-            x_current = x[batch == idx]
-            noise_scale = noise_scales[idx]
 
-            for _ in range(self.num_steps):
-                x_current = self._langevin_update(x_current, x_cond, noise_scale)
+if __name__ == "__main__":
+    riemannGuassian = RiemannGaussian()
+    pos = torch.randn((370, 3)) * 1 + 4
+    batch = torch.randint(0, 8, (370,))
+    sigmas_options = [0.01, 0.1, 1.0, 10.0, 100.0]
+    sigma = torch.empty(size=(370,), dtype=torch.float32)
+    for i in range(8):
+        sigma_ = random.choice(sigmas_options)
+        sigma[batch == i] = sigma_
 
-            target[batch == idx] = self._get_target(x_current, x_cond, noise_scale)
-            xout[batch == idx] = x_current
+    print(riemannGuassian(pos, batch, sigma))
 
-        return xout, target
+
+
+

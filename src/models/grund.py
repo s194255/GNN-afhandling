@@ -47,7 +47,6 @@ class GrundSelvvejledt(Grundmodel):
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.riemannGaussian = RiemannGaussian()
         self.noise_scales_options = torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000], device=self.device)
-        # self.criterion = torch.nn.L1Loss(reduction='mean')
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         tabsopslag = self(data.z, data.pos, data.batch)
@@ -98,7 +97,8 @@ class GrundSelvvejledt(Grundmodel):
     ) -> Tuple[Tensor, Tensor]:
         noise_idxs = torch.randint(low=0, high=len(self.noise_scales_options), size=torch.unique(batch).shape, device=self.device)
         noise_scales = torch.gather(self.noise_scales_options, 0, noise_idxs)
-        pos_til, target = self.riemannGaussian(pos, batch, noise_idxs, noise_scales)
+        sigma = torch.gather(noise_scales, 0, batch)
+        pos_til, target = self.riemannGaussian(pos, batch, sigma)
         if self.derivative:
             pos_til.requires_grad_(True)
         edge_index, edge_weight, edge_vec = self.distance(pos_til, batch)
