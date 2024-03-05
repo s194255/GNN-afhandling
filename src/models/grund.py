@@ -53,6 +53,7 @@ class GrundSelvvejledt(Grundmodel):
         if not lambdaer:
             self.lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
 
+        print(self.device)
         self.noise_scales_options = torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000], device=self.device)
         self.maskeringsandel = maskeringsandel
         self.maskemager = Maskemager()
@@ -102,7 +103,9 @@ class GrundSelvvejledt(Grundmodel):
             pos: Tensor,
             batch: Tensor,
     ) -> Tuple[Tensor, Tensor]:
-        noise_idxs = torch.randint(low=0, high=len(self.noise_scales_options), size=torch.unique(batch).shape, device=self.device)
+        print(self.device)
+        noise_idxs = torch.randint(low=0, high=len(self.noise_scales_options),
+                                   size=torch.unique(batch).shape, device=self.device)
         noise_scales = torch.gather(self.noise_scales_options, 0, noise_idxs)
         sigma = torch.gather(noise_scales, 0, batch)
         pos_til, target = self.riemannGaussian(pos, batch, sigma)
