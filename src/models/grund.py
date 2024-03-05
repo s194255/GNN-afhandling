@@ -140,7 +140,7 @@ class GrundDownstream(Grundmodel):
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred[:, 0], data.y[:, 0])
-        self.log("validation_loss", loss.item(), batch_size=data.batch_size)
+        self.log("val_loss", loss.item(), batch_size=data.batch_size)
         return loss
 
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:

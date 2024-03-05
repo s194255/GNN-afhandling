@@ -4,7 +4,7 @@ import argparse
 
 def med_selvtræn():
     selvvejledt = VisNetSelvvejledt(debug=DEBUG, eftertræningsandel=0.0025)
-    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
+    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=EPOKER_SELVTRÆN,
                         callbacks=[checkpoint_callback])
@@ -15,7 +15,7 @@ def med_selvtræn():
     downstream.indæs_selvvejledt_rygrad(VisNetSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path))
     if FRYS_RYGRAD:
         downstream.frys_rygrad()
-    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
+    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=EPOKER_EFTERFØLGENDE,
                         callbacks=[checkpoint_callback])
@@ -26,7 +26,7 @@ def uden_selvtræn():
     downstream = VisNetDownstream(debug=DEBUG)
     if FRYS_RYGRAD:
         downstream.frys_rygrad()
-    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
+    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=EPOKER_EFTERFØLGENDE,
                         callbacks=[checkpoint_callback])
