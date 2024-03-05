@@ -13,6 +13,8 @@ def med_selvtræn():
     # downstream = VisNetDownstream(debug=DEBUG, selvvejledt_ckpt=trainer.checkpoint_callback.best_model_path)
     downstream = VisNetDownstream(debug=DEBUG)
     downstream.indæs_selvvejledt_rygrad(VisNetSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path))
+    if FRYS_RYGRAD:
+        downstream.frys_rygrad()
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=EPOKER_EFTERFØLGENDE,
@@ -22,6 +24,8 @@ def med_selvtræn():
 
 def uden_selvtræn():
     downstream = VisNetDownstream(debug=DEBUG)
+    if FRYS_RYGRAD:
+        downstream.frys_rygrad()
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=EPOKER_EFTERFØLGENDE,
@@ -34,6 +38,7 @@ def parserargs():
     parser.add_argument('--debug', action='store_true', help='Aktiver debug-tilstand')
     parser.add_argument('--epoker_selvtræn', type=int, default=50, help='Antal epoker til selvtræning')
     parser.add_argument('--epoker_efterfølgende', type=int, default=5, help='Antal epoker til efterfølgende træning')
+    parser.add_argument('--frys_rygrad', action='store_true', help='Aktiver frossen rygrad-tilstand')
     args = parser.parse_args()
     return args
 
@@ -42,6 +47,7 @@ if __name__ == "__main__":
     DEBUG = args.debug
     EPOKER_SELVTRÆN = args.epoker_selvtræn
     EPOKER_EFTERFØLGENDE = args.epoker_efterfølgende
+    FRYS_RYGRAD = args.frys_rygrad
 
 
     med_selvtræn()

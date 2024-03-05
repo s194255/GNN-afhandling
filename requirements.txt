@@ -1,4 +1,5 @@
 # local package
+# cuda 11.8 skal du bruge
 -e .
 lightning[extra]
 torch_geometric

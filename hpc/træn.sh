@@ -18,4 +18,4 @@ module load cuda/11.3
 # activate the virtual environment
 source /zhome/2c/b/146593/Desktop/afhandling/env1/bin/activate
 
-python src/træn.py --epoker_selvtræn 20 --epoker_efterfølgende 5
+python src/træn.py --epoker_selvtræn 20 --epoker_efterfølgende 5 --frys_rygrad

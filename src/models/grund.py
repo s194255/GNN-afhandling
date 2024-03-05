@@ -36,6 +36,9 @@ class Grundmodel(L.LightningModule):
         state_dict = grundmodel.rygrad.state_dict()
         self.rygrad.load_state_dict(state_dict)
 
+    def frys_rygrad(self):
+        self.rygrad.freeze()
+
 class GrundSelvvejledt(Grundmodel):
 
     def __init__(self, *args,
@@ -131,19 +134,19 @@ class GrundDownstream(Grundmodel):
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred[:, 0], data.y[:, 0])
-        self.log("loss", loss.item())
+        self.log("loss", loss.item(), batch_size=data.batch_size)
         return loss
 
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred[:, 0], data.y[:, 0])
-        self.log("loss", loss.item())
+        self.log("loss", loss.item(), batch_size=data.batch_size)
         return loss
 
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred[:, 0], data.y[:, 0])
-        self.log("loss", loss.item())
+        self.log("loss", loss.item(), batch_size=data.batch_size)
         return loss
 
     def forward(
