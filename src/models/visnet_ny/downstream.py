@@ -1,10 +1,5 @@
 from typing import Optional, Tuple
 
-import lightning as L
-import torch
-from torch import Tensor
-from torch_geometric.utils import scatter
-
 from src.models.visnet_ny.kerne import ViSNetBlock, Distance
 from src.models.grund import GrundDownstream
 class VisNetDownstream(GrundDownstream):
