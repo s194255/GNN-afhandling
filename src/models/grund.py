@@ -54,7 +54,8 @@ class GrundSelvvejledt(Grundmodel):
             self.lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
 
         print(self.device)
-        self.noise_scales_options = torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000], device=self.device)
+        # self.noise_scales_options = torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000], device=self.device)
+        self.register_buffer("noise_scales_options", torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000]))
         self.maskeringsandel = maskeringsandel
         self.maskemager = Maskemager()
         self.criterion = torch.nn.MSELoss(reduction='mean')
