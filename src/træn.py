@@ -44,5 +44,5 @@ if __name__ == "__main__":
     EPOKER_EFTERFØLGENDE = args.epoker_efterfølgende
 
 
-    # med_selvtræn()
+    med_selvtræn()
     uden_selvtræn()

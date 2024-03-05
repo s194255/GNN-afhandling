@@ -9,20 +9,20 @@ from torch import Tensor
 from typing import Tuple, Optional
 from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
 from src.models.hoveder.hoveddownstream import HovedDownstream
-import inspect
 
 class Grundmodel(L.LightningModule):
 
     def __init__(self,
                  debug: bool = False,
-                 eftertræningsandel: float = 0.0025
+                 eftertræningsandel: float = 0.0025,
+                 delmængdestørrelse: float = 0.1,
                  ):
         super().__init__()
         self.rygrad = L.LightningModule()
         self.hoved = L.LightningModule()
         self.debug = debug
         self.eftertræningsandel = eftertræningsandel
-        self.QM9Bygger = QM9Bygger(eftertræningsandel)
+        self.QM9Bygger = QM9Bygger(eftertræningsandel, delmængdestørrelse)
 
     def train_dataloader(self) -> DataLoader:
         return self.QM9Bygger('train', self.debug)
@@ -33,7 +33,7 @@ class Grundmodel(L.LightningModule):
         return self.QM9Bygger('test', self.debug)
 
     def indæs_selvvejledt_rygrad(self, grundmodel):
-        state_dict = grundmodel.motor.state_dict()
+        state_dict = grundmodel.rygrad.state_dict()
         self.rygrad.load_state_dict(state_dict)
 
 class GrundSelvvejledt(Grundmodel):
@@ -72,42 +72,29 @@ class GrundSelvvejledt(Grundmodel):
         tabsopslag = self(data.z, data.pos, data.batch)
         loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
         self.log("loss", loss.item(), batch_size=data.batch_size)
-        print(loss.item())
         return loss
 
     def train_dataloader(self) -> DataLoader:
         return self.QM9Bygger('pretrain', self.debug)
 
-    # def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-    #     with torch.enable_grad():
-    #         pred, target = self(data.z, data.pos, data.batch)
-    #     loss = self.criterion(pred, target)
-    #     self.log("loss", loss.item(), batch_size=data.batch_size)
-    #     print(loss.item())
-    #     return loss
-    #
-    def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+    def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
             tabsopslag = self(data.z, data.pos, data.batch)
         # loss = self.criterion(pred, target)
         loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
         self.log("loss", loss.item(), batch_size=data.batch_size)
-        # print(pred)
+        return loss
+
+    def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+        with torch.enable_grad():
+            tabsopslag = self(data.z, data.pos, data.batch)
+        loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
+        self.log("loss", loss.item(), batch_size=data.batch_size)
         return loss
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
         optimizer = torch.optim.AdamW(self.parameters(), lr=0.0001)
         return optimizer
-
-    def on_before_optimizer_step(self, optimizer):
-        # Compute the 2-norm for each layer
-        # If using mixed precision, the gradients are already unscaled here
-        norms = grad_norm(self.rygrad, norm_type=2)
-        norms_list = []
-        for norm in norms.values():
-            norms_list.append(norm.item())
-        print(f"største gradientværdi = {max(norms_list)}")
-        print(f"mindste gradientværdi = {min(norms_list)}")
 
     def forward(
             self,
@@ -144,7 +131,18 @@ class GrundDownstream(Grundmodel):
         pred = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred[:, 0], data.y[:, 0])
         self.log("loss", loss.item())
-        print(loss.item())
+        return loss
+
+    def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+        pred = self(data.z, data.pos, data.batch)
+        loss = self.criterion(pred[:, 0], data.y[:, 0])
+        self.log("loss", loss.item())
+        return loss
+
+    def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+        pred = self(data.z, data.pos, data.batch)
+        loss = self.criterion(pred[:, 0], data.y[:, 0])
+        self.log("loss", loss.item())
         return loss
 
     def forward(

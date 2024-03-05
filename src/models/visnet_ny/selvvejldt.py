@@ -35,6 +35,7 @@ class VisNetSelvvejledt(GrundSelvvejledt):
             hidden_channels=hidden_channels,
             max_z=max_z
         )
+        self.derivative = True
 
 
 
