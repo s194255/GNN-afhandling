@@ -20,6 +20,7 @@ class Grundmodel(L.LightningModule):
                  rygrad_args = VisNetRyggrad.args
                  ):
         super().__init__()
+        rygrad_args = self.behandl_rygrad_args(rygrad_args)
         self.rygrad = VisNetRyggrad(
             **rygrad_args
         )
@@ -27,6 +28,12 @@ class Grundmodel(L.LightningModule):
         self.debug = debug
         self.eftertræningsandel = eftertræningsandel
         self.QM9Bygger = QM9Bygger(eftertræningsandel, delmængdestørrelse)
+
+    def behandl_rygrad_args(self, rygrad_args):
+        forskel = set(rygrad_args.keys()) - set(VisNetRyggrad.args.keys())
+        assert len(forskel) == 0, f'Følgende argumenter var uventede {forskel}'
+        ny_rygrad_args = {**VisNetRyggrad.args, **{k: rygrad_args[k] for k in rygrad_args}}
+        return ny_rygrad_args
 
     def train_dataloader(self) -> DataLoader:
         return self.QM9Bygger('train', self.debug)

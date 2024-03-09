@@ -1,10 +1,9 @@
 import lightning as L
-from src.models.visnet import VisNetSelvvejledt, VisNetDownstream
 from src.models.grund import GrundSelvvejledt, GrundDownstream
 import argparse
 
 def med_selvtræn():
-    selvvejledt = GrundSelvvejledt(debug=DEBUG, eftertræningsandel=0.0025)
+    selvvejledt = GrundSelvvejledt(debug=DEBUG, eftertræningsandel=0.0025, rygrad_args={'num_heads': 2})
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=EPOKER_SELVTRÆN,
