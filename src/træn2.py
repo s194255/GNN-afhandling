@@ -1,12 +1,12 @@
 print("importerer ...")
 import lightning as L
-from src.models import visnet_ny
+from src.models import visnet
 import torch
 print("færdig ...")
 
-# model = visnet_ny.VisNetSelvvejledt(debug=True)
-# model = visnet_ny.VisNetSelvvejledt2(debug=True)
-model = visnet_ny.VisNetDownstream(debug=True, reduce_op='sum', eftertræningsandel=0.20)
+# model = visnet.VisNetSelvvejledt(debug=True)
+# model = visnet.VisNetSelvvejledt2(debug=True)
+model = visnet.VisNetDownstream(debug=True, reduce_op='sum', eftertræningsandel=0.20)
 model.frys_rygrad()
 
 

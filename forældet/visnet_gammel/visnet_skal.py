@@ -9,7 +9,7 @@ import lightning as L
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 
-from src.models.visnet_gammel.visnet_kerne import Distance, ViSNetBlock
+from forældet.visnet_gammel.visnet_kerne import Distance, ViSNetBlock
 from src.models.redskaber import Maskemager
 from src.data import QM9Bygger
 

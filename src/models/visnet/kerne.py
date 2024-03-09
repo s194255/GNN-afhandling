@@ -1071,3 +1071,55 @@ class ViSNet(L.LightningModule):
     # def indæs_selvvejledt_rygrad(self, visetbase):
     #     state_dict = visetbase.motor.state_dict()
     #     self.motor.load_state_dict(state_dict)
+
+class VisNetRyggrad(L.LightningModule):
+    args = {'lmax': 1,
+            'vecnorm_type': None,
+            'trainable_vecnorm': False,
+            'num_heads': 8,
+            'num_layers': 6,
+            'num_rbf': 32,
+            'trainable_rbf': False,
+            'cutoff': 5.0,
+            'max_num_neighbors': 32,
+            'vertex': False,
+            'hidden_channels': 128,
+            'max_z': 100
+            }
+    def __init__(self, *args,
+                 lmax: int = 1,
+                 vecnorm_type: Optional[str] = None,
+                 trainable_vecnorm: bool = False,
+                 num_heads: int = 8,
+                 num_layers: int = 6,
+                 num_rbf: int = 32,
+                 trainable_rbf: bool = False,
+                 cutoff: float = 5.0,
+                 max_num_neighbors: int = 32,
+                 vertex: bool = False,
+                 hidden_channels: int = 128,
+                 max_z: int = 100,
+                 **kwargs
+                 ):
+        super().__init__(*args, **kwargs)
+        self.distance = Distance(cutoff, max_num_neighbors=max_num_neighbors)
+        self.motor = ViSNetBlock(
+            lmax=lmax,
+            vecnorm_type=vecnorm_type,
+            trainable_vecnorm=trainable_vecnorm,
+            num_heads=num_heads,
+            num_layers=num_layers,
+            hidden_channels=hidden_channels,
+            num_rbf=num_rbf,
+            trainable_rbf=trainable_rbf,
+            max_z=max_z,
+            cutoff=cutoff,
+            max_num_neighbors=max_num_neighbors,
+            vertex=vertex,
+        )
+
+    def forward(self, z, pos, batch):
+        edge_index, edge_weight, edge_vec = self.distance(pos, batch)
+        x, v, edge_attr = self.motor(z, pos, batch,
+                                      edge_index, edge_weight, edge_vec)
+        return x, v, edge_attr

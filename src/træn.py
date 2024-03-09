@@ -1,5 +1,5 @@
 import lightning as L
-from src.models.visnet_ny import VisNetSelvvejledt, VisNetDownstream
+from src.models.visnet import VisNetSelvvejledt, VisNetDownstream
 import argparse
 
 def med_selvtræn():

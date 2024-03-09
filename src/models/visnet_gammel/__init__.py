@@ -1,1 +1,0 @@
-from src.models.visnet_gammel.visnet_skal import VisNetSelvvejledt, VisNetDownstream

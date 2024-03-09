@@ -9,6 +9,7 @@ from torch import Tensor
 from typing import Tuple, Optional
 from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
 from src.models.hoveder.hoveddownstream import HovedDownstream
+from src.models.visnet.kerne import VisNetRyggrad
 
 class Grundmodel(L.LightningModule):
 
@@ -18,7 +19,9 @@ class Grundmodel(L.LightningModule):
                  delmængdestørrelse: float = 0.1,
                  ):
         super().__init__()
-        self.rygrad = L.LightningModule()
+        self.rygrad = VisNetRyggrad(
+
+        )
         self.hoved = L.LightningModule()
         self.debug = debug
         self.eftertræningsandel = eftertræningsandel
@@ -33,7 +36,7 @@ class Grundmodel(L.LightningModule):
         return self.QM9Bygger('test', self.debug)
 
     def indæs_selvvejledt_rygrad(self, grundmodel):
-        state_dict = grundmodel.rygrad.state_dict()
+        state_dict = grundmodel.motor.state_dict()
         self.rygrad.load_state_dict(state_dict)
 
     def frys_rygrad(self):
