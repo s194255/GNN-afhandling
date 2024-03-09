@@ -1,18 +1,18 @@
 import lightning as L
 from src.models.visnet import VisNetSelvvejledt, VisNetDownstream
+from src.models.grund import GrundSelvvejledt, GrundDownstream
 import argparse
 
 def med_selvtræn():
-    selvvejledt = VisNetSelvvejledt(debug=DEBUG, eftertræningsandel=0.0025)
+    selvvejledt = GrundSelvvejledt(debug=DEBUG, eftertræningsandel=0.0025)
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=EPOKER_SELVTRÆN,
                         callbacks=[checkpoint_callback])
     trainer.fit(model=selvvejledt)
 
-    # downstream = VisNetDownstream(debug=DEBUG, selvvejledt_ckpt=trainer.checkpoint_callback.best_model_path)
-    downstream = VisNetDownstream(debug=DEBUG)
-    downstream.indæs_selvvejledt_rygrad(VisNetSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path))
+    downstream = GrundDownstream(debug=DEBUG)
+    downstream.indæs_selvvejledt_rygrad(GrundSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path))
     if FRYS_RYGRAD:
         downstream.frys_rygrad()
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
@@ -23,7 +23,7 @@ def med_selvtræn():
     trainer.test(ckpt_path="best")
 
 def uden_selvtræn():
-    downstream = VisNetDownstream(debug=DEBUG)
+    downstream = GrundDownstream(debug=DEBUG)
     if FRYS_RYGRAD:
         downstream.frys_rygrad()
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',

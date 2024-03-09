@@ -42,6 +42,7 @@ class HovedSelvvejledt(L.LightningModule):
             reduce_op=reduce_op,
             out_channels=out_channels
         )
+        self.derivative = True
 
     def forward(self, z, pos, batch, x, v, noise_idx, noise_scale, target):
         tabsopslag = {}

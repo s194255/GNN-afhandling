@@ -1087,18 +1087,18 @@ class VisNetRyggrad(L.LightningModule):
             'max_z': 100
             }
     def __init__(self, *args,
-                 lmax: int = 1,
-                 vecnorm_type: Optional[str] = None,
-                 trainable_vecnorm: bool = False,
-                 num_heads: int = 8,
-                 num_layers: int = 6,
-                 num_rbf: int = 32,
-                 trainable_rbf: bool = False,
-                 cutoff: float = 5.0,
-                 max_num_neighbors: int = 32,
-                 vertex: bool = False,
-                 hidden_channels: int = 128,
-                 max_z: int = 100,
+                 lmax: int = args['lmax'],
+                 vecnorm_type: Optional[str] = args['vecnorm_type'],
+                 trainable_vecnorm: bool = args['trainable_vecnorm'],
+                 num_heads: int = args['num_heads'],
+                 num_layers: int = args['num_layers'],
+                 num_rbf: int = args['num_rbf'],
+                 trainable_rbf: bool = args['trainable_rbf'],
+                 cutoff: float = args['cutoff'],
+                 max_num_neighbors: int = args['max_num_neighbors'],
+                 vertex: bool = args['vertex'],
+                 hidden_channels: int = args['hidden_channels'],
+                 max_z: int = args['max_z'],
                  **kwargs
                  ):
         super().__init__(*args, **kwargs)
@@ -1123,3 +1123,6 @@ class VisNetRyggrad(L.LightningModule):
         x, v, edge_attr = self.motor(z, pos, batch,
                                       edge_index, edge_weight, edge_vec)
         return x, v, edge_attr
+
+if __name__ == "__main__":
+    abe = VisNetRyggrad()

@@ -17,10 +17,11 @@ class Grundmodel(L.LightningModule):
                  debug: bool = False,
                  eftertræningsandel: float = 0.0025,
                  delmængdestørrelse: float = 0.1,
+                 rygrad_args = VisNetRyggrad.args
                  ):
         super().__init__()
         self.rygrad = VisNetRyggrad(
-
+            **rygrad_args
         )
         self.hoved = L.LightningModule()
         self.debug = debug
@@ -36,7 +37,7 @@ class Grundmodel(L.LightningModule):
         return self.QM9Bygger('test', self.debug)
 
     def indæs_selvvejledt_rygrad(self, grundmodel):
-        state_dict = grundmodel.motor.state_dict()
+        state_dict = grundmodel.rygrad.state_dict()
         self.rygrad.load_state_dict(state_dict)
 
     def frys_rygrad(self):
@@ -113,11 +114,9 @@ class GrundSelvvejledt(Grundmodel):
         noise_scales = torch.gather(self.noise_scales_options, 0, noise_idxs)
         sigma = torch.gather(noise_scales, 0, batch)
         pos_til, target = self.riemannGaussian(pos, batch, sigma)
-        if self.derivative:
+        if self.hoved.derivative:
             pos_til.requires_grad_(True)
-        edge_index, edge_weight, edge_vec = self.distance(pos_til, batch)
-        x, v, edge_attr = self.rygrad(z, pos_til, batch,
-                                      edge_index, edge_weight, edge_vec)
+        x, v, edge_attr = self.rygrad(z, pos_til, batch)
         tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
         return tabsopslag
 class GrundDownstream(Grundmodel):
@@ -158,9 +157,7 @@ class GrundDownstream(Grundmodel):
         pos: Tensor,
         batch: Tensor,
     ) -> Tuple[Tensor, Optional[Tensor]]:
-        edge_index, edge_weight, edge_vec = self.distance(pos, batch)
-        x, v, edge_attr = self.rygrad(z, pos, batch,
-                                      edge_index, edge_weight, edge_vec)
+        x, v, edge_attr = self.rygrad(z, pos, batch)
         y = self.hoved(z, pos, batch, x, v)
         return y
 
