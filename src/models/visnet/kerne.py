@@ -652,8 +652,8 @@ class ViS_MP(MessagePassing):
         dim_size: Optional[int],
     ) -> Tuple[Tensor, Tensor]:
         x, vec = features
-        x = scatter(x, index, dim=self.node_dim, dim_size=dim_size)
-        vec = scatter(vec, index, dim=self.node_dim, dim_size=dim_size)
+        x = scatter(x, index, dim=self.node_dim, dim_size=dim_size, reduce='sum')
+        vec = scatter(vec, index, dim=self.node_dim, dim_size=dim_size, reduce='sum')
         return x, vec
 
 

@@ -1,24 +1,24 @@
 import lightning as L
-from src.models import VisNetSelvvejledt, VisNetDownstream
+from src.models.grund import GrundSelvvejledt, GrundDownstream
 import argparse
 import torch
 import pickle
 from src.data import QM9Bygger2
 
 def fortræn():
-    selvvejledt = VisNetSelvvejledt(debug=args.debug)
-    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
+    selvvejledt = GrundSelvvejledt(debug=args.debug)
+    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=args.epoker_selvtræn,
                         callbacks=[checkpoint_callback])
     trainer.fit(selvvejledt,
                 train_dataloaders=qm9Bygger2('pretrain', debug=args.debug),
                 val_dataloaders=qm9Bygger2('val', debug=args.debug))
-    return VisNetSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
+    return GrundSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
 def med_selvtræn(eftertræningsandel):
-    downstream = VisNetDownstream(debug=args.debug)
+    downstream = GrundDownstream(debug=args.debug)
     downstream.indæs_selvvejledt_rygrad(selvvejledt)
-    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
+    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=args.epoker_efterfølgende,
                         callbacks=[checkpoint_callback])
@@ -30,8 +30,8 @@ def med_selvtræn(eftertræningsandel):
     return resultater
 
 def uden_selvtræn(eftertræningsandel):
-    downstream = VisNetDownstream(debug=args.debug)
-    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='loss', mode='min',
+    downstream = GrundDownstream(debug=args.debug)
+    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=args.epoker_efterfølgende,
                         callbacks=[checkpoint_callback])
@@ -45,7 +45,7 @@ def uden_selvtræn(eftertræningsandel):
 def eksperiment(eftertræningsandel: float):
     res_med_selvtræn = med_selvtræn(eftertræningsandel)
     res_uden_selvtræn = uden_selvtræn(eftertræningsandel)
-    return res_med_selvtræn[0]['MSE'], res_uden_selvtræn[0]['MSE']
+    return res_med_selvtræn[0]['test_loss'], res_uden_selvtræn[0]['test_loss']
 
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
