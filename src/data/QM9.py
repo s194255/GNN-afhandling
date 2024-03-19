@@ -38,7 +38,7 @@ class QM9Bygger:
             torch.save(self.data_splits, self.data_splits_path)
     def get_dataloader(self, dataset, debug, task):
         shuffle_options = {'pretrain': True, 'train': True, 'val': False, 'test': False}
-        batch_size = 32
+        batch_size = 64
         num_workers = 4
         if debug:
             subset_indices = random.sample(list(range(len(dataset))), k=min(50, len(dataset)))

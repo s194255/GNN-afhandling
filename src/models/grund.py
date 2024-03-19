@@ -4,12 +4,11 @@ from torch_geometric.loader import DataLoader
 from src.data import QM9Bygger
 from src.models.redskaber import Maskemager, RiemannGaussian
 import torch
-from lightning.pytorch.utilities import grad_norm
 from torch import Tensor
 from typing import Tuple, Optional, List
 from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
 from src.models.hoveder.hoveddownstream import HovedDownstream
-from src.models.visnet.kerne import VisNetRyggrad
+from src.models.visnet import VisNetRyggrad
 
 
 class Grundmodel(L.LightningModule):

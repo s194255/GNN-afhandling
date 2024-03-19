@@ -1056,22 +1056,6 @@ class ViSNet(L.LightningModule):
                                      edge_index, edge_weight, edge_vec)
         return x, v, edge_attr
 
-    # def train_dataloader(self) -> DataLoader:
-    #     return self.QM9Bygger('train', self.debug)
-    #
-    # def val_dataloader(self) -> DataLoader:
-    #     return self.QM9Bygger('val', self.debug)
-    # def test_dataloader(self) -> DataLoader:
-    #     return self.QM9Bygger('test', self.debug)
-    #
-    # def configure_optimizers(self) -> torch.optim.Optimizer:
-    #     optimizer = torch.optim.AdamW(self.parameters(), lr=0.000001)
-    #     return optimizer
-    #
-    # def indæs_selvvejledt_rygrad(self, visetbase):
-    #     state_dict = visetbase.motor.state_dict()
-    #     self.motor.load_state_dict(state_dict)
-
 class VisNetRyggrad(L.LightningModule):
     args = {'lmax': 1,
             'vecnorm_type': None,
@@ -1123,6 +1107,3 @@ class VisNetRyggrad(L.LightningModule):
         x, v, edge_attr = self.motor(z, pos, batch,
                                       edge_index, edge_weight, edge_vec)
         return x, v, edge_attr
-
-if __name__ == "__main__":
-    abe = VisNetRyggrad()

@@ -22,17 +22,29 @@ import torch
 # trainer.fit(model)
 # # trainer.test(model=model, ckpt_path='best')
 
-model = torch.nn.Linear(1, 1, bias=False)
-rotation_radians = torch.tensor(0.5236)
-rotation_matrix = torch.tensor([
-    [1, 0, 0],
-    [0, torch.cos(rotation_radians), -torch.sin(rotation_radians)],
-    [0, torch.sin(rotation_radians), torch.cos(rotation_radians)]
-], dtype=torch.float32)
+# model = torch.nn.Linear(1, 1, bias=False)
+# rotation_radians = torch.tensor(0.5236)
+# rotation_matrix = torch.tensor([
+#     [1, 0, 0],
+#     [0, torch.cos(rotation_radians), -torch.sin(rotation_radians)],
+#     [0, torch.sin(rotation_radians), torch.cos(rotation_radians)]
+# ], dtype=torch.float32)
+#
+#
+# a = torch.randn(size=(2, 3, 1))
+# b = rotation_matrix @ model(a)
+# c = model(rotation_matrix @ a)
+# print(b)
+# print(c)
+
+import torch_geometric
+import random
+from torch_geometric.loader import DataLoader
+
+dataset = torch_geometric.datasets.MD17("data/MD17", "malonaldehyde")
+dataloader = DataLoader(dataset=dataset, batch_size=2)
+for data in dataloader:
+    a = 2
 
 
-a = torch.randn(size=(2, 3, 1))
-b = rotation_matrix @ model(a)
-c = model(rotation_matrix @ a)
-print(b)
-print(c)
+
