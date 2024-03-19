@@ -4,14 +4,14 @@ from torch_geometric.utils import scatter
 
 
 class HovedDownstream(L.LightningModule):
-    # defaults_args = {'hidden_channels': 128,
-    #                  'out_channels': 19,
-    #                  'reduce_op': "sum"}
+    args = {'out_channels': 19,
+            'reduce_op': "sum"}
+
 
     def __init__(self,
                  hidden_channels: int,
-                 out_channels: int,
-                 reduce_op: str,
+                 out_channels: int = args['out_channels'],
+                 reduce_op: str = args['reduce_op'],
                  ):
         super().__init__()
         self.motor = torch.nn.Sequential(

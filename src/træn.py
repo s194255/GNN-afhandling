@@ -1,33 +1,35 @@
 import lightning as L
-from src.models.grund import GrundSelvvejledt, GrundDownstream
+import src.models as m
 import argparse
 
 def med_selvtræn():
-    selvvejledt = GrundSelvvejledt(debug=DEBUG, eftertræningsandel=0.0025, rygrad_args={'num_heads': 2})
+    selvvejledt = m.GrundSelvvejledt(debug=args.debug, eftertræningsandel=0.0025,
+                                   rygrad_args=m.load_config("config/rygrad_args.yaml"),
+                                     hoved_args=m.load_config("config/selvvejledt_hoved_args.yaml"))
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
-    trainer = L.Trainer(max_epochs=EPOKER_SELVTRÆN,
+    trainer = L.Trainer(max_epochs=args.epoker_selvtræn,
                         callbacks=[checkpoint_callback])
     trainer.fit(model=selvvejledt)
 
-    downstream = GrundDownstream(debug=DEBUG)
-    downstream.indæs_selvvejledt_rygrad(GrundSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path))
-    if FRYS_RYGRAD:
+    downstream = m.GrundDownstream(debug=args.debug, rygrad_args=m.load_config("config/rygrad_args2.yaml"))
+    downstream.indæs_selvvejledt_rygrad(m.GrundSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path))
+    if args.frys_rygrad:
         downstream.frys_rygrad()
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
-    trainer = L.Trainer(max_epochs=EPOKER_EFTERFØLGENDE,
+    trainer = L.Trainer(max_epochs=args.epoker_efterfølgende,
                         callbacks=[checkpoint_callback])
     trainer.fit(downstream)
     trainer.test(ckpt_path="best")
 
 def uden_selvtræn():
-    downstream = GrundDownstream(debug=DEBUG)
-    if FRYS_RYGRAD:
+    downstream = m.GrundDownstream(debug=args.debug, rygrad_args=m.load_config("config/rygrad_args.yaml"))
+    if args.frys_rygrad:
         downstream.frys_rygrad()
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
-    trainer = L.Trainer(max_epochs=EPOKER_EFTERFØLGENDE,
+    trainer = L.Trainer(max_epochs=args.epoker_efterfølgende,
                         callbacks=[checkpoint_callback])
     trainer.fit(downstream)
     trainer.test(ckpt_path="best")
@@ -43,10 +45,16 @@ def parserargs():
 
 if __name__ == "__main__":
     args = parserargs()
-    DEBUG = args.debug
-    EPOKER_SELVTRÆN = args.epoker_selvtræn
-    EPOKER_EFTERFØLGENDE = args.epoker_efterfølgende
-    FRYS_RYGRAD = args.frys_rygrad
+    # DEBUG = args.debug
+    # EPOKER_SELVTRÆN = args.epoker_selvtræn
+    # EPOKER_EFTERFØLGENDE = args.epoker_efterfølgende
+    # FRYS_RYGRAD = args.frys_rygrad
+    # RYGRAD_ARGS = m.load_config("config/rygrad_args.yaml")
+    # SELVVEJLEDT_HOVED_ARGS = m.load_config("config/selvvejledt_hoved_args.yaml")
+    # with open("config/rygrad_args.yaml") as f:
+    #     RYGRAD_ARGS = yaml.safe_load(f)
+    # with open("config/selvvejledt_hoved_args.yaml") as f:
+    #     SELVVEJLEDT_HOVED_ARGS = yaml.safe_load(f)
 
 
     med_selvtræn()

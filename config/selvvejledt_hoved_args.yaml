@@ -1,0 +1,5 @@
+atomref: null
+max_z: 100
+reduce_op: sum
+mean: 0.0
+std: 1.0

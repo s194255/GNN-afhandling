@@ -8,6 +8,8 @@ from torch_geometric.utils import subgraph
 import lightning as L
 from torch_scatter import scatter_mean, scatter_add
 
+import yaml
+
 
 class Maskemager(L.LightningModule):
     def forward(self, n_knuder: int,
@@ -65,6 +67,11 @@ class RiemannGaussian(L.LightningModule):
         target = (1/alpha).view(-1, 1) * s
         return pos_til, target
 
+
+def load_config(path):
+    with open(path) as f:
+        config_dict = yaml.safe_load(f)
+    return config_dict
 
 if __name__ == "__main__":
     riemannGuassian = RiemannGaussian()

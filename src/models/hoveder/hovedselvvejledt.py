@@ -10,15 +10,21 @@ from src.models.visnet.kerne import EquivariantScalar, Atomref
 
 
 class HovedSelvvejledt(L.LightningModule):
-
+    args = {
+        'atomref': None,
+        'max_z': 100,
+        'reduce_op': "sum",
+        'mean': 0.0,
+        'std': 1.0,
+    }
     def __init__(self,
-                 hidden_channels: int = 128,
-                 atomref: Optional[Tensor] = None,
-                 max_z: int = 100,
-                 reduce_op: str = "sum",
-                 mean: float = 0.0,
-                 std: float = 1.0,
-                 out_channels: int = 4,
+                 out_channels,
+                 hidden_channels: int,
+                 atomref: Optional[Tensor] = args['atomref'],
+                 max_z: int = args['max_z'],
+                 reduce_op: str = args['reduce_op'],
+                 mean: float = args['mean'],
+                 std: float = args['std'],
                  ):
         super().__init__()
         self.lokal = LokaltGradient(

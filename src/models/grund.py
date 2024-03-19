@@ -11,16 +11,17 @@ from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
 from src.models.hoveder.hoveddownstream import HovedDownstream
 from src.models.visnet.kerne import VisNetRyggrad
 
+
 class Grundmodel(L.LightningModule):
 
     def __init__(self,
                  debug: bool = False,
                  eftertræningsandel: float = 0.0025,
                  delmængdestørrelse: float = 0.1,
-                 rygrad_args = VisNetRyggrad.args
+                 rygrad_args=VisNetRyggrad.args
                  ):
         super().__init__()
-        rygrad_args = self.behandl_rygrad_args(rygrad_args)
+        self.tjek_args(rygrad_args, VisNetRyggrad.args)
         self.rygrad = VisNetRyggrad(
             **rygrad_args
         )
@@ -28,18 +29,20 @@ class Grundmodel(L.LightningModule):
         self.debug = debug
         self.eftertræningsandel = eftertræningsandel
         self.QM9Bygger = QM9Bygger(eftertræningsandel, delmængdestørrelse)
+        self.save_hyperparameters()
 
-    def behandl_rygrad_args(self, rygrad_args):
-        forskel = set(rygrad_args.keys()) - set(VisNetRyggrad.args.keys())
-        assert len(forskel) == 0, f'Følgende argumenter var uventede {forskel}'
-        ny_rygrad_args = {**VisNetRyggrad.args, **{k: rygrad_args[k] for k in rygrad_args}}
-        return ny_rygrad_args
+    def tjek_args(self, givne_args, forventede_args):
+        forskel1 = set(givne_args.keys()) - set(forventede_args.keys())
+        assert len(forskel1) == 0, f'Følgende argumenter var uventede {forskel1}'
+        forskel2 = set(forventede_args.keys()) - set(givne_args.keys())
+        assert len(forskel2) == 0, f'Følgende argumenter mangler {forskel2}'
 
     def train_dataloader(self) -> DataLoader:
         return self.QM9Bygger('train', self.debug)
 
     def val_dataloader(self) -> DataLoader:
         return self.QM9Bygger('val', self.debug)
+
     def test_dataloader(self) -> DataLoader:
         return self.QM9Bygger('test', self.debug)
 
@@ -50,22 +53,19 @@ class Grundmodel(L.LightningModule):
     def frys_rygrad(self):
         self.rygrad.freeze()
 
+
 class GrundSelvvejledt(Grundmodel):
 
     def __init__(self, *args,
-                 maskeringsandel = 0.15,
-                 lambdaer = None,
-                 reduce_op: str = "sum",
-                 mean: float = 0.0,
-                 std: float = 1.0,
-                 hidden_channels: int = 128,
-                 max_z: int = 100,
-                 atomref: Optional[Tensor] = None,
+                 maskeringsandel=0.15,
+                 lambdaer=None,
+                 hoved_args=HovedSelvvejledt.args,
                  **kwargs):
         super().__init__(*args, **kwargs)
 
         if not lambdaer:
             self.lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
+        self.tjek_args(hoved_args, HovedSelvvejledt.args)
 
         self.register_buffer("noise_scales_options", torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000]))
         self.maskeringsandel = maskeringsandel
@@ -73,12 +73,8 @@ class GrundSelvvejledt(Grundmodel):
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.riemannGaussian = RiemannGaussian()
         self.hoved = HovedSelvvejledt(
-            atomref=atomref,
-            max_z=max_z,
-            reduce_op=reduce_op,
-            mean=mean,
-            std=std,
-            hidden_channels=hidden_channels,
+            **hoved_args,
+            hidden_channels=self.hparams.rygrad_args['hidden_channels'],
             out_channels=len(self.noise_scales_options)
         )
 
@@ -126,17 +122,17 @@ class GrundSelvvejledt(Grundmodel):
         x, v, edge_attr = self.rygrad(z, pos_til, batch)
         tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
         return tabsopslag
+
+
 class GrundDownstream(Grundmodel):
     def __init__(self, *args,
-                 hidden_channels: int = 128,
-                 out_channels: int = 19,
-                 reduce_op: str = 'sum',
+                 hoved_args=HovedDownstream.args,
                  **kwargs):
         super().__init__(*args, **kwargs)
+        self.tjek_args(hoved_args, HovedDownstream.args)
         self.hoved = HovedDownstream(
-            hidden_channels=hidden_channels,
-            out_channels=out_channels,
-            reduce_op=reduce_op
+            hidden_channels=self.hparams.rygrad_args['hidden_channels'],
+            **hoved_args
         )
         self.criterion = torch.nn.MSELoss()
 
@@ -159,10 +155,10 @@ class GrundDownstream(Grundmodel):
         return loss
 
     def forward(
-        self,
-        z: Tensor,
-        pos: Tensor,
-        batch: Tensor,
+            self,
+            z: Tensor,
+            pos: Tensor,
+            batch: Tensor,
     ) -> Tuple[Tensor, Optional[Tensor]]:
         x, v, edge_attr = self.rygrad(z, pos, batch)
         y = self.hoved(z, pos, batch, x, v)
@@ -171,8 +167,3 @@ class GrundDownstream(Grundmodel):
     def configure_optimizers(self) -> torch.optim.Optimizer:
         optimizer = torch.optim.AdamW(self.parameters(), lr=0.0001)
         return optimizer
-
-
-
-
-

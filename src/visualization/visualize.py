@@ -17,6 +17,7 @@ for idx, (key, tensor) in enumerate(data.items()):
     plt.plot(x, tensor, color=colors[idx], label=key)
 
 plt.xlabel("andel træningdata til downstream")
+plt.ylabel("MSE")
 plt.yscale('log')
 plt.legend()
 print("nu skal jeg til at vise")

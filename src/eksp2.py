@@ -1,12 +1,12 @@
 import lightning as L
-from src.models.grund import GrundSelvvejledt, GrundDownstream
+import src.models as m
 import argparse
 import torch
 import pickle
 from src.data import QM9Bygger2
 
 def fortræn():
-    selvvejledt = GrundSelvvejledt(debug=args.debug)
+    selvvejledt = m.GrundSelvvejledt(debug=args.debug)
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=args.epoker_selvtræn,
@@ -14,9 +14,9 @@ def fortræn():
     trainer.fit(selvvejledt,
                 train_dataloaders=qm9Bygger2('pretrain', debug=args.debug),
                 val_dataloaders=qm9Bygger2('val', debug=args.debug))
-    return GrundSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
+    return m.GrundSelvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
 def med_selvtræn(eftertræningsandel):
-    downstream = GrundDownstream(debug=args.debug)
+    downstream = m.GrundDownstream(debug=args.debug)
     downstream.indæs_selvvejledt_rygrad(selvvejledt)
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
@@ -30,7 +30,7 @@ def med_selvtræn(eftertræningsandel):
     return resultater
 
 def uden_selvtræn(eftertræningsandel):
-    downstream = GrundDownstream(debug=args.debug)
+    downstream = m.GrundDownstream(debug=args.debug)
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=args.epoker_efterfølgende,
