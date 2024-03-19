@@ -6,7 +6,7 @@
 #BSUB -gpu "num=1:mode=exclusive_process"
 #BSUB -n 1
 #BSUB -R "rusage[mem=8G]"
-#BSUB -W 1:30
+#BSUB -W 4:00
 #BSUB -N
 # end of BSUB options
 
@@ -18,4 +18,4 @@ module load cuda/11.3
 # activate the virtual environment
 source /zhome/2c/b/146593/Desktop/afhandling/env1/bin/activate
 
-python src/træn.py
+python src/eksp1.py
