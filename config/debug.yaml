@@ -1,0 +1,6 @@
+debug: True
+delmængdestørrelse: 1.0
+fordeling: [0.85, 0.0125, 0.085, 0.0125, 0.04]
+epoker_selvtræn: 1
+epoker_efterfølgende: 1
+frys_rygrad: True

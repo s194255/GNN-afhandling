@@ -4,7 +4,7 @@ from torch_geometric.utils import scatter
 
 
 class HovedDownstream(L.LightningModule):
-    args = {'out_channels': 19,
+    args = {'out_channels': 1,
             'reduce_op': "sum"}
 
 

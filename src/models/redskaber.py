@@ -69,7 +69,7 @@ class RiemannGaussian(L.LightningModule):
 
 
 def load_config(path):
-    with open(path) as f:
+    with open(path, encoding='utf-8') as f:
         config_dict = yaml.safe_load(f)
     return config_dict
 

@@ -6,18 +6,22 @@ from src.models.redskaber import Maskemager, RiemannGaussian
 import torch
 from lightning.pytorch.utilities import grad_norm
 from torch import Tensor
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
 from src.models.hoveder.hoveddownstream import HovedDownstream
 from src.models.visnet.kerne import VisNetRyggrad
 
 
 class Grundmodel(L.LightningModule):
-
+    træn_args = {
+        'debug': False,
+        'delmængdestørrelse': 0.1,
+        'fordeling': None,
+    }
     def __init__(self,
-                 debug: bool = False,
-                 eftertræningsandel: float = 0.0025,
-                 delmængdestørrelse: float = 0.1,
+                 debug: bool = træn_args['debug'],
+                 delmængdestørrelse: float = træn_args['delmængdestørrelse'],
+                 fordeling: List = træn_args['fordeling'],
                  rygrad_args=VisNetRyggrad.args
                  ):
         super().__init__()
@@ -27,8 +31,8 @@ class Grundmodel(L.LightningModule):
         )
         self.hoved = L.LightningModule()
         self.debug = debug
-        self.eftertræningsandel = eftertræningsandel
-        self.QM9Bygger = QM9Bygger(eftertræningsandel, delmængdestørrelse)
+        # self.eftertræningsandel = eftertræningsandel
+        self.QM9Bygger = QM9Bygger(delmængdestørrelse, fordeling)
         self.save_hyperparameters()
 
     def tjek_args(self, givne_args, forventede_args):
@@ -47,6 +51,7 @@ class Grundmodel(L.LightningModule):
         return self.QM9Bygger('test', self.debug)
 
     def indæs_selvvejledt_rygrad(self, grundmodel):
+        assert grundmodel.hparams.rygrad_args == self.hparams.rygrad_args, 'downstreams rygrad skal bruge samme argumenter som den selvvejledte'
         state_dict = grundmodel.rygrad.state_dict()
         self.rygrad.load_state_dict(state_dict)
 
@@ -54,7 +59,7 @@ class Grundmodel(L.LightningModule):
         self.rygrad.freeze()
 
 
-class GrundSelvvejledt(Grundmodel):
+class Selvvejledt(Grundmodel):
 
     def __init__(self, *args,
                  maskeringsandel=0.15,
@@ -124,7 +129,7 @@ class GrundSelvvejledt(Grundmodel):
         return tabsopslag
 
 
-class GrundDownstream(Grundmodel):
+class Downstream(Grundmodel):
     def __init__(self, *args,
                  hoved_args=HovedDownstream.args,
                  **kwargs):
@@ -134,7 +139,7 @@ class GrundDownstream(Grundmodel):
             hidden_channels=self.hparams.rygrad_args['hidden_channels'],
             **hoved_args
         )
-        self.criterion = torch.nn.MSELoss()
+        self.criterion = torch.nn.L1Loss()
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         pred = self(data.z, data.pos, data.batch)
