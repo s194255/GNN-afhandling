@@ -136,26 +136,25 @@ class Downstream(Grundmodel):
         self.tjek_args(hoved_args, HovedDownstream.args)
         self.hoved = HovedDownstream(
             hidden_channels=self.hparams.rygrad_args['hidden_channels'],
+            max_z=self.hparams.rygrad_args['max_z'],
             **hoved_args
         )
         self.criterion = torch.nn.L1Loss()
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        pred = self(data.z, data.pos, data.batch)
-        loss = self.criterion(pred[:, 0], data.y[:, 0])
-        self.log("loss", loss.item(), batch_size=data.batch_size)
-        return loss
+        return self.step("train", data, batch_idx)
 
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        pred = self(data.z, data.pos, data.batch)
-        loss = self.criterion(pred[:, 0], data.y[:, 0])
-        self.log("val_loss", loss.item(), batch_size=data.batch_size)
-        return loss
+        return self.step("val", data, batch_idx)
 
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+        return self.step("test", data, batch_idx)
+
+    def step(self, task, data, batch_idx):
+        on_epoch = {'train': False, 'val': False, 'test': True}
         pred = self(data.z, data.pos, data.batch)
-        loss = self.criterion(pred[:, 0], data.y[:, 0])
-        self.log("test_loss", loss.item(), batch_size=data.batch_size, on_epoch=True)
+        loss = self.criterion(pred, data.y[:, 0]*1000)
+        self.log(f"{task}_loss", loss.item(), batch_size=data.batch_size, on_epoch=on_epoch[task])
         return loss
 
     def forward(
