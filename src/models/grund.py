@@ -94,7 +94,6 @@ class Selvvejledt(Grundmodel):
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
             tabsopslag = self(data.z, data.pos, data.batch)
-        # loss = self.criterion(pred, target)
         loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
         self.log("val_loss", loss.item(), batch_size=data.batch_size)
         return loss
@@ -151,7 +150,7 @@ class Downstream(Grundmodel):
         return self.step("test", data, batch_idx)
 
     def step(self, task, data, batch_idx):
-        on_epoch = {'train': False, 'val': False, 'test': True}
+        on_epoch = {'train': None, 'val': None, 'test': True}
         pred = self(data.z, data.pos, data.batch)
         loss = self.criterion(pred, data.y[:, 0]*1000)
         self.log(f"{task}_loss", loss.item(), batch_size=data.batch_size, on_epoch=on_epoch[task])
