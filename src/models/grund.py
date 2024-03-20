@@ -134,6 +134,8 @@ class Downstream(Grundmodel):
         super().__init__(*args, **kwargs)
         self.tjek_args(hoved_args, HovedDownstream.args)
         self.hoved = HovedDownstream(
+            means=self.QM9Bygger.mean_std['means'],
+            stds=self.QM9Bygger.mean_std['stds'],
             hidden_channels=self.hparams.rygrad_args['hidden_channels'],
             max_z=self.hparams.rygrad_args['max_z'],
             **hoved_args
@@ -152,7 +154,7 @@ class Downstream(Grundmodel):
     def step(self, task, data, batch_idx):
         on_epoch = {'train': None, 'val': None, 'test': True}
         pred = self(data.z, data.pos, data.batch)
-        loss = self.criterion(pred, data.y[:, 0]*1000)
+        loss = 1000*self.criterion(pred, data.y[:, 0])
         self.log(f"{task}_loss", loss.item(), batch_size=data.batch_size, on_epoch=on_epoch[task])
         return loss
 

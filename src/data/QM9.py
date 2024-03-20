@@ -15,13 +15,19 @@ class QM9Bygger:
         assert self.fordeling.shape == torch.Size([5])
         assert self.fordeling.sum() == 1
         self.delmængdestørrelse = delmængdestørrelse
-        self.init_mother_dataset()
         self.data_splits_path = "data/QM9/processed/data_splits.pt"
-
+        self.mean_std_path = "data/QM9/processed/mean_std.pt"
+        self.init_mother_dataset()
         self.init_data_splits()
 
     def init_mother_dataset(self):
         self.mother_dataset = torch_geometric.datasets.QM9(self.root)
+        if os.path.exists(self.mean_std_path):
+            self.mean_std = torch.load(self.mean_std_path)
+        else:
+            self.mean_std = {'means': torch.tensor(self.mother_dataset.mean(0)),
+                             'stds': torch.tensor(self.mother_dataset.std(0))}
+            torch.save(self.mean_std, self.mean_std_path)
         n = len(self.mother_dataset)
         subset_indices = random.sample(list(range(n)), k=int(self.delmængdestørrelse * n))
         self.mother_dataset = torch.utils.data.Subset(self.mother_dataset, subset_indices)

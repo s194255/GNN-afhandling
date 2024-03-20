@@ -14,23 +14,12 @@ class HovedDownstream(L.LightningModule):
     def __init__(self,
                  max_z: int,
                  hidden_channels: int,
+                 means: torch.Tensor,
+                 stds: torch.Tensor,
                  out_channels: int = args['out_channels'],
                  reduce_op: str = args['reduce_op'],
                  ):
         super().__init__()
-        # self.motor = torch.nn.Sequential(
-        #     torch.nn.Linear(hidden_channels, hidden_channels),
-        #     torch.nn.SiLU(),
-        #     torch.nn.Linear(hidden_channels, out_channels)
-        # )
-        # self.motor = torch.nn.Sequential(
-        #     GatedEquivariantBlock(hidden_channels,
-        #                           hidden_channels,
-        #                           scalar_activation=True),
-        #     GatedEquivariantBlock(hidden_channels,
-        #                           out_channels,
-        #                           scalar_activation=False)
-        # )
         atom_weights = self.get_atom_weights(max_z)
         self.register_buffer('atom_weights', atom_weights)
         self.motor = torch.nn.ModuleList([
@@ -42,6 +31,8 @@ class HovedDownstream(L.LightningModule):
                                   scalar_activation=False)
         ])
         self.reduce_op = reduce_op
+        self.register_buffer('means', means)
+        self.register_buffer('stds', stds)
 
     def get_atom_weights(self, max_z):
         atom_weights = []
@@ -60,6 +51,7 @@ class HovedDownstream(L.LightningModule):
     def forward(self, z, pos, batch, x, v):
         for layer in self.motor:
             x, v = layer(x, v)
+        x = x*self.stds + self.means
         r_c = self.get_centre_of_mass(pos, z)
         diff = pos - r_c
         res = x*diff+v.squeeze(2)
