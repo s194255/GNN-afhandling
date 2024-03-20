@@ -7,6 +7,7 @@ from torch_geometric.loader import DataLoader
 
 
 class QM9Bygger:
+    data_splits_path = "data/QM9/processed/data_splits.pt"
     def __init__(self, delmængdestørrelse: float = 0.1, fordeling = None):
         if not fordeling:
             fordeling = [0.85, 0.0125, 0.085, 0.0125, 0.04]
@@ -15,7 +16,7 @@ class QM9Bygger:
         assert self.fordeling.shape == torch.Size([5])
         assert self.fordeling.sum() == 1
         self.delmængdestørrelse = delmængdestørrelse
-        self.data_splits_path = "data/QM9/processed/data_splits.pt"
+        self.data_splits_path = QM9Bygger.data_splits_path
         self.mean_std_path = "data/QM9/processed/mean_std.pt"
         self.init_mother_dataset()
         self.init_data_splits()
@@ -59,6 +60,10 @@ class QM9Bygger:
         task_dataset = torch.utils.data.Subset(self.mother_dataset, self.data_splits[task])
         dataloader = self.get_dataloader(task_dataset, debug, task)
         return dataloader
+    @staticmethod
+    def reset():
+        if os.path.exists(QM9Bygger.data_splits_path):
+            os.remove(QM9Bygger.data_splits_path)
 
 class QM9Bygger2(QM9Bygger):
     def __init__(self, delmængdestørrelse: float = 0.1):

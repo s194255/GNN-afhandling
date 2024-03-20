@@ -2,6 +2,7 @@
 import argparse
 import src.models as m
 import lightning as L
+from src.data import QM9Bygger
 
 def uden_selvtræn():
     downstream = m.Downstream(rygrad_args=m.load_config(args.rygrad_args_path),
@@ -27,6 +28,7 @@ def parserargs():
     args = parser.parse_args()
     return args
 if __name__ == "__main__":
+    QM9Bygger.reset()
     args = parserargs()
     eksp3 = m.load_config(args.eksp3_path)
     eksp3_model = {key: value for (key, value) in eksp3.items() if key in m.Selvvejledt.træn_args.keys()}

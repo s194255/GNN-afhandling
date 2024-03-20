@@ -4,7 +4,7 @@
 #BSUB -e backbone%J.err
 #BSUB -q gpuv100
 #BSUB -gpu "num=1:mode=exclusive_process"
-#BSUB -n 1
+#BSUB -n 4
 #BSUB -R "rusage[mem=8G]"
 #BSUB -W 3:00
 #BSUB -N
