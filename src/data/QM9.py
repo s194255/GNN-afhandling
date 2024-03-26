@@ -8,7 +8,7 @@ from torch_geometric.loader import DataLoader
 
 class QM9Bygger:
     data_splits_path = "data/QM9/processed/data_splits.pt"
-    def __init__(self, delmængdestørrelse: float = 0.1, fordeling = None):
+    def __init__(self, delmængdestørrelse: float = 0.1, fordeling = None, batch_size=32, num_workers=0):
         if not fordeling:
             fordeling = [0.85, 0.0125, 0.085, 0.0125, 0.04]
         self.root = "data/QM9"
@@ -16,6 +16,8 @@ class QM9Bygger:
         assert self.fordeling.shape == torch.Size([5])
         assert self.fordeling.sum() == 1
         self.delmængdestørrelse = delmængdestørrelse
+        self.batch_size = batch_size
+        self.num_workers = num_workers
         self.data_splits_path = QM9Bygger.data_splits_path
         self.mean_std_path = "data/QM9/processed/mean_std.pt"
         self.init_mother_dataset()
@@ -45,15 +47,11 @@ class QM9Bygger:
             torch.save(self.data_splits, self.data_splits_path)
     def get_dataloader(self, dataset, debug, task):
         shuffle_options = {'pretrain': True, 'train': True, 'val': False, 'test': False}
-        batch_size = 128
-        num_workers = 4
         if debug:
-            subset_indices = random.sample(list(range(len(dataset))), k=min(50, len(dataset)))
+            subset_indices = random.sample(list(range(len(dataset))), k=min(30, len(dataset)))
             dataset = torch.utils.data.Subset(dataset, subset_indices)
-            batch_size = 32
-            num_workers = 0
-        dataloader = DataLoader(dataset, batch_size=batch_size,
-                                shuffle=shuffle_options[task], num_workers=num_workers)
+        dataloader = DataLoader(dataset, batch_size=self.batch_size,
+                                shuffle=shuffle_options[task], num_workers=self.num_workers)
         return dataloader
 
     def __call__(self, task: str, debug: bool):

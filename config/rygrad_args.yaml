@@ -10,3 +10,4 @@ max_num_neighbors: 32
 vertex: false
 hidden_channels: 512
 max_z: 100
+maskeringsandel: null

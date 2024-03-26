@@ -2,7 +2,7 @@ import lightning as L
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 from src.data import QM9Bygger
-from src.models.redskaber import Maskemager, RiemannGaussian
+from src.models.redskaber import RiemannGaussian
 import torch
 from torch import Tensor
 from typing import Tuple, Optional, List
@@ -16,11 +16,15 @@ class Grundmodel(L.LightningModule):
         'debug': False,
         'delmængdestørrelse': 0.1,
         'fordeling': None,
+        'batch_size': 32,
+        'num_workers': 0
     }
     def __init__(self,
                  debug: bool = træn_args['debug'],
                  delmængdestørrelse: float = træn_args['delmængdestørrelse'],
                  fordeling: List = træn_args['fordeling'],
+                 batch_size: int = træn_args['batch_size'],
+                 num_workers: int = træn_args['num_workers'],
                  rygrad_args=VisNetRyggrad.args
                  ):
         super().__init__()
@@ -31,7 +35,10 @@ class Grundmodel(L.LightningModule):
         self.hoved = L.LightningModule()
         self.debug = debug
         # self.eftertræningsandel = eftertræningsandel
-        self.QM9Bygger = QM9Bygger(delmængdestørrelse, fordeling)
+        self.QM9Bygger = QM9Bygger(delmængdestørrelse, fordeling,
+                                   batch_size=batch_size,
+                                   num_workers=num_workers
+                                   )
         self.save_hyperparameters()
 
     def tjek_args(self, givne_args, forventede_args):
@@ -73,7 +80,6 @@ class Selvvejledt(Grundmodel):
 
         self.register_buffer("noise_scales_options", torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000]))
         self.maskeringsandel = maskeringsandel
-        self.maskemager = Maskemager()
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.riemannGaussian = RiemannGaussian()
         self.hoved = HovedSelvvejledt(
@@ -122,7 +128,7 @@ class Selvvejledt(Grundmodel):
         pos_til, target = self.riemannGaussian(pos, batch, sigma)
         if self.hoved.derivative:
             pos_til.requires_grad_(True)
-        x, v, edge_attr = self.rygrad(z, pos_til, batch)
+        x, v, edge_attr, _ = self.rygrad(z, pos_til, batch)
         tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
         return tabsopslag
 
@@ -164,7 +170,7 @@ class Downstream(Grundmodel):
             pos: Tensor,
             batch: Tensor,
     ) -> Tuple[Tensor, Optional[Tensor]]:
-        x, v, edge_attr = self.rygrad(z, pos, batch)
+        x, v, edge_attr, _ = self.rygrad(z, pos, batch)
         y = self.hoved(z, pos, batch, x, v)
         return y
 

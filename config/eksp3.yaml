@@ -1,5 +1,7 @@
 debug: False
 delmængdestørrelse: 1.0
 fordeling: [0, 0, 0.92, 0.04, 0.04]
+batch_size: 32
+num_workers: 4
 epoker_efterfølgende: 100
 frys_rygrad: False

@@ -10,6 +10,7 @@ from torch_geometric.utils import scatter
 
 import lightning as L
 from torch_geometric.loader import DataLoader
+from src.models.redskaber import Maskemager
 
 APPROX_ZERO_STD = 0.00001
 
@@ -760,6 +761,7 @@ class ViSNetBlock(L.LightningModule):
         self.neighbor_embedding = NeighborEmbedding(hidden_channels, num_rbf,
                                                     cutoff, max_z)
         self.edge_embedding = EdgeEmbedding(num_rbf, hidden_channels)
+        self.register_parameter('mask_token', torch.nn.Parameter(torch.randn(hidden_channels)))
 
         self.vis_mp_layers = torch.nn.ModuleList()
         vis_mp_kwargs = dict(
@@ -818,8 +820,8 @@ class ViSNetBlock(L.LightningModule):
                           dtype=x.dtype, device=x.device) * APPROX_ZERO_STD
         edge_attr = self.edge_embedding(edge_index, edge_attr, x)
         if masker:
-            x[masker['knuder']] = torch.zeros(x.shape[1], device=self.device)
-            edge_attr[masker['kanter']] = torch.zeros(edge_attr.shape[1], device=self.device)
+            x[masker['knuder']] = self.mask_token
+            edge_attr[masker['kanter']] = self.mask_token
 
         for attn in self.vis_mp_layers[:-1]:
             dx, dvec, dedge_attr = attn(x, vec, edge_index, edge_weight,
@@ -1068,7 +1070,8 @@ class VisNetRyggrad(L.LightningModule):
             'max_num_neighbors': 32,
             'vertex': False,
             'hidden_channels': 128,
-            'max_z': 100
+            'max_z': 100,
+            'maskeringsandel': None
             }
     def __init__(self, *args,
                  lmax: int = args['lmax'],
@@ -1083,10 +1086,12 @@ class VisNetRyggrad(L.LightningModule):
                  vertex: bool = args['vertex'],
                  hidden_channels: int = args['hidden_channels'],
                  max_z: int = args['max_z'],
+                 maskeringsandel: float = args['maskeringsandel'],
                  **kwargs
                  ):
         super().__init__(*args, **kwargs)
         self.distance = Distance(cutoff, max_num_neighbors=max_num_neighbors)
+        self.maskemager = Maskemager()
         self.motor = ViSNetBlock(
             lmax=lmax,
             vecnorm_type=vecnorm_type,
@@ -1101,9 +1106,13 @@ class VisNetRyggrad(L.LightningModule):
             max_num_neighbors=max_num_neighbors,
             vertex=vertex,
         )
+        self.maskeringsandel = maskeringsandel
 
     def forward(self, z, pos, batch):
         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
+        masker = None
+        if self.maskeringsandel:
+            masker = self.maskemager(z.shape[0], edge_index, self.maskeringsandel)
         x, v, edge_attr = self.motor(z, pos, batch,
-                                      edge_index, edge_weight, edge_vec)
-        return x, v, edge_attr
+                                      edge_index, edge_weight, edge_vec, masker=masker)
+        return x, v, edge_attr, masker
