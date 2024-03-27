@@ -94,4 +94,3 @@ class QM9Bygger2(QM9Bygger):
         return dataloader
 
 
-

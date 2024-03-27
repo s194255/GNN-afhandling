@@ -14,7 +14,7 @@ def uden_selvtræn():
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=eksp3['epoker_efterfølgende'],
                         callbacks=[checkpoint_callback,
-                                   L.pytorch.callbacks.TQDMProgressBar(refresh_rate=100)
+                                   L.pytorch.callbacks.TQDMProgressBar(refresh_rate=1000)
                                    ])
     trainer.fit(downstream)
     trainer.test(ckpt_path="best")

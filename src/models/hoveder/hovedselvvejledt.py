@@ -159,12 +159,5 @@ class Globalt(L.LightningModule):
         loss = self.criterion(x, noise_idx)
         return loss
 
-class HovedSelvvejledt2(L.LightningModule):
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, hidden_channels,
-                         **kwargs)
-        self.motor = torch.nn.Sequential(
-            torch.nn.Linear()
-        )
 

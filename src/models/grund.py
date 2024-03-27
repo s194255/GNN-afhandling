@@ -6,7 +6,7 @@ from src.models.redskaber import RiemannGaussian
 import torch
 from torch import Tensor
 from typing import Tuple, Optional, List
-from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt, HovedSelvvejledt2
+from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
 from src.models.hoveder.hoveddownstream import HovedDownstream
 from src.models.visnet import VisNetRyggrad
 
@@ -74,7 +74,8 @@ class Selvvejledt(Grundmodel):
         super().__init__(*args, **kwargs)
 
         if not lambdaer:
-            self.lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
+            lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
+        self.lambdaer = lambdaer
         self.tjek_args(hoved_args, HovedSelvvejledt.args)
 
         self.register_buffer("noise_scales_options", torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000]))
@@ -181,8 +182,18 @@ class Downstream(Grundmodel):
 class Selvvejledt2(Selvvejledt):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.hoved = HovedSelvvejledt2()
+        super().__init__(*args,
+                         lambdaer={'lokalt': 1.0, 'globalt': 0.0},
+                         **kwargs)
+        assert self.hparams.rygrad_args['maskeringsandel'] != None
+        hidden_channels = self.hparams.rygrad_args['hidden_channels']
+        out_channels = self.hparams.rygrad_args['max_z']
+        self.hoved = torch.nn.Sequential(
+            torch.nn.Linear(hidden_channels, hidden_channels),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_channels, out_channels)
+        )
+        self.criterionlokal = torch.nn.CrossEntropyLoss()
 
     def forward(
             self,
@@ -192,5 +203,10 @@ class Selvvejledt2(Selvvejledt):
     ) -> Tuple[Tensor, Optional[Tensor]]:
 
         x, v, edge_attr, masker = self.rygrad(z, pos, batch)
-        a = 2
+        x = x[masker['knuder']]
+        z = z[masker['knuder']]
+        x = self.hoved(x)
+        lokal = self.criterionlokal(x, z)
+        globall = torch.tensor(0, device=self.device)
+        return {'lokalt': lokal, 'globalt': globall}
 
