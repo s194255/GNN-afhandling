@@ -6,7 +6,7 @@ from src.models.redskaber import RiemannGaussian
 import torch
 from torch import Tensor
 from typing import Tuple, Optional, List
-from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
+from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt, HovedSelvvejledt2
 from src.models.hoveder.hoveddownstream import HovedDownstream
 from src.models.visnet import VisNetRyggrad
 
@@ -66,7 +66,6 @@ class Grundmodel(L.LightningModule):
 
 
 class Selvvejledt(Grundmodel):
-
     def __init__(self, *args,
                  maskeringsandel=0.15,
                  lambdaer=None,
@@ -175,5 +174,23 @@ class Downstream(Grundmodel):
         return y
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=0.0001)
-        return optimizer
+        optimizer = torch.optim.AdamW(self.parameters(), lr=0.00001)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+        return [optimizer], [scheduler]
+
+class Selvvejledt2(Selvvejledt):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.hoved = HovedSelvvejledt2()
+
+    def forward(
+            self,
+            z: Tensor,
+            pos: Tensor,
+            batch: Tensor,
+    ) -> Tuple[Tensor, Optional[Tensor]]:
+
+        x, v, edge_attr, masker = self.rygrad(z, pos, batch)
+        a = 2
+

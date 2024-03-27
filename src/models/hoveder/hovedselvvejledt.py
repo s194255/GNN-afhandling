@@ -118,7 +118,7 @@ class LokaltLineær(L.LightningModule):
                  ):
         super().__init__()
         self.motor = torch.nn.Linear(in_features=hidden_channels, out_features=3)
-        self.prior_model = Atomref(atomref=atomref, max_z=max_z)
+        # self.prior_model = Atomref(atomref=atomref, max_z=max_z)
         self.register_buffer('mean', torch.tensor(mean))
         self.register_buffer('std', torch.tensor(std))
         self.reduce_op = reduce_op
@@ -157,5 +157,14 @@ class Globalt(L.LightningModule):
         x = scatter(x, batch, dim=0, reduce=self.reduce_op)
         x = self.motor(x)
         loss = self.criterion(x, noise_idx)
-
         return loss
+
+class HovedSelvvejledt2(L.LightningModule):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, hidden_channels,
+                         **kwargs)
+        self.motor = torch.nn.Sequential(
+            torch.nn.Linear()
+        )
+
