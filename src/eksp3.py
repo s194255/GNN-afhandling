@@ -13,7 +13,9 @@ def uden_selvtræn():
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=eksp3['epoker_efterfølgende'],
-                        callbacks=[checkpoint_callback])
+                        callbacks=[checkpoint_callback,
+                                   L.pytorch.callbacks.TQDMProgressBar(refresh_rate=100)
+                                   ])
     trainer.fit(downstream)
     trainer.test(ckpt_path="best")
 def parserargs():
