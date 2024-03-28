@@ -12,7 +12,7 @@ from src.models.visnet import VisNetRyggrad
 
 
 class Grundmodel(L.LightningModule):
-    grund_args = {
+    udgngs_træn_args = {
         'debug': False,
         'delmængdestørrelse': 0.1,
         'fordeling': None,
@@ -20,23 +20,21 @@ class Grundmodel(L.LightningModule):
         'num_workers': 0
     }
     def __init__(self,
-                 debug: bool = grund_args['debug'],
-                 delmængdestørrelse: float = grund_args['delmængdestørrelse'],
-                 fordeling: List = grund_args['fordeling'],
-                 batch_size: int = grund_args['batch_size'],
-                 num_workers: int = grund_args['num_workers'],
+                 træn_args=udgngs_træn_args,
                  rygrad_args=VisNetRyggrad.args
                  ):
         super().__init__()
+        self.tjek_args(træn_args, self.udgngs_træn_args)
+        self.træn_args = træn_args
         self.tjek_args(rygrad_args, VisNetRyggrad.args)
         self.rygrad = VisNetRyggrad(
             **rygrad_args
         )
         self.hoved = L.LightningModule()
-        self.debug = debug
-        self.QM9Bygger = QM9Bygger(delmængdestørrelse, fordeling,
-                                   batch_size=batch_size,
-                                   num_workers=num_workers
+        self.debug = self.træn_args['debug']
+        self.QM9Bygger = QM9Bygger(self.træn_args['delmængdestørrelse'] , self.træn_args['fordeling'],
+                                   batch_size=self.træn_args['batch_size'],
+                                   num_workers=self.træn_args['num_workers']
                                    )
         self.save_hyperparameters()
 
@@ -65,19 +63,19 @@ class Grundmodel(L.LightningModule):
 
 
 class Selvvejledt(Grundmodel):
+    _selvvejledt_args = {'lambdaer': None}
+    udgngs_træn_args = {**Grundmodel.udgngs_træn_args, **_selvvejledt_args}
     def __init__(self, *args,
-                 lambdaer=None,
                  hoved_args=HovedSelvvejledt.args,
                  **kwargs):
         super().__init__(*args, **kwargs)
 
-        if not lambdaer:
+        if not self.træn_args['lambdaer']:
             lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
         self.lambdaer = lambdaer
         self.tjek_args(hoved_args, HovedSelvvejledt.args)
 
         self.register_buffer("noise_scales_options", torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000]))
-        # self.maskeringsandel = maskeringsandel
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.riemannGaussian = RiemannGaussian()
         self.hoved = HovedSelvvejledt(
@@ -132,18 +130,12 @@ class Selvvejledt(Grundmodel):
 
 
 class Downstream(Grundmodel):
-    _downstream_args = {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
-    grund_args = {**Grundmodel.grund_args, **_downstream_args}
+    _downstream_args = {"lr": 0.00001, "step_size": 20, "gamma": 0.5, "frys_rygrad": False, "epoker_efterfølgende": 50}
+    udgngs_træn_args = {**Grundmodel.udgngs_træn_args, **_downstream_args}
     def __init__(self, *args,
                  hoved_args=HovedDownstream.args,
-                 lr=grund_args['lr'],
-                 step_size=grund_args['step_size'],
-                 gamma=grund_args['gamma'],
                  **kwargs):
         super().__init__(*args, **kwargs)
-        self.lr = lr
-        self.step_size = step_size
-        self.gamma = gamma
         self.tjek_args(hoved_args, HovedDownstream.args)
         self.hoved = HovedDownstream(
             means=self.QM9Bygger.mean_std['means'],
@@ -181,14 +173,15 @@ class Downstream(Grundmodel):
         return y
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.træn_args['lr'])
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                                    step_size=self.step_size,
-                                                    gamma=self.gamma)
+                                                    step_size=self.hparams.træn_args['step_size'],
+                                                    gamma=self.hparams.træn_args['gamma'])
         return [optimizer], [scheduler]
 
 class Selvvejledt2(Selvvejledt):
-
+    _selvvejledt_args = {}
+    udgngs_træn_args = {**Grundmodel.udgngs_træn_args, **_selvvejledt_args}
     def __init__(self, *args, **kwargs):
         super().__init__(*args,
                          lambdaer={'lokalt': 1.0, 'globalt': 0.0},

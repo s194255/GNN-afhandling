@@ -7,7 +7,7 @@ from src.data import QM9Bygger
 def uden_selvtræn():
     downstream = m.Downstream(rygrad_args=m.load_config(args.rygrad_args_path),
                               hoved_args=m.load_config(args.downstream_hoved_args_path),
-                              **eksp3_model)
+                              træn_args=eksp3)
     if eksp3['frys_rygrad']:
         downstream.frys_rygrad()
     checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
@@ -33,5 +33,4 @@ if __name__ == "__main__":
     QM9Bygger.reset()
     args = parserargs()
     eksp3 = m.load_config(args.eksp3_path)
-    eksp3_model = {key: value for (key, value) in eksp3.items() if key in m.Downstream.grund_args.keys()}
     uden_selvtræn()
