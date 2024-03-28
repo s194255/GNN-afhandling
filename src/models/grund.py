@@ -132,10 +132,18 @@ class Selvvejledt(Grundmodel):
 
 
 class Downstream(Grundmodel):
+    _downstream_args = {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
+    grund_args = {**Grundmodel.grund_args, **_downstream_args}
     def __init__(self, *args,
                  hoved_args=HovedDownstream.args,
+                 lr=grund_args['lr'],
+                 step_size=grund_args['step_size'],
+                 gamma=grund_args['gamma'],
                  **kwargs):
         super().__init__(*args, **kwargs)
+        self.lr = lr
+        self.step_size = step_size
+        self.gamma = gamma
         self.tjek_args(hoved_args, HovedDownstream.args)
         self.hoved = HovedDownstream(
             means=self.QM9Bygger.mean_std['means'],
@@ -173,8 +181,10 @@ class Downstream(Grundmodel):
         return y
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=0.00001)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.lr)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
+                                                    step_size=self.step_size,
+                                                    gamma=self.gamma)
         return [optimizer], [scheduler]
 
 class Selvvejledt2(Selvvejledt):

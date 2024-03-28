@@ -2,14 +2,20 @@ import lightning as L
 import src.models as m
 import argparse
 
+
+def checkpoint_callback():
+    return  L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
+                                                              save_top_k=1, filename='best', save_last=True)
+def TQDMProgressBar():
+    return L.pytorch.callbacks.TQDMProgressBar(refresh_rate=1000)
+
 def med_selvtræn():
     selvvejledt = m.Selvvejledt(rygrad_args=m.load_config(args.rygrad_args_path),
                                 hoved_args=m.load_config(args.selvvejledt_hoved_args_path),
                                 **eksp1_model)
-    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
-                                                              save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=eksp1['epoker_selvtræn'],
-                        callbacks=[checkpoint_callback])
+                        callbacks=[checkpoint_callback(),
+                                   TQDMProgressBar()])
     trainer.fit(model=selvvejledt)
 
     downstream = m.Downstream(rygrad_args=m.load_config(args.rygrad_args_path),
@@ -18,10 +24,9 @@ def med_selvtræn():
     downstream.indæs_selvvejledt_rygrad(m.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path))
     if eksp1['frys_rygrad']:
         downstream.frys_rygrad()
-    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
-                                                              save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=eksp1['epoker_efterfølgende'],
-                        callbacks=[checkpoint_callback])
+                        callbacks=[checkpoint_callback(),
+                                   TQDMProgressBar()])
     trainer.fit(downstream)
     trainer.test(ckpt_path="best")
 
@@ -31,10 +36,9 @@ def uden_selvtræn():
                               **eksp1_model)
     if eksp1['frys_rygrad']:
         downstream.frys_rygrad()
-    checkpoint_callback = L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
-                                                              save_top_k=1, filename='best', save_last=True)
     trainer = L.Trainer(max_epochs=eksp1['epoker_efterfølgende'],
-                        callbacks=[checkpoint_callback])
+                        callbacks=[checkpoint_callback(),
+                                   TQDMProgressBar()])
     trainer.fit(downstream)
     trainer.test(ckpt_path="best")
 
@@ -54,5 +58,6 @@ if __name__ == "__main__":
     args = parserargs()
     eksp1 = m.load_config(args.eksp1_path)
     eksp1_model = {key: value for (key, value) in eksp1.items() if key in m.Selvvejledt.grund_args.keys()}
+
     med_selvtræn()
     uden_selvtræn()

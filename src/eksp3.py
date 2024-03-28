@@ -33,5 +33,5 @@ if __name__ == "__main__":
     QM9Bygger.reset()
     args = parserargs()
     eksp3 = m.load_config(args.eksp3_path)
-    eksp3_model = {key: value for (key, value) in eksp3.items() if key in m.Selvvejledt.grund_args.keys()}
+    eksp3_model = {key: value for (key, value) in eksp3.items() if key in m.Downstream.grund_args.keys()}
     uden_selvtræn()
