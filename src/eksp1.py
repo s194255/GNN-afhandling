@@ -53,6 +53,6 @@ def parserargs():
 if __name__ == "__main__":
     args = parserargs()
     eksp1 = m.load_config(args.eksp1_path)
-    eksp1_model = {key: value for (key, value) in eksp1.items() if key in m.Selvvejledt.træn_args.keys()}
+    eksp1_model = {key: value for (key, value) in eksp1.items() if key in m.Selvvejledt.grund_args.keys()}
     med_selvtræn()
     uden_selvtræn()

@@ -12,7 +12,7 @@ from src.models.visnet import VisNetRyggrad
 
 
 class Grundmodel(L.LightningModule):
-    træn_args = {
+    grund_args = {
         'debug': False,
         'delmængdestørrelse': 0.1,
         'fordeling': None,
@@ -20,11 +20,11 @@ class Grundmodel(L.LightningModule):
         'num_workers': 0
     }
     def __init__(self,
-                 debug: bool = træn_args['debug'],
-                 delmængdestørrelse: float = træn_args['delmængdestørrelse'],
-                 fordeling: List = træn_args['fordeling'],
-                 batch_size: int = træn_args['batch_size'],
-                 num_workers: int = træn_args['num_workers'],
+                 debug: bool = grund_args['debug'],
+                 delmængdestørrelse: float = grund_args['delmængdestørrelse'],
+                 fordeling: List = grund_args['fordeling'],
+                 batch_size: int = grund_args['batch_size'],
+                 num_workers: int = grund_args['num_workers'],
                  rygrad_args=VisNetRyggrad.args
                  ):
         super().__init__()
@@ -34,7 +34,6 @@ class Grundmodel(L.LightningModule):
         )
         self.hoved = L.LightningModule()
         self.debug = debug
-        # self.eftertræningsandel = eftertræningsandel
         self.QM9Bygger = QM9Bygger(delmængdestørrelse, fordeling,
                                    batch_size=batch_size,
                                    num_workers=num_workers
@@ -67,7 +66,6 @@ class Grundmodel(L.LightningModule):
 
 class Selvvejledt(Grundmodel):
     def __init__(self, *args,
-                 maskeringsandel=0.15,
                  lambdaer=None,
                  hoved_args=HovedSelvvejledt.args,
                  **kwargs):
@@ -79,7 +77,7 @@ class Selvvejledt(Grundmodel):
         self.tjek_args(hoved_args, HovedSelvvejledt.args)
 
         self.register_buffer("noise_scales_options", torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000]))
-        self.maskeringsandel = maskeringsandel
+        # self.maskeringsandel = maskeringsandel
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.riemannGaussian = RiemannGaussian()
         self.hoved = HovedSelvvejledt(
@@ -176,7 +174,7 @@ class Downstream(Grundmodel):
 
     def configure_optimizers(self) -> torch.optim.Optimizer:
         optimizer = torch.optim.AdamW(self.parameters(), lr=0.00001)
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=10, gamma=0.1)
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.5)
         return [optimizer], [scheduler]
 
 class Selvvejledt2(Selvvejledt):
