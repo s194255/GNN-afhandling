@@ -1,4 +1,6 @@
 import os
+
+import lightning as L
 import torch
 
 import torch_geometric
@@ -94,3 +96,86 @@ class QM9Bygger2(QM9Bygger):
         return dataloader
 
 
+class QM9Byggerlol(L.LightningDataModule):
+    args = {'delmængdestørrelse': 0.1, 'fordeling': None, 'batch_size': 32, 'num_workers': 0}
+
+    def __init__(self, delmængdestørrelse: float = 0.1, fordeling = None, batch_size=32, num_workers=0):
+        super().__init__()
+        if not fordeling:
+            fordeling = [0.85, 0.0125, 0.085, 0.0125, 0.04]
+        self.root = "data/QM9"
+        self.fordeling = torch.tensor(fordeling)
+        assert self.fordeling.shape == torch.Size([5])
+        assert self.fordeling.sum() == 1
+        self.delmængdestørrelse = delmængdestørrelse
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.data_splits_path = QM9Bygger.data_splits_path
+        self.mean_std_path = "data/QM9/processed/mean_std.pt"
+        self.init_mother_dataset()
+        self.init_data_splits()
+
+    def init_mother_dataset(self):
+        mother_dataset = torch_geometric.datasets.QM9(self.root)
+        if os.path.exists(self.mean_std_path):
+            self.mean_std = torch.load(self.mean_std_path)
+        else:
+            self.mean_std = {'means': torch.tensor(mother_dataset.mean(0)),
+                             'stds': torch.tensor(mother_dataset.std(0))}
+            torch.save(self.mean_std, self.mean_std_path)
+        n = len(mother_dataset)
+        self.mother_indices = random.sample(list(range(n)), k=int(self.delmængdestørrelse * n))
+    def init_data_splits(self):
+        a = torch.multinomial(self.fordeling, len(self.mother_indices), replacement=True)
+        tasks = ['pretrain', 'preval', 'train', 'val', 'test']
+        self.data_splits = {}
+        self.data_splits_debug = {}
+        for i in range(len(tasks)):
+            task = tasks[i]
+            self.data_splits[task] = torch.where(a == i)[0].tolist()
+            self.data_splits_debug[task] = random.sample(self.data_splits[task],
+                                                       k=min(30, len(self.data_splits[task])))
+
+    def setup(self, stage: str) -> None:
+        mother_dataset = torch_geometric.datasets.QM9(self.root)
+        self.datasets = {}
+        self.datasets_debug = {}
+        for task in self.get_setup_tasks(stage):
+            self.datasets[task] = torch.utils.data.Subset(mother_dataset, self.data_splits[task])
+            self.datasets_debug[task] = torch.utils.data.Subset(mother_dataset, self.data_splits_debug[task])
+
+    def get_setup_tasks(self, stage: str):
+        if stage == 'fit':
+            if self.trainer.model.selvvejledt:
+                return ['pretrain', 'preval']
+            else:
+                return ['train', 'val']
+        if stage == 'test':
+            return ['test']
+
+    def state_dict(self):
+        state = {'data_splits': self.data_splits,
+                 'data_splits_debug': self.data_splits_debug}
+        return state
+
+    def load_state_dict(self, state_dict):
+        self.data_splits = state_dict['data_splits']
+        self.data_splits_debug = state_dict['data_splits_debug']
+
+    def get_dataloader(self, task):
+        if self.trainer.model.debug:
+            dataset = self.datasets_debug[task]
+        else:
+            dataset = self.datasets[task]
+        return DataLoader(dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=True)
+
+    def train_dataloader(self):
+        task = 'pretrain' if self.trainer.model.selvvejledt else 'train'
+        return self.get_dataloader(task)
+
+    def val_dataloader(self):
+        task = 'preval' if self.trainer.model.selvvejledt else 'val'
+        return self.get_dataloader(task)
+
+    def test_dataloader(self):
+        return self.get_dataloader('test')

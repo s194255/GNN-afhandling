@@ -24,6 +24,7 @@ class Grundmodel(L.LightningModule):
                  rygrad_args=VisNetRyggrad.args
                  ):
         super().__init__()
+        self.selvvejledt = None
         self.tjek_args(træn_args, self.udgngs_træn_args)
         self.træn_args = træn_args
         self.tjek_args(rygrad_args, VisNetRyggrad.args)
@@ -44,15 +45,6 @@ class Grundmodel(L.LightningModule):
         forskel2 = set(forventede_args.keys()) - set(givne_args.keys())
         assert len(forskel2) == 0, f'Følgende argumenter mangler {forskel2}'
 
-    def train_dataloader(self) -> DataLoader:
-        return self.QM9Bygger('train', self.debug)
-
-    def val_dataloader(self) -> DataLoader:
-        return self.QM9Bygger('val', self.debug)
-
-    def test_dataloader(self) -> DataLoader:
-        return self.QM9Bygger('test', self.debug)
-
     def indæs_selvvejledt_rygrad(self, grundmodel):
         assert grundmodel.hparams.rygrad_args == self.hparams.rygrad_args, 'downstreams rygrad skal bruge samme argumenter som den selvvejledte'
         state_dict = grundmodel.rygrad.state_dict()
@@ -69,7 +61,7 @@ class Selvvejledt(Grundmodel):
                  hoved_args=HovedSelvvejledt.args,
                  **kwargs):
         super().__init__(*args, **kwargs)
-
+        self.selvvejledt = True
         if not self.træn_args['lambdaer']:
             lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
         self.lambdaer = lambdaer
@@ -89,9 +81,6 @@ class Selvvejledt(Grundmodel):
         loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
         self.log("train_loss", loss.item(), batch_size=data.batch_size)
         return loss
-
-    def train_dataloader(self) -> DataLoader:
-        return self.QM9Bygger('pretrain', self.debug)
 
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
@@ -136,6 +125,7 @@ class Downstream(Grundmodel):
                  hoved_args=HovedDownstream.args,
                  **kwargs):
         super().__init__(*args, **kwargs)
+        self.selvvejledt = False
         self.tjek_args(hoved_args, HovedDownstream.args)
         self.hoved = HovedDownstream(
             means=self.QM9Bygger.mean_std['means'],
