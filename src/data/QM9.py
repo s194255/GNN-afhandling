@@ -162,20 +162,20 @@ class QM9Byggerlol(L.LightningDataModule):
         self.data_splits = state_dict['data_splits']
         self.data_splits_debug = state_dict['data_splits_debug']
 
-    def get_dataloader(self, task):
+    def get_dataloader(self, task, shuffle):
         if self.trainer.model.debug:
             dataset = self.datasets_debug[task]
         else:
             dataset = self.datasets[task]
-        return DataLoader(dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=True)
+        return DataLoader(dataset, batch_size=self.batch_size, num_workers=self.num_workers, shuffle=shuffle)
 
     def train_dataloader(self):
         task = 'pretrain' if self.trainer.model.selvvejledt else 'train'
-        return self.get_dataloader(task)
+        return self.get_dataloader(task, True)
 
     def val_dataloader(self):
         task = 'preval' if self.trainer.model.selvvejledt else 'val'
-        return self.get_dataloader(task)
+        return self.get_dataloader(task, False)
 
     def test_dataloader(self):
-        return self.get_dataloader('test')
+        return self.get_dataloader('test', False)

@@ -10,10 +10,10 @@ def uden_selvtræn():
         downstream = m.Downstream.load_from_checkpoint(args.ckpt_path)
         qm9 = d.QM9Byggerlol.load_from_checkpoint(args.ckpt_path)
     else:
+        qm9 = d.QM9Byggerlol(**m.load_config(args.eksp3_path, d.QM9Byggerlol.args))
         downstream = m.Downstream(rygrad_args=m.load_config(args.rygrad_args_path),
                                   hoved_args=m.load_config(args.downstream_hoved_args_path),
                                   træn_args=eksp3)
-        qm9 = d.QM9Byggerlol(**m.load_config(args.eksp3_path, d.QM9Byggerlol.args))
     if eksp3['frys_rygrad']:
         downstream.frys_rygrad()
 
@@ -23,7 +23,7 @@ def uden_selvtræn():
                         callbacks=[checkpoint_callback,
                                    L.pytorch.callbacks.TQDMProgressBar(refresh_rate=1000)
                                    ])
-    trainer.fit(downstream, datamodule=qm9)
+    trainer.fit(downstream, datamodule=qm9, ckpt_path=args.ckpt_path)
     trainer.test(ckpt_path="best", datamodule=qm9)
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
