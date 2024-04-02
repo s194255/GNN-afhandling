@@ -1,7 +1,7 @@
 debug: True
 delmængdestørrelse: 1.0
 fordeling: [0.85, 0.0125, 0.085, 0.0125, 0.04]
-batch_size: 1
+batch_size: 32
 num_workers: 0
 epoker_efterfølgende: 1
 frys_rygrad: True

@@ -39,7 +39,6 @@ def parserargs():
     args = parser.parse_args()
     return args
 if __name__ == "__main__":
-    # QM9Bygger.reset()
     args = parserargs()
     eksp3 = m.load_config(args.eksp3_path)
     uden_selvtræn()
