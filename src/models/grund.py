@@ -1,7 +1,8 @@
 import lightning as L
+import torchmetrics.regression
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
-from src.data import QM9Bygger
+from src.data import QM9ByggerForældet, get_metadata
 from src.models.redskaber import RiemannGaussian
 import torch
 from torch import Tensor
@@ -33,10 +34,6 @@ class Grundmodel(L.LightningModule):
         )
         self.hoved = L.LightningModule()
         self.debug = self.træn_args['debug']
-        self.QM9Bygger = QM9Bygger(self.træn_args['delmængdestørrelse'] , self.træn_args['fordeling'],
-                                   batch_size=self.træn_args['batch_size'],
-                                   num_workers=self.træn_args['num_workers']
-                                   )
         self.save_hyperparameters()
 
     def tjek_args(self, givne_args, forventede_args):
@@ -127,9 +124,10 @@ class Downstream(Grundmodel):
         super().__init__(*args, **kwargs)
         self.selvvejledt = False
         self.tjek_args(hoved_args, HovedDownstream.args)
+        metadata = get_metadata()
         self.hoved = HovedDownstream(
-            means=self.QM9Bygger.mean_std['means'],
-            stds=self.QM9Bygger.mean_std['stds'],
+            means=metadata['means'],
+            stds=metadata['stds'],
             hidden_channels=self.hparams.rygrad_args['hidden_channels'],
             max_z=self.hparams.rygrad_args['max_z'],
             **hoved_args
@@ -149,7 +147,11 @@ class Downstream(Grundmodel):
         on_epoch = {'train': None, 'val': None, 'test': True}
         pred = self(data.z, data.pos, data.batch)
         loss = 1000*self.criterion(pred, data.y[:, 0])
-        self.log(f"{task}_loss", loss.item(), batch_size=data.batch_size, on_epoch=on_epoch[task])
+        self.log(
+            f"{task}_loss", loss.item(),
+            batch_size=data.batch_size,
+            on_epoch=on_epoch[task],
+        )
         return loss
 
     def forward(

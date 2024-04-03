@@ -1,1 +1,1 @@
-from src.data.QM9 import QM9Bygger, QM9Bygger2, QM9Byggerlol
+from src.data.QM9 import *

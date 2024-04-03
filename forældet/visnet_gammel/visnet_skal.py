@@ -11,7 +11,7 @@ from torch_geometric.loader import DataLoader
 
 from forældet.visnet_gammel.visnet_kerne import Distance, ViSNetBlock
 from src.models.redskaber import Maskemager
-from src.data import QM9Bygger
+from src.data import QM9ByggerForældet
 
 
 class VisNetBase(L.LightningModule):
@@ -23,7 +23,7 @@ class VisNetBase(L.LightningModule):
         super().__init__()
         self.rygrad = ViSNetBlock()
         self.distance = Distance(cutoff, max_num_neighbors=max_num_neighbors)
-        self.QM9Bygger = QM9Bygger(eftertræningsandel)
+        self.QM9Bygger = QM9ByggerForældet(eftertræningsandel)
         self.debug = debug
         self.criterion = torch.nn.MSELoss(reduction='mean')
 

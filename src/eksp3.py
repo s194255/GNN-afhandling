@@ -8,9 +8,9 @@ def uden_selvtræn():
     if args.ckpt_path:
         print("DU GAV EN CKPT-PATH. Bruger denne og ingorerer visse konfigurationsfiler")
         downstream = m.Downstream.load_from_checkpoint(args.ckpt_path)
-        qm9 = d.QM9Byggerlol.load_from_checkpoint(args.ckpt_path)
+        qm9 = d.QM9Bygger.load_from_checkpoint(args.ckpt_path)
     else:
-        qm9 = d.QM9Byggerlol(**m.load_config(args.eksp3_path, d.QM9Byggerlol.args))
+        qm9 = d.QM9Bygger(**m.load_config(args.eksp3_path, d.QM9Bygger.args))
         downstream = m.Downstream(rygrad_args=m.load_config(args.rygrad_args_path),
                                   hoved_args=m.load_config(args.downstream_hoved_args_path),
                                   træn_args=eksp3)

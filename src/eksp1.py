@@ -2,12 +2,8 @@ import lightning as L
 import src.models as m
 import argparse
 
+from src.redskaber import TQDMProgressBar, checkpoint_callback
 
-def checkpoint_callback():
-    return  L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
-                                                              save_top_k=1, filename='best', save_last=True)
-def TQDMProgressBar():
-    return L.pytorch.callbacks.TQDMProgressBar(refresh_rate=1000)
 
 def med_selvtræn():
     selvvejledt = m.Selvvejledt(rygrad_args=m.load_config(args.rygrad_args_path),
