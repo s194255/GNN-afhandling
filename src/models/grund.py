@@ -1,8 +1,6 @@
 import lightning as L
-import torchmetrics.regression
 from torch_geometric.data import Data
-from torch_geometric.loader import DataLoader
-from src.data import QM9ByggerForældet, get_metadata
+from src.data import  get_metadata
 from src.models.redskaber import RiemannGaussian
 import torch
 from torch import Tensor
@@ -10,30 +8,24 @@ from typing import Tuple, Optional, List
 from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
 from src.models.hoveder.hoveddownstream import HovedDownstream
 from src.models.visnet import VisNetRyggrad
+from src.models.redskaber import tjek_args, prune_args
 
 
 class Grundmodel(L.LightningModule):
-    udgngs_træn_args = {
-        'debug': False,
-        'delmængdestørrelse': 0.1,
-        'fordeling': None,
-        'batch_size': 32,
-        'num_workers': 0
-    }
     def __init__(self,
-                 træn_args=udgngs_træn_args,
-                 rygrad_args=VisNetRyggrad.args
+                 args_dict: dict,
+                 rygrad_args: dict,
                  ):
         super().__init__()
         self.selvvejledt = None
-        self.tjek_args(træn_args, self.udgngs_træn_args)
-        self.træn_args = træn_args
+        args_dict = prune_args(args_dict, self.udgangsargsdict)
+        tjek_args(args_dict, self.udgangsargsdict)
+        self.træn_args = args_dict
         self.tjek_args(rygrad_args, VisNetRyggrad.args)
         self.rygrad = VisNetRyggrad(
             **rygrad_args
         )
         self.hoved = L.LightningModule()
-        self.debug = self.træn_args['debug']
         self.save_hyperparameters()
 
     def tjek_args(self, givne_args, forventede_args):
@@ -50,10 +42,14 @@ class Grundmodel(L.LightningModule):
     def frys_rygrad(self):
         self.rygrad.freeze()
 
+    @property
+    def udgangsargsdict(self):
+        return {}
+
 
 class Selvvejledt(Grundmodel):
-    _selvvejledt_args = {'lambdaer': None}
-    udgngs_træn_args = {**Grundmodel.udgngs_træn_args, **_selvvejledt_args}
+    # _selvvejledt_args = {'lambdaer': None}
+    # udgngsargs = {**Grundmodel.udgngsargs, **_selvvejledt_args}
     def __init__(self, *args,
                  hoved_args=HovedSelvvejledt.args,
                  **kwargs):
@@ -114,10 +110,12 @@ class Selvvejledt(Grundmodel):
         tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
         return tabsopslag
 
+    @property
+    def udgangsargsdict(self):
+        udgangsargs = {'lambdaer': None}
+        return {**super().udgangsargsdict, **udgangsargs}
 
 class Downstream(Grundmodel):
-    _downstream_args = {"lr": 0.00001, "step_size": 20, "gamma": 0.5, "frys_rygrad": False, "epoker_efterfølgende": 50}
-    udgngs_træn_args = {**Grundmodel.udgngs_træn_args, **_downstream_args}
     def __init__(self, *args,
                  hoved_args=HovedDownstream.args,
                  **kwargs):
@@ -164,16 +162,19 @@ class Downstream(Grundmodel):
         y = self.hoved(z, pos, batch, x, v)
         return y
 
-    def configure_optimizers(self) -> torch.optim.Optimizer:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.træn_args['lr'])
+    def configure_optimizers(self) -> Tuple[List[torch.optim.Optimizer], List[torch.optim.lr_scheduler]]:
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.args_dict['lr'])
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                                    step_size=self.hparams.træn_args['step_size'],
-                                                    gamma=self.hparams.træn_args['gamma'])
+                                                    step_size=self.hparams.args_dict['step_size'],
+                                                    gamma=self.hparams.args_dict['gamma'])
         return [optimizer], [scheduler]
 
+    @property
+    def udgangsargsdict(self):
+        downstream_args = {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
+        return {**super().udgangsargsdict, **downstream_args}
+
 class Selvvejledt2(Selvvejledt):
-    _selvvejledt_args = {}
-    udgngs_træn_args = {**Grundmodel.udgngs_træn_args, **_selvvejledt_args}
     def __init__(self, *args, **kwargs):
         super().__init__(*args,
                          lambdaer={'lokalt': 1.0, 'globalt': 0.0},
@@ -193,7 +194,7 @@ class Selvvejledt2(Selvvejledt):
             z: Tensor,
             pos: Tensor,
             batch: Tensor,
-    ) -> Tuple[Tensor, Optional[Tensor]]:
+    ) -> dict:
 
         x, v, edge_attr, masker = self.rygrad(z, pos, batch)
         x = x[masker['knuder']]
@@ -202,4 +203,9 @@ class Selvvejledt2(Selvvejledt):
         lokal = self.criterionlokal(x, z)
         globall = torch.tensor(0, device=self.device)
         return {'lokalt': lokal, 'globalt': globall}
+
+    @property
+    def udgangsargsdict(self):
+        super_dict = super().udgangsargsdict
+        return {key: value for key, value in super_dict.items() if key != 'lambdaer'}
 

@@ -1,13 +1,15 @@
-debug: True
-delmængdestørrelse: 1.0
-fordeling: [0.4675, 0.0125, 0.4675, 0.0125, 0.04]
-batch_size: 1
-num_workers: 0
-epoker_efterfølgende: 1
-epoker_selvtræn: 1
+model:
+  lr: 0.00001
+  step_size: 20
+  gamma: 0.5
+  lambdaer: null
+datasæt:
+  debug: False
+  delmængdestørrelse: 1.0
+  fordeling: [0.4675, 0.0125, 0.4675, 0.0125, 0.04]
+  batch_size: 32
+  num_workers: 4
+epoker_efterfølgende: 100
+epoker_selvtræn: 100
+trin: 100
 frys_rygrad: True
-lr: 0.00001
-step_size: 20
-gamma: 0.5
-trin: 2
-lambdaer: null

@@ -75,6 +75,15 @@ def load_config(path, reference_dict=None):
         config_dict = {key: value for (key, value) in config_dict.items() if key in reference_dict.keys()}
     return config_dict
 
+def tjek_args(givne_args, forventede_args):
+    forskel1 = set(givne_args.keys()) - set(forventede_args.keys())
+    assert len(forskel1) == 0, f'Følgende argumenter var uventede {forskel1}'
+    forskel2 = set(forventede_args.keys()) - set(givne_args.keys())
+    assert len(forskel2) == 0, f'Følgende argumenter mangler {forskel2}'
+
+def prune_args(givne_args, forventede_args):
+    return {key: value for (key, value) in givne_args.items() if key in forventede_args.keys()}
+
 if __name__ == "__main__":
     riemannGuassian = RiemannGaussian()
     pos = torch.randn((370, 3)) * 1 + 4

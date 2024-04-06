@@ -7,7 +7,7 @@ import src.models as m
 import argparse
 import torch
 from src.data import QM9Bygger2
-from src.redskaber import TQDMProgressBar, checkpoint_callback, get_trainer, tensorBoardLogger
+from src.redskaber import get_trainer, tensorBoardLogger
 import copy
 from torch_geometric.data import Data
 import pandas as pd
@@ -83,16 +83,16 @@ class Eksp2:
         else:
             selvvejledt = m.Selvvejledt(rygrad_args=m.load_config(self.args.rygrad_args_path),
                                     hoved_args=m.load_config(self.args.selvvejledt_hoved_args_path),
-                                    træn_args=m.load_config(self.args.eksp2_path, m.Selvvejledt.udgngs_træn_args))
-            self.qm9Bygger2Hoved = QM9Bygger2(**m.load_config(self.args.eksp2_path, QM9Bygger2.args),
+                                    args_dict=self.eksp2['model'])
+            self.qm9Bygger2Hoved = QM9Bygger2(**self.eksp2['datasæt'],
                                               eftertræningsandel=1.0)
         logger = tensorBoardLogger(save_dir=self.save_dir, name='selvvejledt')
         trainer = get_trainer(self.eksp2['epoker_selvtræn'], logger=logger)
-        trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved)
+        trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=args.selv_ckpt_path)
         self.bedste_selvvejledt = m.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
 
     def get_qm9Bygger2(self, eftertræningsandel):
-        qm9Bygger2 = QM9Bygger2(**m.load_config(self.args.eksp2_path, QM9Bygger2.args),
+        qm9Bygger2 = QM9Bygger2(**self.eksp2['datasæt'],
                                 eftertræningsandel=eftertræningsandel)
         qm9Bygger2.load_state_dict(copy.deepcopy(self.qm9Bygger2Hoved.state_dict()))
         qm9Bygger2.sample_train_reduced()
@@ -103,7 +103,7 @@ class Eksp2:
 
         downstream = DownstreamEksp2(rygrad_args=m.load_config(self.args.rygrad_args_path),
                                   hoved_args=m.load_config(self.args.downstream_hoved_args_path),
-                                  træn_args=m.load_config(self.args.eksp2_path, m.Downstream.udgngs_træn_args))
+                                  args_dict=self.eksp2['model'])
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if self.eksp2['frys_rygrad']:
