@@ -17,15 +17,15 @@ import time
 LOG_ROOT = "eksp2_logs"
 
 class DownstreamEksp2(m.Downstream):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.metric = torchmetrics.BootStrapper(
-            torchmetrics.regression.MeanAbsoluteError(),
-            num_bootstraps=20,
-            quantile=torch.tensor([0.05, 0.95])
-        )
+    def setup(self, stage: str) -> None:
+        if stage == 'test':
+            self.metric = torchmetrics.BootStrapper(
+                torchmetrics.regression.MeanAbsoluteError(),
+                num_bootstraps=20,
+                quantile=torch.tensor([0.05, 0.95], device=self.device)
+            )
 
-    def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+    def test_step(self, data: Data, batch_idx: int) -> None:
         pred = self(data.z, data.pos, data.batch)
         self.metric.update(1000 * pred, 1000 * data.y[:, 0])
 
