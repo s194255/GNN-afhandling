@@ -13,6 +13,7 @@ import copy
 from torch_geometric.data import Data
 import pandas as pd
 import time
+import shutil
 
 LOG_ROOT = "eksp2_logs"
 
@@ -163,6 +164,7 @@ class Eksp2:
         resultat['i'] = [i]
         self.resultater = pd.concat([self.resultater, pd.DataFrame(data=resultat)], ignore_index=True)
         self.resultater.to_csv(os.path.join(self.kørsel_path, "logs_metrics.csv"), index=False)
+        shutil.rmtree(os.path.join(self.kørsel_path, "downstream", f'version_{i}', 'checkpoints'))
 
     def main(self):
         self.fortræn()
