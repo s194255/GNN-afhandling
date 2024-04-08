@@ -54,7 +54,6 @@ def parserargs():
 
 
 class Eksp2:
-
     def __init__(self, args):
         self.log_metrics = ['test_loss_std', 'test_loss_mean', 'test_loss_lower', 'test_loss_upper']
         self.udgaver = ['uden', 'med']
@@ -101,7 +100,7 @@ class Eksp2:
         )
         os.mkdir(self.kørsel_path)
 
-    def get_trainer(self, opgave):
+    def get_trainer(self, opgave, epoch=-1):
         assert opgave in ['selvvejledt', 'downstream']
         logger = r.tensorBoardLogger(save_dir=self.kørsel_path, name=opgave)
         trainer_dict = self.configs['eksp2'][opgave]
@@ -110,7 +109,8 @@ class Eksp2:
             r.TQDMProgressBar(),
             r.earlyStopping(trainer_dict['min_delta'], trainer_dict['patience'])
         ]
-        trainer = L.Trainer(max_epochs=trainer_dict['epoker'],
+        max_epochs = max([trainer_dict['epoker'], epoch])
+        trainer = L.Trainer(max_epochs=max_epochs,
                             log_every_n_steps=1,
                             callbacks=callbacks,
                             logger=logger,
@@ -120,16 +120,18 @@ class Eksp2:
         if self.selv_chkt_path:
             selvvejledt = m.Selvvejledt.load_from_checkpoint(self.selv_chkt_path)
             self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(self.selv_chkt_path)
+            epoch = torch.load(self.selv_chkt_path, map_location='cpu')['epoch']
         else:
             selvvejledt = m.Selvvejledt(rygrad_args=self.configs['rygrad'],
                                     hoved_args=self.configs['selvvejledt_hoved'],
                                     args_dict=self.configs['eksp2']['selvvejledt']['model'])
             self.qm9Bygger2Hoved = QM9Bygger2(**self.configs['eksp2']['datasæt'],
                                               eftertræningsandel=1.0)
-        trainer = self.get_trainer('selvvejledt')
+            epoch = -1
+        trainer = self.get_trainer('selvvejledt', epoch)
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_chkt_path)
         self.bedste_selvvejledt = m.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
-        time.sleep(2)
+        time.sleep(3)
 
     def get_qm9Bygger2(self, eftertræningsandel):
         qm9Bygger2 = QM9Bygger2(**self.configs['eksp2']['datasæt'],
@@ -151,7 +153,7 @@ class Eksp2:
         trainer = self.get_trainer('downstream')
         trainer.fit(model=downstream, datamodule=qm9Bygger2)
         resultat = trainer.test(ckpt_path="best", datamodule=qm9Bygger2)[0]
-        time.sleep(2)
+        time.sleep(3)
         return {f'{udgave}_{nøgle}': [værdi] for nøgle, værdi in resultat.items()}
 
     def eksperiment_runde(self, i):

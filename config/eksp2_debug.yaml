@@ -4,7 +4,7 @@ selvvejledt:
     step_size: 2000
     gamma: 0.5
     lambdaer: null
-  epoker: 1
+  epoker: 0
   min_delta: 0.01
   patience: 3
 downstream:
