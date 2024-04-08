@@ -40,12 +40,6 @@ class DownstreamEksp2(m.Downstream):
 
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
-    parser.add_argument('--rygrad_args_path', type=str, default="config/rygrad_args.yaml",
-                        help='Sti til rygrad arguments YAML fil')
-    parser.add_argument('--selvvejledt_hoved_args_path', type=str, default="config/selvvejledt_hoved_args.yaml",
-                        help='Sti til selvvejledt hoved arguments YAML fil')
-    parser.add_argument('--downstream_hoved_args_path', type=str, default="config/downstream_hoved_args.yaml",
-                        help='Sti til downstream hoved arguments YAML fil')
     parser.add_argument('--eksp2_path', type=str, default="config/eksp2.yaml", help='Sti til eksp2 YAML fil')
     parser.add_argument('--selv_ckpt_path', type=str, default=None, help='Sti til eksp2 YAML fil')
     parser.add_argument('--kørsel_path', type=str, default=None, help='Sti til eksp2 YAML fil')
@@ -61,21 +55,16 @@ class Eksp2:
             self.kørsel_path = args.kørsel_path
             self.eftertræningsandele = torch.load(os.path.join(self.kørsel_path, "eftertræningsandele.pth"))
             self.selv_chkt_path = os.path.join(self.kørsel_path, "selvvejledt", "version_0", "checkpoints", "last.ckpt")
-            self.configs = m.load_config(os.path.join(self.kørsel_path, "configs.yaml"))
+            self.config = m.load_config(os.path.join(self.kørsel_path, "configs.yaml"))
             self.resultater = pd.read_csv(os.path.join(self.kørsel_path, "logs_metrics.csv"))
             self.fra_i = int(self.resultater["i"].max()) + 1
         else:
             self.init_kørsel_path()
             self.selv_chkt_path = args.selv_ckpt_path
-            self.configs = {
-                'eksp2': m.load_config(args.eksp2_path),
-                'rygrad': m.load_config(args.rygrad_args_path),
-                'selvvejledt_hoved': m.load_config(args.selvvejledt_hoved_args_path),
-                'downstream_hoved': m.load_config(args.downstream_hoved_args_path)
-            }
+            self.config = m.load_config(args.eksp2_path)
             with open(os.path.join(self.kørsel_path, "configs.yaml"), 'w', encoding='utf-8') as fil:
-                yaml.dump(self.configs, fil, allow_unicode=True)
-            self.eftertræningsandele = torch.linspace(0.0025, 1.0, steps=self.configs['eksp2']['trin'])
+                yaml.dump(self.config, fil, allow_unicode=True)
+            self.eftertræningsandele = torch.linspace(0.0025, 1.0, steps=self.config['trin'])
             torch.save(self.eftertræningsandele, os.path.join(self.kørsel_path, 'eftertræningsandele.pth'))
             self.init_resultater()
             self.fra_i = 0
@@ -103,7 +92,7 @@ class Eksp2:
     def get_trainer(self, opgave, epoch=-1):
         assert opgave in ['selvvejledt', 'downstream']
         logger = r.tensorBoardLogger(save_dir=self.kørsel_path, name=opgave)
-        trainer_dict = self.configs['eksp2'][opgave]
+        trainer_dict = self.config[opgave]
         callbacks = [
             r.checkpoint_callback(),
             r.TQDMProgressBar(),
@@ -122,10 +111,10 @@ class Eksp2:
             self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(self.selv_chkt_path)
             epoch = torch.load(self.selv_chkt_path, map_location='cpu')['epoch']
         else:
-            selvvejledt = m.Selvvejledt(rygrad_args=self.configs['rygrad'],
-                                    hoved_args=self.configs['selvvejledt_hoved'],
-                                    args_dict=self.configs['eksp2']['selvvejledt']['model'])
-            self.qm9Bygger2Hoved = QM9Bygger2(**self.configs['eksp2']['datasæt'],
+            selvvejledt = m.Selvvejledt(rygrad_args=self.config['rygrad'],
+                                        hoved_args=self.config['selvvejledt']['hoved'],
+                                        args_dict=self.config['selvvejledt']['model'])
+            self.qm9Bygger2Hoved = QM9Bygger2(**self.config['datasæt'],
                                               eftertræningsandel=1.0)
             epoch = -1
         trainer = self.get_trainer('selvvejledt', epoch)
@@ -134,7 +123,7 @@ class Eksp2:
         time.sleep(3)
 
     def get_qm9Bygger2(self, eftertræningsandel):
-        qm9Bygger2 = QM9Bygger2(**self.configs['eksp2']['datasæt'],
+        qm9Bygger2 = QM9Bygger2(**self.config['datasæt'],
                                 eftertræningsandel=eftertræningsandel)
         qm9Bygger2.load_state_dict(copy.deepcopy(self.qm9Bygger2Hoved.state_dict()))
         qm9Bygger2.sample_train_reduced()
@@ -143,12 +132,12 @@ class Eksp2:
     def eftertræn(self, eftertræningsandel, udgave):
         qm9Bygger2 = self.get_qm9Bygger2(eftertræningsandel)
 
-        downstream = DownstreamEksp2(rygrad_args=self.configs['rygrad'],
-                                  hoved_args=self.configs['downstream_hoved'],
-                                  args_dict=self.configs['eksp2']['downstream']['model'])
+        downstream = DownstreamEksp2(rygrad_args=self.config['rygrad'],
+                                     hoved_args=self.config['downstream']['hoved'],
+                                     args_dict=self.config['downstream']['model'])
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
-        if self.configs['eksp2']['frys_rygrad']:
+        if self.config['frys_rygrad']:
             downstream.frys_rygrad()
         trainer = self.get_trainer('downstream')
         trainer.fit(model=downstream, datamodule=qm9Bygger2)
@@ -170,7 +159,7 @@ class Eksp2:
 
     def main(self):
         self.fortræn()
-        for i in range(self.fra_i, self.configs['eksp2']['trin']):
+        for i in range(self.fra_i, self.config['trin']):
             self.eksperiment_runde(i)
 
     def get_datamængde(self, eftertræningsandel):
