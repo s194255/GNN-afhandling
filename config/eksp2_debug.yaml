@@ -1,15 +1,25 @@
-model:
-  lr: 0.00001
-  step_size: 20
-  gamma: 0.5
-  lambdaer: null
+selvvejledt:
+  model:
+    lr: 0.00001
+    step_size: 2000
+    gamma: 0.5
+    lambdaer: null
+  epoker: 1
+  min_delta: 0.01
+  patience: 3
+downstream:
+  model:
+    lr: 0.00001
+    step_size: 20
+    gamma: 0.5
+  epoker: 1
+  min_delta: 1
+  patience: 3
 datasæt:
   debug: True
   delmængdestørrelse: 1.0
   fordeling: [0.4675, 0.0125, 0.4675, 0.0125, 0.04]
   batch_size: 1
   num_workers: 0
-epoker_efterfølgende: 1
-epoker_selvtræn: 3
-trin: 2
+trin: 5
 frys_rygrad: True

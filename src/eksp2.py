@@ -8,7 +8,7 @@ import src.models as m
 import argparse
 import torch
 from src.data import QM9Bygger2
-from src.redskaber import get_trainer, tensorBoardLogger
+import src.redskaber as r
 import copy
 from torch_geometric.data import Data
 import pandas as pd
@@ -100,6 +100,21 @@ class Eksp2:
         )
         os.mkdir(self.kørsel_path)
 
+    def get_trainer(self, opgave):
+        assert opgave in ['selvvejledt', 'downstream']
+        logger = r.tensorBoardLogger(save_dir=self.kørsel_path, name=opgave)
+        trainer_dict = self.configs['eksp2'][opgave]
+        callbacks = [
+            r.checkpoint_callback(),
+            r.TQDMProgressBar(),
+            r.earlyStopping(trainer_dict['min_delta'], trainer_dict['patience'])
+        ]
+        trainer = L.Trainer(max_epochs=trainer_dict['epoker'],
+                            log_every_n_steps=1,
+                            callbacks=callbacks,
+                            logger=logger,
+                            )
+        return trainer
     def fortræn(self):
         if self.selv_chkt_path:
             selvvejledt = m.Selvvejledt.load_from_checkpoint(self.selv_chkt_path)
@@ -107,11 +122,10 @@ class Eksp2:
         else:
             selvvejledt = m.Selvvejledt(rygrad_args=self.configs['rygrad'],
                                     hoved_args=self.configs['selvvejledt_hoved'],
-                                    args_dict=self.configs['eksp2']['model'])
+                                    args_dict=self.configs['eksp2']['selvvejledt']['model'])
             self.qm9Bygger2Hoved = QM9Bygger2(**self.configs['eksp2']['datasæt'],
                                               eftertræningsandel=1.0)
-        logger = tensorBoardLogger(save_dir=self.kørsel_path, name='selvvejledt')
-        trainer = get_trainer(self.configs['eksp2']['epoker_selvtræn'], logger=logger)
+        trainer = self.get_trainer('selvvejledt')
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_chkt_path)
         self.bedste_selvvejledt = m.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
         time.sleep(2)
@@ -128,13 +142,12 @@ class Eksp2:
 
         downstream = DownstreamEksp2(rygrad_args=self.configs['rygrad'],
                                   hoved_args=self.configs['downstream_hoved'],
-                                  args_dict=self.configs['eksp2']['model'])
+                                  args_dict=self.configs['eksp2']['downstream']['model'])
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if self.configs['eksp2']['frys_rygrad']:
             downstream.frys_rygrad()
-        logger = tensorBoardLogger(save_dir=self.kørsel_path, name='efterfølgende')
-        trainer = get_trainer(self.configs['eksp2']['epoker_efterfølgende'], logger=logger)
+        trainer = self.get_trainer('downstream')
         trainer.fit(model=downstream, datamodule=qm9Bygger2)
         resultat = trainer.test(ckpt_path="best", datamodule=qm9Bygger2)[0]
         time.sleep(2)

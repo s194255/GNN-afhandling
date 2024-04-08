@@ -20,7 +20,7 @@ class Grundmodel(L.LightningModule):
         self.selvvejledt = None
         args_dict = prune_args(args_dict, self.udgangsargsdict)
         tjek_args(args_dict, self.udgangsargsdict)
-        self.træn_args = args_dict
+        self.args_dict = args_dict
         self.tjek_args(rygrad_args, VisNetRyggrad.args)
         self.rygrad = VisNetRyggrad(
             **rygrad_args
@@ -44,18 +44,16 @@ class Grundmodel(L.LightningModule):
 
     @property
     def udgangsargsdict(self):
-        return {}
+        return {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
 
 
 class Selvvejledt(Grundmodel):
-    # _selvvejledt_args = {'lambdaer': None}
-    # udgngsargs = {**Grundmodel.udgngsargs, **_selvvejledt_args}
     def __init__(self, *args,
                  hoved_args=HovedSelvvejledt.args,
                  **kwargs):
         super().__init__(*args, **kwargs)
         self.selvvejledt = True
-        if not self.træn_args['lambdaer']:
+        if not self.args_dict['lambdaer']:
             lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
         self.lambdaer = lambdaer
         self.tjek_args(hoved_args, HovedSelvvejledt.args)
@@ -89,9 +87,12 @@ class Selvvejledt(Grundmodel):
         self.log("test_loss", loss.item(), batch_size=data.batch_size, on_epoch=True)
         return loss
 
-    def configure_optimizers(self) -> torch.optim.Optimizer:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=0.0001)
-        return optimizer
+    def configure_optimizers(self) -> Tuple[List[torch.optim.Optimizer], List[torch.optim.lr_scheduler]]:
+        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.args_dict['lr'])
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
+                                                    step_size=self.hparams.args_dict['step_size'],
+                                                    gamma=self.hparams.args_dict['gamma'])
+        return [optimizer], [scheduler]
 
     def forward(
             self,
@@ -168,11 +169,6 @@ class Downstream(Grundmodel):
                                                     step_size=self.hparams.args_dict['step_size'],
                                                     gamma=self.hparams.args_dict['gamma'])
         return [optimizer], [scheduler]
-
-    @property
-    def udgangsargsdict(self):
-        downstream_args = {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
-        return {**super().udgangsargsdict, **downstream_args}
 
 class Selvvejledt2(Selvvejledt):
     def __init__(self, *args, **kwargs):

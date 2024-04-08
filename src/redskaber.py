@@ -5,9 +5,12 @@ import os
 def TQDMProgressBar():
     return L.pytorch.callbacks.TQDMProgressBar(refresh_rate=1000)
 
+def earlyStopping(min_delta, patience):
+    return L.pytorch.callbacks.EarlyStopping(monitor='val_loss', mode='min',
+                                      min_delta=min_delta, patience=patience)
 
 def checkpoint_callback():
-    return  L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
+    return L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True)
 def tensorBoardLogger(save_dir=None, name=None, version=None):
     if not save_dir:
