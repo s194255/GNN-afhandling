@@ -11,7 +11,7 @@ selvvejledt:
     mean: 0.0
     std: 1.0
   epoker: 50
-  min_delta: 0.01
+  min_delta: 0.001
   patience: 3
 downstream:
   model:
@@ -22,7 +22,7 @@ downstream:
     out_channels: 1
     reduce_op: "sum"
   epoker: 100
-  min_delta: 1
+  min_delta: 0.1
   patience: 3
 datasæt:
   debug: False
@@ -45,4 +45,4 @@ rygrad:
   max_z: 100
   maskeringsandel: null
 trin: 10
-frys_rygrad: True
+frys_rygrad: False
