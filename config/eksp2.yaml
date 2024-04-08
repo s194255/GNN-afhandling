@@ -44,5 +44,5 @@ rygrad:
   hidden_channels: 128
   max_z: 100
   maskeringsandel: null
-trin: 5
+trin: 10
 frys_rygrad: True
