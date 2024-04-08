@@ -89,9 +89,9 @@ class Eksp2:
         )
         os.mkdir(self.kørsel_path)
 
-    def get_trainer(self, opgave, epoch=-1):
+    def get_trainer(self, opgave, udgave="", epoch=-1):
         assert opgave in ['selvvejledt', 'downstream']
-        logger = r.tensorBoardLogger(save_dir=self.kørsel_path, name=opgave)
+        logger = r.tensorBoardLogger(save_dir=self.kørsel_path, name=f'{opgave}_{udgave}')
         trainer_dict = self.config[opgave]
         callbacks = [
             r.checkpoint_callback(),
@@ -117,7 +117,7 @@ class Eksp2:
             self.qm9Bygger2Hoved = QM9Bygger2(**self.config['datasæt'],
                                               eftertræningsandel=1.0)
             epoch = -1
-        trainer = self.get_trainer('selvvejledt', epoch)
+        trainer = self.get_trainer(opgave='selvvejledt', epoch=epoch)
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_chkt_path)
         self.bedste_selvvejledt = m.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
         time.sleep(3)
@@ -139,10 +139,11 @@ class Eksp2:
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if self.config['frys_rygrad']:
             downstream.frys_rygrad()
-        trainer = self.get_trainer('downstream')
+        trainer = self.get_trainer('downstream', udgave=udgave)
         trainer.fit(model=downstream, datamodule=qm9Bygger2)
         resultat = trainer.test(ckpt_path="best", datamodule=qm9Bygger2)[0]
         time.sleep(3)
+        shutil.rmtree(os.path.join(trainer.log_dir, "checkpoints"))
         return {f'{udgave}_{nøgle}': [værdi] for nøgle, værdi in resultat.items()}
 
     def eksperiment_runde(self, i):
@@ -155,7 +156,7 @@ class Eksp2:
         resultat['i'] = [i]
         self.resultater = pd.concat([self.resultater, pd.DataFrame(data=resultat)], ignore_index=True)
         self.resultater.to_csv(os.path.join(self.kørsel_path, "logs_metrics.csv"), index=False)
-        shutil.rmtree(os.path.join(self.kørsel_path, "downstream", f'version_{i}', 'checkpoints'))
+        # shutil.rmtree(os.path.join(self.kørsel_path, "downstream", f'version_{i}', 'checkpoints'))
 
     def main(self):
         self.fortræn()

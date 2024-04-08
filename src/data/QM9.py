@@ -116,21 +116,26 @@ class QM9Bygger2(QM9Bygger):
         self.sample_train_reduced()
 
     def sample_train_reduced(self):
-        for debug_mode in [True, False]:
-            data_split = self.data_splits[debug_mode]['train']
-            k = max(int(self.eftertræningsandel * len(data_split)), 1)
-            self.data_splits[debug_mode]['train_reduced'] = random.sample(data_split, k=k)
+        for task in ['train', 'val']:
+            for debug_mode in [True, False]:
+                data_split = self.data_splits[debug_mode][task]
+                k = max(int(self.eftertræningsandel * len(data_split)), 1)
+                self.data_splits[debug_mode][f'{task}_reduced'] = random.sample(data_split, k=k)
 
     def get_setup_tasks(self, stage: str):
         setup_tasks = super().get_setup_tasks(stage)
         if (stage == 'fit') and not self.trainer.model.selvvejledt:
-            return ['train_reduced', 'val']
+            return ['train_reduced', 'val_reduced']
         return setup_tasks
 
     def train_dataloader(self):
         assert len(self.data_splits[False]['train_reduced']) == int(self.eftertræningsandel * len(self.data_splits[False]['train']))
         task = 'pretrain' if self.trainer.model.selvvejledt else 'train_reduced'
         return self.get_dataloader(task, True)
+
+    def val_dataloader(self):
+        task = 'preval' if self.trainer.model.selvvejledt else 'val_reduced'
+        return self.get_dataloader(task, False)
 
 def get_metadata():
     mean_std_path = "data/QM9/processed/mean_std.pt"

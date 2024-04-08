@@ -21,13 +21,14 @@ downstream:
   hoved:
     out_channels: 1
     reduce_op: "sum"
+    num_layers: 4
   epoker: 1
   min_delta: 1
   patience: 3
 datasæt:
   debug: True
   delmængdestørrelse: 1.0
-  fordeling: [0.4675, 0.0125, 0.4675, 0.0125, 0.04]
+  fordeling: [0.384, 0.096, 0.384, 0.096, 0.04]
   batch_size: 1
   num_workers: 0
 rygrad:

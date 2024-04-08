@@ -12,7 +12,7 @@ selvvejledt:
     std: 1.0
   epoker: 50
   min_delta: 0.001
-  patience: 3
+  patience: 5
 downstream:
   model:
     lr: 0.00001
@@ -21,13 +21,14 @@ downstream:
   hoved:
     out_channels: 1
     reduce_op: "sum"
+    num_layers: 4
   epoker: 100
   min_delta: 0.1
-  patience: 3
+  patience: 5
 datasæt:
   debug: False
   delmængdestørrelse: 1.0
-  fordeling: [0.4675, 0.0125, 0.4675, 0.0125, 0.04]
+  fordeling: [0.384, 0.096, 0.384, 0.096, 0.04]
   batch_size: 128
   num_workers: 4
 rygrad:
@@ -44,5 +45,5 @@ rygrad:
   hidden_channels: 128
   max_z: 100
   maskeringsandel: null
-trin: 10
-frys_rygrad: False
+trin: 5
+frys_rygrad: True
