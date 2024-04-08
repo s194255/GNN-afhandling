@@ -4,6 +4,12 @@ selvvejledt:
     step_size: 20
     gamma: 0.5
     lambdaer: null
+  hoved:
+    atomref: null
+    max_z: 100
+    reduce_op: sum
+    mean: 0.0
+    std: 1.0
   epoker: 50
   min_delta: 0.01
   patience: 3
@@ -12,6 +18,9 @@ downstream:
     lr: 0.00001
     step_size: 20
     gamma: 0.5
+  hoved:
+    out_channels: 1
+    reduce_op: "sum"
   epoker: 100
   min_delta: 1
   patience: 3
@@ -19,7 +28,21 @@ datasæt:
   debug: False
   delmængdestørrelse: 1.0
   fordeling: [0.4675, 0.0125, 0.4675, 0.0125, 0.04]
-  batch_size: 32
+  batch_size: 128
   num_workers: 4
-trin: 10
+rygrad:
+  lmax: 1
+  vecnorm_type: null
+  trainable_vecnorm: false
+  num_heads: 8
+  num_layers: 6
+  num_rbf: 32
+  trainable_rbf: false
+  cutoff: 5.0
+  max_num_neighbors: 32
+  vertex: false
+  hidden_channels: 128
+  max_z: 100
+  maskeringsandel: null
+trin: 5
 frys_rygrad: True
