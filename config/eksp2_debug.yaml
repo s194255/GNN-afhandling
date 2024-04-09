@@ -27,7 +27,7 @@ spænd:
 frys_rygrad: true
 rygrad:
   cutoff: 5.0
-  hidden_channels: 128
+  hidden_channels: 8
   lmax: 1
   maskeringsandel: null
   max_num_neighbors: 32
@@ -40,7 +40,7 @@ rygrad:
   vecnorm_type: null
   vertex: false
 selvvejledt:
-  epoker: 1
+  epoker: 5
   hoved:
     atomref: null
     max_z: 100

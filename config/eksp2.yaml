@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 32
+  batch_size: 256
   debug: false
   delmængdestørrelse: 1.0
   fordeling:
@@ -12,7 +12,7 @@ datasæt:
 downstream:
   epoker: 100
   hoved:
-    num_layers: 4
+    num_layers: 8
     out_channels: 1
     reduce_op: sum
   min_delta: 0.1
@@ -24,10 +24,10 @@ downstream:
 frys_rygrad: false
 spænd:
   - 0.01
-  - 0.1
+  - 0.2
 rygrad:
   cutoff: 5.0
-  hidden_channels: 128
+  hidden_channels: 32
   lmax: 1
   maskeringsandel: null
   max_num_neighbors: 32
@@ -40,7 +40,7 @@ rygrad:
   vecnorm_type: null
   vertex: false
 selvvejledt:
-  epoker: 50
+  epoker: 100
   hoved:
     atomref: null
     max_z: 100
