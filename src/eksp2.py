@@ -22,7 +22,7 @@ class DownstreamEksp2(m.Downstream):
         if stage == 'test':
             self.metric = torchmetrics.BootStrapper(
                 torchmetrics.regression.MeanAbsoluteError(),
-                num_bootstraps=20,
+                num_bootstraps=100,
                 quantile=torch.tensor([0.05, 0.95], device=self.device)
             )
 
@@ -64,7 +64,7 @@ class Eksp2:
             self.config = m.load_config(args.eksp2_path)
             with open(os.path.join(self.kørsel_path, "configs.yaml"), 'w', encoding='utf-8') as fil:
                 yaml.dump(self.config, fil, allow_unicode=True)
-            self.eftertræningsandele = torch.linspace(0.0025, 1.0, steps=self.config['trin'])
+            self.eftertræningsandele = torch.linspace(0.05, 1.0, steps=self.config['trin'])
             torch.save(self.eftertræningsandele, os.path.join(self.kørsel_path, 'eftertræningsandele.pth'))
             self.init_resultater()
             self.fra_i = 0

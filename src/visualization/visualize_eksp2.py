@@ -1,22 +1,12 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
-# Antag at data er læst fra en CSV-fil og gemt i en DataFrame kaldet df
-# df = pd.read_csv('din_fil.csv')
+kørsel_path = "eksp2_logs/hpckørsel_5"
 
-# Eksempeldata
-data = {
-    "uden_test_loss_mean": [0.5, 0.6, 0.7, 0.8, 0.9],
-    "uden_test_loss_lower": [0.4, 0.5, 0.6, 0.7, 0.8],
-    "uden_test_loss_upper": [0.6, 0.7, 0.8, 0.9, 1.0],
-    "med_test_loss_mean": [0.4, 0.5, 0.6, 0.7, 0.8],
-    "med_test_loss_lower": [0.3, 0.4, 0.5, 0.6, 0.7],
-    "med_test_loss_upper": [0.5, 0.6, 0.7, 0.8, 0.9],
-    "datamængde": [100, 200, 300, 400, 500]
-}
+df = pd.read_csv(os.path.join(kørsel_path, "logs_metrics.csv"))
 
-# df = pd.DataFrame(data)
-df = pd.read_csv("logs_metrics.csv")
+df = df.iloc[1:]
 
 # Plot
 plt.figure(figsize=(10, 6))
@@ -35,4 +25,4 @@ plt.xlabel("Datamængde")
 plt.ylabel("Test Loss")
 plt.legend()
 plt.grid(True)
-plt.show()
+plt.savefig(os.path.join(kørsel_path, "results.jpg"))

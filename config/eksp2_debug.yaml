@@ -1,49 +1,54 @@
-selvvejledt:
-  model:
-    lr: 0.00001
-    step_size: 2000
-    gamma: 0.5
-    lambdaer: null
-  hoved:
-    atomref: null
-    max_z: 100
-    reduce_op: sum
-    mean: 0.0
-    std: 1.0
-  epoker: 1
-  min_delta: 0.01
-  patience: 3
-downstream:
-  model:
-    lr: 0.00001
-    step_size: 20
-    gamma: 0.5
-  hoved:
-    out_channels: 1
-    reduce_op: "sum"
-    num_layers: 4
-  epoker: 1
-  min_delta: 1
-  patience: 3
 datasæt:
-  debug: True
-  delmængdestørrelse: 1.0
-  fordeling: [0.384, 0.096, 0.384, 0.096, 0.04]
   batch_size: 1
+  debug: true
+  delmængdestørrelse: 1.0
+  fordeling:
+  - 0.384
+  - 0.096
+  - 0.384
+  - 0.096
+  - 0.04
   num_workers: 0
+downstream:
+  epoker: 1
+  hoved:
+    num_layers: 4
+    out_channels: 1
+    reduce_op: sum
+  min_delta: 0.1
+  model:
+    gamma: 0.5
+    lr: 1.0e-05
+    step_size: 20
+  patience: 5
+frys_rygrad: true
 rygrad:
+  cutoff: 5.0
+  hidden_channels: 8
   lmax: 1
-  vecnorm_type: null
-  trainable_vecnorm: false
+  maskeringsandel: null
+  max_num_neighbors: 32
+  max_z: 100
   num_heads: 8
   num_layers: 6
   num_rbf: 32
   trainable_rbf: false
-  cutoff: 5.0
-  max_num_neighbors: 32
+  trainable_vecnorm: false
+  vecnorm_type: null
   vertex: false
-  hidden_channels: 8
-  max_z: 100
-  maskeringsandel: null
-trin: 5
-frys_rygrad: True
+selvvejledt:
+  epoker: 1
+  hoved:
+    atomref: null
+    max_z: 100
+    mean: 0.0
+    reduce_op: sum
+    std: 1.0
+  min_delta: 0.001
+  model:
+    gamma: 0.5
+    lambdaer: null
+    lr: 1.0e-05
+    step_size: 20
+  patience: 5
+trin: 2
