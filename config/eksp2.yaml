@@ -10,17 +10,17 @@ datasæt:
   - 0.04
   num_workers: 4
 downstream:
-  epoker: 100
+  epoker: 500
   hoved:
     num_layers: 8
     out_channels: 1
     reduce_op: sum
-  min_delta: 0.1
+  min_delta: 0.0
   model:
     gamma: 0.5
     lr: 1.0e-05
     step_size: 20
-  patience: 20
+  patience: 10
 frys_rygrad: false
 spænd:
   - 0.01
