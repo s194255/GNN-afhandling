@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 128
+  batch_size: 32
   debug: false
   delmængdestørrelse: 1.0
   fordeling:
@@ -24,7 +24,7 @@ downstream:
 frys_rygrad: false
 rygrad:
   cutoff: 5.0
-  hidden_channels: 128
+  hidden_channels: 512
   lmax: 1
   maskeringsandel: null
   max_num_neighbors: 32

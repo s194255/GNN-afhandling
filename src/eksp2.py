@@ -64,7 +64,7 @@ class Eksp2:
             self.config = m.load_config(args.eksp2_path)
             with open(os.path.join(self.kørsel_path, "configs.yaml"), 'w', encoding='utf-8') as fil:
                 yaml.dump(self.config, fil, allow_unicode=True)
-            self.eftertræningsandele = torch.linspace(0.05, 1.0, steps=self.config['trin'])
+            self.eftertræningsandele = torch.linspace(0.01, 1.0, steps=self.config['trin'])
             torch.save(self.eftertræningsandele, os.path.join(self.kørsel_path, 'eftertræningsandele.pth'))
             self.init_resultater()
             self.fra_i = 0
