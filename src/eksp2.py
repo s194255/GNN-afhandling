@@ -64,7 +64,9 @@ class Eksp2:
             self.config = m.load_config(args.eksp2_path)
             with open(os.path.join(self.kørsel_path, "configs.yaml"), 'w', encoding='utf-8') as fil:
                 yaml.dump(self.config, fil, allow_unicode=True)
-            self.eftertræningsandele = torch.linspace(0.01, 1.0, steps=self.config['trin'])
+            self.eftertræningsandele = torch.linspace(self.config['spænd'][0],
+                                                      self.config['spænd'][1],
+                                                      steps=self.config['trin'])
             torch.save(self.eftertræningsandele, os.path.join(self.kørsel_path, 'eftertræningsandele.pth'))
             self.init_resultater()
             self.fra_i = 0
@@ -108,7 +110,8 @@ class Eksp2:
     def fortræn(self):
         if self.selv_chkt_path:
             selvvejledt = m.Selvvejledt.load_from_checkpoint(self.selv_chkt_path)
-            self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(self.selv_chkt_path)
+            self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(self.selv_chkt_path,
+                                                                   **self.config['datasæt'])
             epoch = torch.load(self.selv_chkt_path, map_location='cpu')['epoch']
         else:
             selvvejledt = m.Selvvejledt(rygrad_args=self.config['rygrad'],

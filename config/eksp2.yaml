@@ -22,9 +22,12 @@ downstream:
     step_size: 20
   patience: 5
 frys_rygrad: false
+spænd:
+  - 0.01
+  - 0.1
 rygrad:
   cutoff: 5.0
-  hidden_channels: 512
+  hidden_channels: 128
   lmax: 1
   maskeringsandel: null
   max_num_neighbors: 32

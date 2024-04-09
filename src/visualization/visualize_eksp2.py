@@ -16,12 +16,12 @@ for kørsel in kørsler:
     plt.figure(figsize=(10, 6))
 
     # Plot uden_test_loss
-    plt.plot(df["datamængde"], df["uden_test_loss_mean"], label="uden", color="blue")
-    plt.fill_between(df["datamængde"], df["uden_test_loss_lower"], df["uden_test_loss_upper"], color="blue", alpha=0.3)
+    plt.plot(df["datamængde"], df["uden_test_loss_mean"], label="uden", color="#2F3EEA")
+    plt.fill_between(df["datamængde"], df["uden_test_loss_lower"], df["uden_test_loss_upper"], color="#2F3EEA", alpha=0.3)
 
     # Plot med_test_loss
-    plt.plot(df["datamængde"], df["med_test_loss_mean"], label="med", color="orange")
-    plt.fill_between(df["datamængde"], df["med_test_loss_lower"], df["med_test_loss_upper"], color="orange", alpha=0.3)
+    plt.plot(df["datamængde"], df["med_test_loss_mean"], label="med", color="#990000")
+    plt.fill_between(df["datamængde"], df["med_test_loss_lower"], df["med_test_loss_upper"], color="#990000", alpha=0.3)
 
     # Tittel og labels
     plt.title("Testtab")
