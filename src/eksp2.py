@@ -109,17 +109,18 @@ class Eksp2:
         return trainer
     def fortræn(self):
         if self.selv_chkt_path:
-            selvvejledt = m.Selvvejledt.load_from_checkpoint(self.selv_chkt_path)
+            self.bedste_selvvejledt = m.Selvvejledt.load_from_checkpoint(self.selv_chkt_path)
             self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(self.selv_chkt_path,
                                                                    **self.config['datasæt'])
             epoch = torch.load(self.selv_chkt_path, map_location='cpu')['epoch']
-        else:
-            selvvejledt = m.Selvvejledt(rygrad_args=self.config['rygrad'],
-                                        hoved_args=self.config['selvvejledt']['hoved'],
-                                        args_dict=self.config['selvvejledt']['model'])
-            self.qm9Bygger2Hoved = QM9Bygger2(**self.config['datasæt'],
-                                              eftertræningsandel=1.0)
-            epoch = -1
+            return
+
+        selvvejledt = m.Selvvejledt(rygrad_args=self.config['rygrad'],
+                                    hoved_args=self.config['selvvejledt']['hoved'],
+                                    args_dict=self.config['selvvejledt']['model'])
+        self.qm9Bygger2Hoved = QM9Bygger2(**self.config['datasæt'],
+                                          eftertræningsandel=1.0)
+        epoch = -1
         trainer = self.get_trainer(opgave='selvvejledt', epoch=epoch)
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_chkt_path)
         self.bedste_selvvejledt = m.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
