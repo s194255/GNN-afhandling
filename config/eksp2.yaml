@@ -20,7 +20,7 @@ downstream:
     gamma: 0.5
     lr: 1.0e-05
     step_size: 20
-  patience: 5
+  patience: 20
 frys_rygrad: false
 spænd:
   - 0.01
@@ -53,5 +53,5 @@ selvvejledt:
     lambdaer: null
     lr: 1.0e-05
     step_size: 20
-  patience: 5
+  patience: 20
 trin: 5
