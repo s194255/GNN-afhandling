@@ -12,7 +12,7 @@ downstream:
   min_delta: 0.0
   model:
     gamma: 0.1
-    lr: 1.0e-04
+    lr: 1.0e-05
     step_size: 10
   patience: 15
 spænd:
@@ -44,7 +44,7 @@ selvvejledt:
   model:
     gamma: 0.1
     lambdaer: null
-    lr: 1.0e-04
+    lr: 1.0e-05
     step_size: 10
   patience: 20
 trin: 5
