@@ -83,37 +83,37 @@ class Eksp2:
     def init_resultater(self):
         self.resultater = {}
         for udgave in self.udgaver:
-            for log_metric in self.log_metrics:
-                for frys in [True, False]:
+            for frys in [True, False]:
+                for log_metric in self.log_metrics:
                     nøgle = f'{udgave}_{frys}_{log_metric}'
                     self.resultater[nøgle] = []
-        # self.resultater = {f'{udgave}_{log_metric}': [] for udgave in self.udgaver for log_metric in self.log_metrics}
         self.resultater['datamængde'] = []
         self.resultater['i'] = []
         self.resultater = pd.DataFrame(data=self.resultater)
 
     def init_kørsel_path(self):
-        if os.path.exists(LOG_ROOT):
-            kørsler = os.listdir(LOG_ROOT)
+        a = os.path.join(LOG_ROOT, "logging")
+        if os.path.exists(a):
+            kørsler = os.listdir(a)
             kørsler = [int(version.split("_")[1]) for version in kørsler]
             kørsel = max(kørsler, default=-1)+1
         else:
-            os.mkdir(LOG_ROOT)
+            os.makedirs(os.path.join(a))
             kørsel = 0
         self.kørsel_path = os.path.join(
-            LOG_ROOT,
+            a,
             f'kørsel_{kørsel}'
         )
-        os.mkdir(self.kørsel_path)
+        os.makedirs(self.kørsel_path)
 
-    def get_trainer(self, opgave, name, epoch=-1):
+    def get_trainer(self, opgave, name, epoch=-1, dirpath=None):
         assert opgave in ['selvvejledt', 'downstream']
         loggers = [
             r.tensorBoardLogger(save_dir=self.kørsel_path, name=name),
         ]
         trainer_dict = self.config[opgave]
         callbacks = [
-            r.checkpoint_callback(),
+            r.checkpoint_callback(dirpath=dirpath),
             r.TQDMProgressBar(),
             r.earlyStopping(trainer_dict['min_delta'], trainer_dict['patience']),
         ]
@@ -140,7 +140,8 @@ class Eksp2:
             eftertræningsandel=1.0
         )
         epoch = -1
-        trainer = self.get_trainer(opgave='selvvejledt', epoch=epoch, name="selvvejledt")
+        trainer = self.get_trainer(opgave='selvvejledt', epoch=epoch, name="selvvejledt",
+                                   dirpath=os.path.join(LOG_ROOT, "checkpoints"))
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_chkt_path)
         self.bedste_selvvejledt = m.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
         time.sleep(3)
@@ -163,7 +164,7 @@ class Eksp2:
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if frys_rygrad:
             downstream.frys_rygrad()
-        trainer = self.get_trainer('downstream', name=f'downstream_{udgave}')
+        trainer = self.get_trainer('downstream', name=f'downstream_{udgave}_{frys_rygrad}')
         trainer.fit(model=downstream, datamodule=qm9Bygger2)
         resultat = trainer.test(ckpt_path="best", datamodule=qm9Bygger2)[0]
         time.sleep(1)

@@ -47,4 +47,4 @@ selvvejledt:
     lr: 1.0e-03
     step_size: 10
   patience: 5
-trin: 2
+trin: 1

@@ -9,9 +9,10 @@ def earlyStopping(min_delta, patience):
     return L.pytorch.callbacks.EarlyStopping(monitor='val_loss', mode='min',
                                       min_delta=min_delta, patience=patience)
 
-def checkpoint_callback():
+def checkpoint_callback(dirpath=None):
     return L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
-                                                              save_top_k=1, filename='best', save_last=True)
+                                                              save_top_k=1, filename='best', save_last=True,
+                                               dirpath=dirpath)
 def tensorBoardLogger(save_dir=None, name=None, version=None):
     if not save_dir:
         save_dir = os.getcwd()
