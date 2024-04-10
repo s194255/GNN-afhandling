@@ -2,12 +2,6 @@ datasæt:
   batch_size: 1
   debug: true
   delmængdestørrelse: 1.0
-  fordeling:
-  - 0.384
-  - 0.096
-  - 0.384
-  - 0.096
-  - 0.04
   num_workers: 0
 downstream:
   epoker: 1
@@ -17,14 +11,13 @@ downstream:
     reduce_op: sum
   min_delta: 0.1
   model:
-    gamma: 0.5
-    lr: 1.0e-05
-    step_size: 20
+    gamma: 0.1
+    lr: 1.0e-03
+    step_size: 10
   patience: 5
 spænd:
-  - 0.01
-  - 0.1
-frys_rygrad: true
+  - 100
+  - 2000
 rygrad:
   cutoff: 5.0
   hidden_channels: 8
@@ -40,7 +33,7 @@ rygrad:
   vecnorm_type: null
   vertex: false
 selvvejledt:
-  epoker: 5
+  epoker: 1
   hoved:
     atomref: null
     max_z: 100
@@ -49,9 +42,9 @@ selvvejledt:
     std: 1.0
   min_delta: 0.001
   model:
-    gamma: 0.5
+    gamma: 0.1
     lambdaer: null
-    lr: 1.0e-05
-    step_size: 20
+    lr: 1.0e-03
+    step_size: 10
   patience: 5
 trin: 2

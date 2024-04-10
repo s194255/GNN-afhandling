@@ -6,6 +6,7 @@ import torch
 import torch_geometric
 import random
 from torch_geometric.loader import DataLoader
+from typing import List
 
 DATA_SPLITS_PATH = "data/QM9/processed/data_splits.pt"
 
@@ -20,11 +21,11 @@ class QM9Bygger(L.LightningDataModule):
 
 
     def __init__(self,
-                 delmængdestørrelse: float = args['delmængdestørrelse'],
-                 fordeling=args['fordeling'],
-                 batch_size=args['batch_size'],
-                 num_workers=args['num_workers'],
-                 debug=args['debug']
+                 delmængdestørrelse: float,
+                 batch_size: int,
+                 fordeling: List,
+                 num_workers: int,
+                 debug: bool,
                  ):
         super().__init__()
         if not fordeling:
@@ -109,7 +110,6 @@ class QM9Bygger(L.LightningDataModule):
         return self.get_dataloader('test', False)
 
 class QM9Bygger2(QM9Bygger):
-    _qm92_args = {'eftertræningsandel': 1.0}
     def __init__(self, *args, eftertræningsandel, **kwargs):
         super().__init__(*args, **kwargs)
         self.eftertræningsandel = eftertræningsandel

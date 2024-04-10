@@ -47,6 +47,14 @@ def parserargs():
     args = parser.parse_args()
     return args
 
+def get_fordeling(højre_interval):
+    n = 130831
+    test = 0.04
+    train = højre_interval/n*0.8
+    val = højre_interval/n*0.2
+    pretrain = (1-(test+train+val))*0.8
+    preval = (1-(test+train+val))*0.2
+    return [pretrain, preval, train, val, test]
 
 class Eksp2:
     def __init__(self, args):
@@ -65,15 +73,21 @@ class Eksp2:
             self.config = m.load_config(args.eksp2_path)
             with open(os.path.join(self.kørsel_path, "configs.yaml"), 'w', encoding='utf-8') as fil:
                 yaml.dump(self.config, fil, allow_unicode=True)
-            self.eftertræningsandele = torch.linspace(self.config['spænd'][0],
-                                                      self.config['spænd'][1],
+            self.eftertræningsandele = torch.linspace(self.config['spænd'][0]/130831,
+                                                      self.config['spænd'][1]/130831,
                                                       steps=self.config['trin'])
             torch.save(self.eftertræningsandele, os.path.join(self.kørsel_path, 'eftertræningsandele.pth'))
             self.init_resultater()
             self.fra_i = 0
 
     def init_resultater(self):
-        self.resultater = {f'{udgave}_{log_metric}': [] for udgave in self.udgaver for log_metric in self.log_metrics}
+        self.resultater = {}
+        for udgave in self.udgaver:
+            for log_metric in self.log_metrics:
+                for frys in [True, False]:
+                    nøgle = f'{udgave}_{frys}_{log_metric}'
+                    self.resultater[nøgle] = []
+        # self.resultater = {f'{udgave}_{log_metric}': [] for udgave in self.udgaver for log_metric in self.log_metrics}
         self.resultater['datamængde'] = []
         self.resultater['i'] = []
         self.resultater = pd.DataFrame(data=self.resultater)
@@ -120,8 +134,11 @@ class Eksp2:
         selvvejledt = m.Selvvejledt(rygrad_args=self.config['rygrad'],
                                     hoved_args=self.config['selvvejledt']['hoved'],
                                     args_dict=self.config['selvvejledt']['model'])
-        self.qm9Bygger2Hoved = QM9Bygger2(**self.config['datasæt'],
-                                          eftertræningsandel=1.0)
+        self.qm9Bygger2Hoved = QM9Bygger2(
+            **self.config['datasæt'],
+            fordeling=get_fordeling(self.config['spænd'][1]),
+            eftertræningsandel=1.0
+        )
         epoch = -1
         trainer = self.get_trainer(opgave='selvvejledt', epoch=epoch, name="selvvejledt")
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_chkt_path)
@@ -130,12 +147,13 @@ class Eksp2:
 
     def get_qm9Bygger2(self, eftertræningsandel):
         qm9Bygger2 = QM9Bygger2(**self.config['datasæt'],
+                                fordeling=self.qm9Bygger2Hoved.fordeling.tolist(),
                                 eftertræningsandel=eftertræningsandel)
         qm9Bygger2.load_state_dict(copy.deepcopy(self.qm9Bygger2Hoved.state_dict()))
         qm9Bygger2.sample_train_reduced()
         return qm9Bygger2
 
-    def eftertræn(self, eftertræningsandel, udgave):
+    def eftertræn(self, eftertræningsandel, udgave, frys_rygrad):
         qm9Bygger2 = self.get_qm9Bygger2(eftertræningsandel)
 
         downstream = DownstreamEksp2(rygrad_args=self.config['rygrad'],
@@ -143,21 +161,22 @@ class Eksp2:
                                      args_dict=self.config['downstream']['model'])
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
-        if self.config['frys_rygrad']:
+        if frys_rygrad:
             downstream.frys_rygrad()
         trainer = self.get_trainer('downstream', name=f'downstream_{udgave}')
         trainer.fit(model=downstream, datamodule=qm9Bygger2)
         resultat = trainer.test(ckpt_path="best", datamodule=qm9Bygger2)[0]
-        time.sleep(3)
+        time.sleep(1)
         shutil.rmtree(os.path.join(trainer.log_dir, "checkpoints"))
-        return {f'{udgave}_{nøgle}': [værdi] for nøgle, værdi in resultat.items()}
+        return {f'{udgave}_{frys_rygrad}_{log_metric}': [værdi] for log_metric, værdi in resultat.items()}
 
     def eksperiment_runde(self, i):
         eftertræningsandel = self.eftertræningsandele[i].item()
         resultat = {}
         for udgave in self.udgaver:
-            udgave_resultat = self.eftertræn(eftertræningsandel, udgave)
-            resultat = {**resultat, **udgave_resultat}
+            for frys_rygrad in [True, False]:
+                udgave_resultat = self.eftertræn(eftertræningsandel, udgave, frys_rygrad)
+                resultat = {**resultat, **udgave_resultat}
         resultat['datamængde'] = [self.get_datamængde(eftertræningsandel)]
         resultat['i'] = [i]
         self.resultater = pd.concat([self.resultater, pd.DataFrame(data=resultat)], ignore_index=True)

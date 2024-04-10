@@ -6,6 +6,8 @@ hoved_kørsel_path = "eksp2_logs_hpc"
 kørsler = os.listdir(hoved_kørsel_path)
 
 for kørsel in kørsler:
+    if kørsel in ["kørsel_0", "kørsel_7"]:
+        continue
     kørsel_path = os.path.join(hoved_kørsel_path, kørsel)
     df = pd.read_csv(os.path.join(kørsel_path, "logs_metrics.csv"))
 
@@ -24,11 +26,16 @@ for kørsel in kørsler:
     plt.fill_between(df["datamængde"], df["med_test_loss_lower"], df["med_test_loss_upper"], color="#990000", alpha=0.3)
 
     # Tittel og labels
-    plt.title("Testtab")
+    if kørsel in ['kørsel_3', 'kørsel_4', 'kørsel_5']:
+        plt.title(f'{kørsel} fjernet første datapunkt')
+    else:
+        plt.title(kørsel)
+
     plt.xlabel("Datamængde")
     plt.ylabel("MAE")
     plt.legend()
     plt.grid(True)
     plt.savefig(os.path.join(kørsel_path, "results.jpg"))
+    plt.savefig(os.path.join("..", "figurer", "resultater", f"{kørsel}.jpg"))
     if kørsel == 'kørsel_2':
-        plt.savefig("../figurer/resultater/eksp2.pdf")
+        plt.savefig(os.path.join("..", "figurer", "resultater", f"{kørsel}.pdf"))
