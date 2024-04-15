@@ -3,17 +3,19 @@ import argparse
 import src.models as m
 import lightning as L
 import src.data as d
+import src.models.downstream
+
 
 def uden_selvtræn():
     if args.ckpt_path:
         print("DU GAV EN CKPT-PATH. Bruger denne og ingorerer visse konfigurationsfiler")
-        downstream = m.Downstream.load_from_checkpoint(args.ckpt_path)
+        downstream = src.models.downstream.Downstream.load_from_checkpoint(args.ckpt_path)
         qm9 = d.QM9Bygger.load_from_checkpoint(args.ckpt_path)
     else:
         qm9 = d.QM9Bygger(**m.load_config(args.eksp3_path, d.QM9Bygger.args))
-        downstream = m.Downstream(rygrad_args=m.load_config(args.rygrad_args_path),
-                                  hoved_args=m.load_config(args.downstream_hoved_args_path),
-                                  træn_args=eksp3)
+        downstream = src.models.downstream.Downstream(rygrad_args=m.load_config(args.rygrad_args_path),
+                                                      hoved_args=m.load_config(args.downstream_hoved_args_path),
+                                                      træn_args=eksp3)
     if eksp3['frys_rygrad']:
         downstream.frys_rygrad()
 

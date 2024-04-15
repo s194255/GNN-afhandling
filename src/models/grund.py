@@ -1,16 +1,20 @@
 import lightning as L
-from torch_geometric.data import Data
-from src.data import  get_metadata
-from src.models.redskaber import RiemannGaussian
-import torch
-from torch import Tensor
-from typing import Tuple, Optional, List
-from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
-from src.models.hoveder.hoveddownstream import HovedDownstream
 from src.models.visnet import VisNetRyggrad
 from src.models.redskaber import tjek_args, prune_args
+import torch
+from typing import Tuple, List, Optional
 
 
+class WarmUpStepLR(torch.optim.lr_scheduler.StepLR):
+
+    def __init__(self, *args,
+                 ønsket_lr: float,
+                 epoker: int,
+                 **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def step(self, epoch: Optional[int] = ...) -> None:
+        pass
 class Grundmodel(L.LightningModule):
     def __init__(self,
                  args_dict: dict,
@@ -47,161 +51,33 @@ class Grundmodel(L.LightningModule):
         return {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
 
 
-class Selvvejledt(Grundmodel):
-    def __init__(self, *args,
-                 hoved_args=HovedSelvvejledt.args,
-                 **kwargs):
-        super().__init__(*args, **kwargs)
-        self.selvvejledt = True
-        if not self.args_dict['lambdaer']:
-            lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
-        self.lambdaer = lambdaer
-        self.tjek_args(hoved_args, HovedSelvvejledt.args)
-
-        self.register_buffer("noise_scales_options", torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000]))
-        self.criterion = torch.nn.MSELoss(reduction='mean')
-        self.riemannGaussian = RiemannGaussian()
-        self.hoved = HovedSelvvejledt(
-            **hoved_args,
-            hidden_channels=self.hparams.rygrad_args['hidden_channels'],
-            out_channels=len(self.noise_scales_options)
-        )
-
-    def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        tabsopslag = self(data.z, data.pos, data.batch)
-        loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
-        self.log("train_loss", loss.item(), batch_size=data.batch_size)
-        return loss
-
-    def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        with torch.enable_grad():
-            tabsopslag = self(data.z, data.pos, data.batch)
-        loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
-        self.log("val_loss", loss.item(), batch_size=data.batch_size)
-        return loss
-
-    def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        with torch.enable_grad():
-            tabsopslag = self(data.z, data.pos, data.batch)
-        loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
-        self.log("test_loss", loss.item(), batch_size=data.batch_size, on_epoch=True)
-        return loss
-
     def configure_optimizers(self) -> Tuple[List[torch.optim.Optimizer], List[torch.optim.lr_scheduler]]:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.args_dict['lr'])
+        lr = self.hparams.args_dict['lr']
+        max_lr = self.hparams.args_dict['max_lr']
+        warmup_period = self.hparams.args_dict['warmup_period']
+        gamma = self.hparams.args_dict['lr']
+        optimizer = torch.optim.AdamW(self.parameters(), lr=max_lr)
+        step_size = self.hparams.args_dict['step_size']
+        # scheduler1 = torch.optim.lr_scheduler.ChainedScheduler([
+        #     torch.optim.lr_scheduler.ConstantLR(optimizer, factor=lr/max_lr),
+        #     torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=(max_lr/lr)**(1/warmup_period))
+        # ])
+        # # scheduler1 = torch.optim.lr_scheduler.StepLR(
+        # #     optimizer,
+        # #     step_size=1,
+        # #     gamma=(max_lr/lr)**(1/warmup_period)
+        # # )
+        # scheduler2 = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
+        # scheduler = torch.optim.lr_scheduler.SequentialLR(
+        #     optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_period]
+        # )
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                     step_size=self.hparams.args_dict['step_size'],
                                                     gamma=self.hparams.args_dict['gamma'])
+        def lol(epoch):
+            if epoch < warmup_period:
+                return (epoch + 1) / warmup_period * (max_lr/lr)**(1/warmup_period)
+            else:
+                return 1
+        scheduler.step = lol
         return [optimizer], [scheduler]
-
-    def forward(
-            self,
-            z: Tensor,
-            pos: Tensor,
-            batch: Tensor,
-    ) -> Tuple[Tensor, Tensor]:
-        noise_idxs = torch.randint(low=0, high=len(self.noise_scales_options),
-                                   size=torch.unique(batch).shape, device=self.device)
-        noise_scales = torch.gather(self.noise_scales_options, 0, noise_idxs)
-        sigma = torch.gather(noise_scales, 0, batch)
-        pos_til, target = self.riemannGaussian(pos, batch, sigma)
-        if self.hoved.derivative:
-            pos_til.requires_grad_(True)
-        x, v, edge_attr, _ = self.rygrad(z, pos_til, batch)
-        tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
-        return tabsopslag
-
-    @property
-    def udgangsargsdict(self):
-        udgangsargs = {'lambdaer': None}
-        return {**super().udgangsargsdict, **udgangsargs}
-
-class Downstream(Grundmodel):
-    def __init__(self, *args,
-                 hoved_args=HovedDownstream.args,
-                 **kwargs):
-        super().__init__(*args, **kwargs)
-        self.selvvejledt = False
-        self.tjek_args(hoved_args, HovedDownstream.args)
-        metadata = get_metadata()
-        self.hoved = HovedDownstream(
-            means=metadata['means'],
-            stds=metadata['stds'],
-            hidden_channels=self.hparams.rygrad_args['hidden_channels'],
-            max_z=self.hparams.rygrad_args['max_z'],
-            **hoved_args
-        )
-        self.criterion = torch.nn.L1Loss()
-
-    def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        return self.step("train", data, batch_idx)
-
-    def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        return self.step("val", data, batch_idx)
-
-    def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        return self.step("test", data, batch_idx)
-
-    def step(self, task, data, batch_idx):
-        on_epoch = {'train': None, 'val': None, 'test': True}
-        pred = self(data.z, data.pos, data.batch)
-        loss = 1000*self.criterion(pred, data.y[:, 0])
-        self.log(
-            f"{task}_loss", loss.item(),
-            batch_size=data.batch_size,
-            on_epoch=on_epoch[task],
-        )
-        return loss
-
-    def forward(
-            self,
-            z: Tensor,
-            pos: Tensor,
-            batch: Tensor,
-    ) -> Tuple[Tensor, Optional[Tensor]]:
-        x, v, edge_attr, _ = self.rygrad(z, pos, batch)
-        y = self.hoved(z, pos, batch, x, v)
-        return y
-
-    def configure_optimizers(self) -> Tuple[List[torch.optim.Optimizer], List[torch.optim.lr_scheduler]]:
-        optimizer = torch.optim.AdamW(self.parameters(), lr=self.hparams.args_dict['lr'])
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                                    step_size=self.hparams.args_dict['step_size'],
-                                                    gamma=self.hparams.args_dict['gamma'])
-        return [optimizer], [scheduler]
-
-class Selvvejledt2(Selvvejledt):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args,
-                         lambdaer={'lokalt': 1.0, 'globalt': 0.0},
-                         **kwargs)
-        assert self.hparams.rygrad_args['maskeringsandel'] != None
-        hidden_channels = self.hparams.rygrad_args['hidden_channels']
-        out_channels = self.hparams.rygrad_args['max_z']
-        self.hoved = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels, hidden_channels),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden_channels, out_channels)
-        )
-        self.criterionlokal = torch.nn.CrossEntropyLoss()
-
-    def forward(
-            self,
-            z: Tensor,
-            pos: Tensor,
-            batch: Tensor,
-    ) -> dict:
-
-        x, v, edge_attr, masker = self.rygrad(z, pos, batch)
-        x = x[masker['knuder']]
-        z = z[masker['knuder']]
-        x = self.hoved(x)
-        lokal = self.criterionlokal(x, z)
-        globall = torch.tensor(0, device=self.device)
-        return {'lokalt': lokal, 'globalt': globall}
-
-    @property
-    def udgangsargsdict(self):
-        super_dict = super().udgangsargsdict
-        return {key: value for key, value in super_dict.items() if key != 'lambdaer'}
-

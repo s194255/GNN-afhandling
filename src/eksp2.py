@@ -8,6 +8,9 @@ from lightning.pytorch.loggers import CSVLogger
 import src.models as m
 import argparse
 import torch
+
+import src.models.downstream
+import src.models.selvvejledt
 from src.data import QM9Bygger2
 import src.redskaber as r
 import copy
@@ -18,7 +21,7 @@ import shutil
 
 LOG_ROOT = "eksp2_logs"
 
-class DownstreamEksp2(m.Downstream):
+class DownstreamEksp2(src.models.downstream.Downstream):
     def setup(self, stage: str) -> None:
         if stage == 'test':
             self.metric = torchmetrics.BootStrapper(
@@ -116,6 +119,7 @@ class Eksp2:
             r.checkpoint_callback(dirpath=dirpath),
             r.TQDMProgressBar(),
             r.earlyStopping(trainer_dict['min_delta'], trainer_dict['patience']),
+            L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
         ]
         max_epochs = max([trainer_dict['epoker'], epoch])
         trainer = L.Trainer(max_epochs=max_epochs,
@@ -126,14 +130,14 @@ class Eksp2:
         return trainer
     def fortræn(self):
         if self.selv_chkt_path:
-            self.bedste_selvvejledt = m.Selvvejledt.load_from_checkpoint(self.selv_chkt_path)
+            self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(self.selv_chkt_path)
             self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(self.selv_chkt_path,
                                                                    **self.config['datasæt'])
             return
 
-        selvvejledt = m.Selvvejledt(rygrad_args=self.config['rygrad'],
-                                    hoved_args=self.config['selvvejledt']['hoved'],
-                                    args_dict=self.config['selvvejledt']['model'])
+        selvvejledt = src.models.selvvejledt.Selvvejledt(rygrad_args=self.config['rygrad'],
+                                                         hoved_args=self.config['selvvejledt']['hoved'],
+                                                         args_dict=self.config['selvvejledt']['model'])
         self.qm9Bygger2Hoved = QM9Bygger2(
             **self.config['datasæt'],
             fordeling=get_fordeling(self.config['spænd'][1]),
@@ -143,7 +147,7 @@ class Eksp2:
         trainer = self.get_trainer(opgave='selvvejledt', epoch=epoch, name="selvvejledt",
                                    dirpath=os.path.join(LOG_ROOT, "checkpoints"))
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_chkt_path)
-        self.bedste_selvvejledt = m.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
+        self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
         time.sleep(3)
 
     def get_qm9Bygger2(self, eftertræningsandel):

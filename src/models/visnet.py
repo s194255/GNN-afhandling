@@ -1107,6 +1107,7 @@ class VisNetRyggrad(L.LightningModule):
             vertex=vertex,
         )
         self.maskeringsandel = maskeringsandel
+        self.reset_parameters()
 
     def forward(self, z, pos, batch):
         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
@@ -1116,3 +1117,7 @@ class VisNetRyggrad(L.LightningModule):
         x, v, edge_attr = self.motor(z, pos, batch,
                                       edge_index, edge_weight, edge_vec, masker=masker)
         return x, v, edge_attr, masker
+
+    def reset_parameters(self):
+        r"""Resets the parameters of the module."""
+        self.motor.reset_parameters()

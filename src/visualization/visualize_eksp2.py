@@ -1,41 +1,36 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+from farver import farvekort, farver
 
-hoved_kørsel_path = "eksp2_logs_hpc"
+hoved_kørsel_path = "eksp2_logs_hpc/logging"
 kørsler = os.listdir(hoved_kørsel_path)
 
 for kørsel in kørsler:
-    if kørsel in ["kørsel_0", "kørsel_7"]:
-        continue
     kørsel_path = os.path.join(hoved_kørsel_path, kørsel)
     df = pd.read_csv(os.path.join(kørsel_path, "logs_metrics.csv"))
 
-    if kørsel in ['kørsel_3', 'kørsel_4', 'kørsel_5']:
-        df = df.iloc[1:]
+
 
     # Plot
-    plt.figure(figsize=(10, 6))
+    for frys_rygrad in [True, False]:
+        plt.figure(figsize=(10, 6))
+        i = 0
+        for mode in ['med', 'uden']:
+            prefix = f'{mode}_{frys_rygrad}'
+            plt.plot(df["datamængde"], df[f"{prefix}_test_loss_mean"], label=prefix, color=farver[i])
+            plt.fill_between(df["datamængde"], df[f"{prefix}_test_loss_lower"], df[f"{prefix}_test_loss_upper"], color=farver[i],
+                             alpha=0.3)
+            i += 1
 
-    # Plot uden_test_loss
-    plt.plot(df["datamængde"], df["uden_test_loss_mean"], label="uden", color="#2F3EEA")
-    plt.fill_between(df["datamængde"], df["uden_test_loss_lower"], df["uden_test_loss_upper"], color="#2F3EEA", alpha=0.3)
 
-    # Plot med_test_loss
-    plt.plot(df["datamængde"], df["med_test_loss_mean"], label="med", color="#990000")
-    plt.fill_between(df["datamængde"], df["med_test_loss_lower"], df["med_test_loss_upper"], color="#990000", alpha=0.3)
+        # Tittel og labels
+        plt.title(f'{kørsel} {frys_rygrad}')
 
-    # Tittel og labels
-    if kørsel in ['kørsel_3', 'kørsel_4', 'kørsel_5']:
-        plt.title(f'{kørsel} fjernet første datapunkt')
-    else:
-        plt.title(kørsel)
-
-    plt.xlabel("Datamængde")
-    plt.ylabel("MAE")
-    plt.legend()
-    plt.grid(True)
-    plt.savefig(os.path.join(kørsel_path, "results.jpg"))
-    plt.savefig(os.path.join("..", "figurer", "resultater", f"{kørsel}.jpg"))
-    if kørsel == 'kørsel_2':
-        plt.savefig(os.path.join("..", "figurer", "resultater", f"{kørsel}.pdf"))
+        plt.xlabel("Datamængde")
+        plt.ylabel("MAE")
+        plt.legend()
+        plt.grid(True)
+        plt.savefig(os.path.join(kørsel_path, f'{kørsel}_{frys_rygrad}.jpg'))
+        # if kørsel == 'kørsel_2':
+        #     plt.savefig(os.path.join("..", "figurer", "resultater", f"{kørsel}.pdf"))

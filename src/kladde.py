@@ -1,7 +1,7 @@
 import lightning as L
 import src.models as m
 from src.data.QM9 import QM9Bygger
-from src.models.grund import Downstream
+from src.models import Downstream
 import torch
 from src.redskaber import checkpoint_callback
 import time

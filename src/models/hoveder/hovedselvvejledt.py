@@ -35,20 +35,17 @@ class HovedSelvvejledt(L.LightningModule):
             mean=mean,
             std=std,
         )
-        # self.lokal = LokaltLineær(
-        #     hidden_channels=hidden_channels,
-        #     atomref=atomref,
-        #     max_z=max_z,
-        #     reduce_op=reduce_op,
-        #     mean=mean,
-        #     std=std,
-        # )
         self.globall = Globalt(
             hidden_channels=hidden_channels,
             reduce_op=reduce_op,
             out_channels=out_channels
         )
         self.derivative = True
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        self.lokal.reset_parameters()
+        self.globall.reset_parameters()
 
     def forward(self, z, pos, batch, x, v, noise_idx, noise_scale, target):
         tabsopslag = {}
@@ -74,6 +71,7 @@ class LokaltGradient(L.LightningModule):
         self.register_buffer('std', torch.tensor(std))
         self.reduce_op = reduce_op
         self.criterion = torch.nn.MSELoss(reduction='none')
+        self.reset_parameters()
 
     def reset_parameters(self):
         self.motor.reset_parameters()
@@ -152,12 +150,20 @@ class Globalt(L.LightningModule):
             torch.nn.Linear(hidden_channels, out_channels)
         )
         self.criterion = torch.nn.CrossEntropyLoss()
+        self.reset_parameters()
 
     def forward(self, z, pos, batch, x, v, noise_idx, noise_scale) -> torch.Tensor:
         x = scatter(x, batch, dim=0, reduce=self.reduce_op)
         x = self.motor(x)
         loss = self.criterion(x, noise_idx)
         return loss
+
+    def reset_parameters(self):
+        for m in self.motor.modules():
+            if isinstance(m, torch.nn.Linear):
+                torch.nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    torch.nn.init.constant_(m.bias, 0.0)
 
 
 
