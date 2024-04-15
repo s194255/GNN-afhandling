@@ -8,13 +8,18 @@ from typing import Tuple, List, Optional
 class WarmUpStepLR(torch.optim.lr_scheduler.StepLR):
 
     def __init__(self, *args,
-                 ønsket_lr: float,
-                 epoker: int,
+                 opvarmningsgamma: float,
+                 opvarmningsperiode: int,
                  **kwargs):
+        self.opvarmningsgamma = opvarmningsgamma
+        self.opvarmningsperiode = opvarmningsperiode
         super().__init__(*args, **kwargs)
 
-    def step(self, epoch: Optional[int] = ...) -> None:
-        pass
+    def get_lr(self):
+        if self.last_epoch > self.opvarmningsperiode:
+            return super().get_lr()
+        else:
+            return [self.optimizer.param_groups[i]['lr'] * self.opvarmningsgamma for i in range(len(self.optimizer.param_groups))]
 class Grundmodel(L.LightningModule):
     def __init__(self,
                  args_dict: dict,
@@ -53,31 +58,15 @@ class Grundmodel(L.LightningModule):
 
     def configure_optimizers(self) -> Tuple[List[torch.optim.Optimizer], List[torch.optim.lr_scheduler]]:
         lr = self.hparams.args_dict['lr']
-        max_lr = self.hparams.args_dict['max_lr']
-        warmup_period = self.hparams.args_dict['warmup_period']
-        gamma = self.hparams.args_dict['lr']
-        optimizer = torch.optim.AdamW(self.parameters(), lr=max_lr)
+        ønsket_lr = self.hparams.args_dict['ønsket_lr']
+        opvarmningsperiode = self.hparams.args_dict['opvarmningsperiode']
+        gamma = self.hparams.args_dict['gamma']
+        optimizer = torch.optim.AdamW(self.parameters(), lr=lr)
         step_size = self.hparams.args_dict['step_size']
-        # scheduler1 = torch.optim.lr_scheduler.ChainedScheduler([
-        #     torch.optim.lr_scheduler.ConstantLR(optimizer, factor=lr/max_lr),
-        #     torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=(max_lr/lr)**(1/warmup_period))
-        # ])
-        # # scheduler1 = torch.optim.lr_scheduler.StepLR(
-        # #     optimizer,
-        # #     step_size=1,
-        # #     gamma=(max_lr/lr)**(1/warmup_period)
-        # # )
-        # scheduler2 = torch.optim.lr_scheduler.StepLR(optimizer, step_size=step_size, gamma=gamma)
-        # scheduler = torch.optim.lr_scheduler.SequentialLR(
-        #     optimizer, schedulers=[scheduler1, scheduler2], milestones=[warmup_period]
-        # )
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
-                                                    step_size=self.hparams.args_dict['step_size'],
-                                                    gamma=self.hparams.args_dict['gamma'])
-        # def lol(epoch):
-        #     if epoch < warmup_period:
-        #         return (epoch + 1) / warmup_period * (max_lr/lr)**(1/warmup_period)
-        #     else:
-        #         return 1
-        # scheduler.step = lol
+        opvarmningsgamma = (ønsket_lr/lr)**(1/opvarmningsperiode)
+        scheduler = WarmUpStepLR(optimizer,
+                                 step_size=step_size,
+                                 gamma=gamma,
+                                 opvarmningsgamma=opvarmningsgamma,
+                                 opvarmningsperiode=opvarmningsperiode)
         return [optimizer], [scheduler]
