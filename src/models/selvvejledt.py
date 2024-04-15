@@ -32,18 +32,16 @@ class Selvvejledt(Grundmodel):
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         tabsopslag = self(data.z, data.pos, data.batch)
         loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
-        # loss = torch.tensor(0)
 
         self.log("train_loss", loss.item(), batch_size=data.batch_size)
         return loss
 
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        self.log("val_loss", torch.tensor(0), batch_size=data.batch_size)
-        # with torch.enable_grad():
-        #     tabsopslag = self(data.z, data.pos, data.batch)
-        # loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
-        # self.log("val_loss", loss.item(), batch_size=data.batch_size)
-        # return loss
+        with torch.enable_grad():
+            tabsopslag = self(data.z, data.pos, data.batch)
+        loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
+        self.log("val_loss", loss.item(), batch_size=data.batch_size)
+        return loss
 
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():

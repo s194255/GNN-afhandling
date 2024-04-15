@@ -74,10 +74,10 @@ class Grundmodel(L.LightningModule):
         scheduler = torch.optim.lr_scheduler.StepLR(optimizer,
                                                     step_size=self.hparams.args_dict['step_size'],
                                                     gamma=self.hparams.args_dict['gamma'])
-        def lol(epoch):
-            if epoch < warmup_period:
-                return (epoch + 1) / warmup_period * (max_lr/lr)**(1/warmup_period)
-            else:
-                return 1
-        scheduler.step = lol
+        # def lol(epoch):
+        #     if epoch < warmup_period:
+        #         return (epoch + 1) / warmup_period * (max_lr/lr)**(1/warmup_period)
+        #     else:
+        #         return 1
+        # scheduler.step = lol
         return [optimizer], [scheduler]

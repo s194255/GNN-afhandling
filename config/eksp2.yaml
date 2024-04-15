@@ -12,12 +12,9 @@ downstream:
   min_delta: 0.0
   model:
     gamma: 0.1
-    lr: 1.0e-05
+    lr: 0.0001
     step_size: 10
   patience: 15
-spænd:
-  - 100
-  - 2000
 rygrad:
   cutoff: 5.0
   hidden_channels: 512
@@ -40,11 +37,14 @@ selvvejledt:
     mean: 0.0
     reduce_op: sum
     std: 1.0
-  min_delta: 0.000
+  min_delta: 0.0
   model:
     gamma: 0.1
     lambdaer: null
-    lr: 1.0e-05
+    lr: 0.0001
     step_size: 10
   patience: 20
+spænd:
+- 100
+- 2000
 trin: 5

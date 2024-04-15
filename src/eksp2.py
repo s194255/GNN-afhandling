@@ -46,7 +46,6 @@ def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
     parser.add_argument('--eksp2_path', type=str, default="config/eksp2.yaml", help='Sti til eksp2 YAML fil')
     parser.add_argument('--selv_ckpt_path', type=str, default=None, help='Sti til eksp2 YAML fil')
-    parser.add_argument('--kørsel_path', type=str, default=None, help='Sti til eksp2 YAML fil')
     args = parser.parse_args()
     return args
 
@@ -63,25 +62,17 @@ class Eksp2:
     def __init__(self, args):
         self.log_metrics = ['test_loss_std', 'test_loss_mean', 'test_loss_lower', 'test_loss_upper']
         self.udgaver = ['uden', 'med']
-        if args.kørsel_path:
-            self.kørsel_path = args.kørsel_path
-            self.eftertræningsandele = torch.load(os.path.join(self.kørsel_path, "eftertræningsandele.pth"))
-            self.selv_chkt_path = os.path.join(self.kørsel_path, "selvvejledt", "version_0", "checkpoints", "last.ckpt")
-            self.config = m.load_config(os.path.join(self.kørsel_path, "configs.yaml"))
-            self.resultater = pd.read_csv(os.path.join(self.kørsel_path, "logs_metrics.csv"))
-            self.fra_i = int(self.resultater["i"].max()) + 1
-        else:
-            self.init_kørsel_path()
-            self.selv_chkt_path = args.selv_ckpt_path
-            self.config = m.load_config(args.eksp2_path)
-            with open(os.path.join(self.kørsel_path, "configs.yaml"), 'w', encoding='utf-8') as fil:
-                yaml.dump(self.config, fil, allow_unicode=True)
-            self.eftertræningsandele = torch.linspace(self.config['spænd'][0]/130831,
-                                                      self.config['spænd'][1]/130831,
-                                                      steps=self.config['trin'])
-            torch.save(self.eftertræningsandele, os.path.join(self.kørsel_path, 'eftertræningsandele.pth'))
-            self.init_resultater()
-            self.fra_i = 0
+        self.init_kørsel_path()
+        self.selv_chkt_path = args.selv_ckpt_path
+        self.config = m.load_config(args.eksp2_path)
+        with open(os.path.join(self.kørsel_path, "configs.yaml"), 'w', encoding='utf-8') as fil:
+            yaml.dump(self.config, fil, allow_unicode=True)
+        self.eftertræningsmængder = torch.linspace(self.config['spænd'][0],
+                                                   self.config['spænd'][1],
+                                                   steps=self.config['trin'])
+        torch.save(self.eftertræningsmængder, os.path.join(self.kørsel_path, 'eftertræningsandele.pth'))
+        self.init_resultater()
+        self.fra_i = 0
 
     def init_resultater(self):
         self.resultater = {}
@@ -141,7 +132,7 @@ class Eksp2:
         self.qm9Bygger2Hoved = QM9Bygger2(
             **self.config['datasæt'],
             fordeling=get_fordeling(self.config['spænd'][1]),
-            eftertræningsandel=1.0
+            eftertræningsmængde=1.0
         )
         epoch = -1
         trainer = self.get_trainer(opgave='selvvejledt', epoch=epoch, name="selvvejledt",
@@ -153,7 +144,7 @@ class Eksp2:
     def get_qm9Bygger2(self, eftertræningsandel):
         qm9Bygger2 = QM9Bygger2(**self.config['datasæt'],
                                 fordeling=self.qm9Bygger2Hoved.fordeling.tolist(),
-                                eftertræningsandel=eftertræningsandel)
+                                eftertræningsmængde=eftertræningsandel)
         qm9Bygger2.load_state_dict(copy.deepcopy(self.qm9Bygger2Hoved.state_dict()))
         qm9Bygger2.sample_train_reduced()
         return qm9Bygger2
@@ -176,7 +167,7 @@ class Eksp2:
         return {f'{udgave}_{frys_rygrad}_{log_metric}': [værdi] for log_metric, værdi in resultat.items()}
 
     def eksperiment_runde(self, i):
-        eftertræningsandel = self.eftertræningsandele[i].item()
+        eftertræningsandel = self.eftertræningsmængder[i].item()
         resultat = {}
         for udgave in self.udgaver:
             for frys_rygrad in [True, False]:

@@ -110,9 +110,11 @@ class QM9Bygger(L.LightningDataModule):
         return self.get_dataloader('test', False)
 
 class QM9Bygger2(QM9Bygger):
-    def __init__(self, *args, eftertræningsandel, **kwargs):
+    def __init__(self, *args, eftertræningsmængde, **kwargs):
         super().__init__(*args, **kwargs)
-        self.eftertræningsandel = eftertræningsandel
+        n = len(self.data_splits[False]['train'])
+        assert eftertræningsmængde <= n
+        self.eftertræningsandel = eftertræningsmængde/n
         self.sample_train_reduced()
 
     def sample_train_reduced(self):
@@ -120,6 +122,8 @@ class QM9Bygger2(QM9Bygger):
             for debug_mode in [True, False]:
                 data_split = self.data_splits[debug_mode][task]
                 k = max(int(self.eftertræningsandel * len(data_split)), 1)
+                if debug_mode == False and task == 'train':
+                    print(f"k = {k}")
                 self.data_splits[debug_mode][f'{task}_reduced'] = random.sample(data_split, k=k)
 
     def get_setup_tasks(self, stage: str):
@@ -150,5 +154,5 @@ def get_metadata():
     return metadata
 
 if __name__ == "__main__":
-    qm9 = QM9Bygger()
-    qm9.state_dict()
+    qm9 = QM9Bygger2(eftertræningsmængde=500, debug=False, batch_size=1, fordeling=[0.5, 0.2, 0.1, 0.1, 0.1], num_workers=0, delmængdestørrelse=1.0)
+    a = 3

@@ -35,7 +35,7 @@ rygrad:
   vecnorm_type: null
   vertex: false
 selvvejledt:
-  epoker: 50
+  epoker: 1
   hoved:
     atomref: null
     max_z: 100
