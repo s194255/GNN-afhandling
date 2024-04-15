@@ -174,16 +174,11 @@ class QM9Bygger2(QM9Bygger):
         return self.get_dataloader(task, False)
 
 def get_metadata():
-    mean_std_path = "data/QM9/processed/mean_std.pt"
     root = "data/QM9"
-    if os.path.exists(mean_std_path):
-        metadata = torch.load(mean_std_path)
-    else:
-        mother_dataset = torch_geometric.datasets.QM9(root)
-        metadata = {'means': torch.tensor(mother_dataset.mean(0)),
-                         'stds': torch.tensor(mother_dataset.std(0))}
-        torch.save(metadata, mean_std_path)
-    return metadata
+    mother_dataset = torch_geometric.datasets.QM9(root)
+    stds = mother_dataset.y.std(dim=0)
+    means = mother_dataset.y.mean(dim=0)
+    return {'means': means, 'stds': stds}
 
 if __name__ == "__main__":
     qm9 = QM9Bygger2(eftertræningsmængde=500, debug=False, batch_size=1, fordeling=[0.5, 0.2, 0.1, 0.1, 0.1], num_workers=0, delmængdestørrelse=1.0)

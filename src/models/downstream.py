@@ -6,24 +6,27 @@ from torch_geometric.data import Data
 
 from src.data import get_metadata
 from src.models.grund import Grundmodel
-from src.models.hoveder.hoveddownstream import HovedDownstream
+from src.models.hoveder.hoveddownstream import PredictDipole, PredictRegular
 
 
 class Downstream(Grundmodel):
     def __init__(self, *args,
-                 hoved_args=HovedDownstream.args,
+                 hoved_args=PredictDipole.args,
                  **kwargs):
         super().__init__(*args, **kwargs)
         self.selvvejledt = False
-        self.tjek_args(hoved_args, HovedDownstream.args)
+        self.tjek_args(hoved_args, PredictDipole.args)
         metadata = get_metadata()
-        self.hoved = HovedDownstream(
-            means=metadata['means'],
-            stds=metadata['stds'],
-            hidden_channels=self.hparams.rygrad_args['hidden_channels'],
-            max_z=self.hparams.rygrad_args['max_z'],
-            **hoved_args
-        )
+        hoved_args = {
+            **hoved_args,
+            "means": metadata['means'][self.hparams.args_dict['predicted_attribute']],
+            "stds": metadata['stds'][self.hparams.args_dict['predicted_attribute']],
+            "hidden_channels": self.hparams.rygrad_args['hidden_channels'],
+        }
+        if self.hparams.args_dict['predicted_attribute'] == 0:
+            self.hoved = PredictDipole(**hoved_args, max_z=self.hparams.rygrad_args['max_z'])
+        else:
+            self.hoved = PredictRegular(**hoved_args)
         self.criterion = torch.nn.L1Loss()
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
@@ -55,3 +58,7 @@ class Downstream(Grundmodel):
         x, v, edge_attr, _ = self.rygrad(z, pos, batch)
         y = self.hoved(z, pos, batch, x, v)
         return y
+
+    @property
+    def udgangsargsdict(self):
+        return {**super().udgangsargsdict, "predicted_attribute": 1}

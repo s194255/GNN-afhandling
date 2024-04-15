@@ -7,15 +7,15 @@ downstream:
   epoker: 200
   hoved:
     num_layers: 1
-    out_channels: 1
     reduce_op: sum
   min_delta: 0.1
   model:
     gamma: 0.1
     lr: 1.0e-03
     step_size: 10
-    ønsket_lr: 1.0e-04
-    opvarmningsperiode: 10
+    ønsket_lr: 5.0e-03
+    opvarmningsperiode: 5
+    predicted_attribute: 1
   patience: 20
 spænd:
   - 100
@@ -48,7 +48,7 @@ selvvejledt:
     lambdaer: null
     lr: 1.0e-05
     step_size: 10
-    ønsket_lr: 1.0e-04
-    opvarmningsperiode: 10
+    ønsket_lr: 5.0e-03
+    opvarmningsperiode: 5
   patience: 20
 trin: 5

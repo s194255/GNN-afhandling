@@ -1,28 +1,25 @@
 datasæt:
-  batch_size: 32
+  batch_size: 1
   debug: true
   delmængdestørrelse: 1.0
   num_workers: 0
 downstream:
   epoker: 1
   hoved:
-    num_layers: 4
-    out_channels: 1
+    num_layers: 1
     reduce_op: sum
   min_delta: 0.1
   model:
     gamma: 0.1
-    lr: 1.0e-03
+    lr: 0.001
+    opvarmningsperiode: 5
+    predicted_attribute: 1
     step_size: 10
-    ønsket_lr: 1.0e-03
-    opvarmningsperiode: 10
-  patience: 5
-spænd:
-  - 100
-  - 2000
+    ønsket_lr: 0.005
+  patience: 20
 rygrad:
   cutoff: 5.0
-  hidden_channels: 8
+  hidden_channels: 512
   lmax: 1
   maskeringsandel: null
   max_num_neighbors: 32
@@ -35,7 +32,7 @@ rygrad:
   vecnorm_type: null
   vertex: false
 selvvejledt:
-  epoker: 100
+  epoker: 1
   hoved:
     atomref: null
     max_z: 100
@@ -47,8 +44,11 @@ selvvejledt:
     gamma: 0.1
     lambdaer: null
     lr: 1.0e-05
+    opvarmningsperiode: 5
     step_size: 10
-    ønsket_lr: 1.0e-03
-    opvarmningsperiode: 10
-  patience: 100
+    ønsket_lr: 0.005
+  patience: 20
+spænd:
+- 100
+- 2000
 trin: 1
