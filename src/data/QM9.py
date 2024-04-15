@@ -1,3 +1,4 @@
+import copy
 import os
 
 import lightning as L
@@ -6,10 +7,38 @@ import torch
 import torch_geometric
 import random
 from torch_geometric.loader import DataLoader
-from typing import List
+from typing import List, Tuple
+from torch_geometric.data.data import BaseData
+from src.redskaber import RiemannGaussian
 
 DATA_SPLITS_PATH = "data/QM9/processed/data_splits.pt"
 
+class QM9Contrastive(torch_geometric.datasets.QM9):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.p = 0.5
+        self.riemannGaussian = RiemannGaussian()
+    def get(self, idx: int) -> BaseData:
+        ægte_molekyle = super().get(idx)
+        y = []
+        if random.uniform(0, 1) < self.p:
+            snydeidx = random.choice(self.indices())
+            snydemolekyle = super().get(snydeidx)
+            snydepos = snydemolekyle.pos
+            snydez = snydemolekyle.z
+            y.append(0)
+        else:
+            batch = torch.zeros(size=ægte_molekyle.z.shape, dtype=torch.int64)
+            sigma = 0.01*torch.ones(size=batch.shape)
+            snydepos, _ = self.riemannGaussian(ægte_molekyle.pos, batch, sigma)
+            snydez = copy.deepcopy(ægte_molekyle.z)
+            y.append(1)
+        z = torch.concat([ægte_molekyle.z, snydez])
+        pos = torch.concat([ægte_molekyle.pos, snydepos])
+        y = torch.tensor(y)
+        # torch_geometric.data.Data()
+        return torch_geometric.data.Data(pos=pos, z=z, y=y)
 
 class QM9Bygger(L.LightningDataModule):
     args = {'delmængdestørrelse': 0.1,
@@ -40,12 +69,12 @@ class QM9Bygger(L.LightningDataModule):
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.data_splits_path = DATA_SPLITS_PATH
-        self.init_mother_dataset()
+        self.init_mother_indices()
         self.init_data_splits()
         self.save_hyperparameters()
 
-    def init_mother_dataset(self):
-        mother_dataset = torch_geometric.datasets.QM9(self.root)
+    def init_mother_indices(self):
+        mother_dataset = self.get_mother_dataset()
         n = len(mother_dataset)
         self.mother_indices = random.sample(list(range(n)), k=int(self.delmængdestørrelse * n))
     def init_data_splits(self):
@@ -62,6 +91,9 @@ class QM9Bygger(L.LightningDataModule):
 
     def get_debug_k(self, n):
         return max(min(30, n), 1)
+
+    def get_mother_dataset(self) -> torch_geometric.data.Dataset:
+        return torch_geometric.datasets.QM9(self.root)
     def check_splits(self):
         for debug_mode in [True, False]:
             for task1 in self.tasks:
@@ -72,7 +104,7 @@ class QM9Bygger(L.LightningDataModule):
                         assert len(intersection) == 0
     def setup(self, stage: str) -> None:
         self.check_splits()
-        mother_dataset = torch_geometric.datasets.QM9(self.root)
+        mother_dataset = self.get_mother_dataset()
         self.datasets = {}
         self.datasets_debug = {}
         for task in self.get_setup_tasks(stage):

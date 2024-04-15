@@ -6,7 +6,8 @@ from torch_geometric.data import Data
 
 from src.models.grund import Grundmodel
 from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
-from src.models.redskaber import RiemannGaussian
+from src.redskaber import RiemannGaussian
+from torch_geometric.utils import scatter
 
 
 class Selvvejledt(Grundmodel):
@@ -66,7 +67,6 @@ class Selvvejledt(Grundmodel):
         x, v, edge_attr, _ = self.rygrad(z, pos_til, batch)
         tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
         return tabsopslag
-        # return {'lokalt': torch.tensor(0), 'globalt': torch.tensor(0)}
 
     @property
     def udgangsargsdict(self):
@@ -74,7 +74,7 @@ class Selvvejledt(Grundmodel):
         return {**super().udgangsargsdict, **udgangsargs}
 
 
-class Selvvejledt2(Selvvejledt):
+class SelvvejledtBaseline(Selvvejledt):
     def __init__(self, *args, **kwargs):
         super().__init__(*args,
                          lambdaer={'lokalt': 1.0, 'globalt': 0.0},
@@ -108,3 +108,40 @@ class Selvvejledt2(Selvvejledt):
     def udgangsargsdict(self):
         super_dict = super().udgangsargsdict
         return {key: value for key, value in super_dict.items() if key != 'lambdaer'}
+
+class SelvvejledtContrastive(Grundmodel):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        hidden_channels = self.hparams.rygrad_args['hidden_channels']
+        self.hoved = torch.nn.Sequential(
+            torch.nn.Linear(hidden_channels, hidden_channels),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_channels, 2)
+        )
+        self.criterion = torch.nn.CrossEntropyLoss()
+
+    def forward(self, z: Tensor, pos: Tensor, batch: Tensor,) -> Tuple[Tensor, Tensor]:
+        x, v, edge_attr, masker = self.rygrad(z, pos, batch)
+        x = scatter(x, batch, dim=0, reduce='sum')
+        x = self.hoved(x)
+        return x
+
+    def step(self, task: str, data: Data, batch_idx: int):
+        on_epoch = {'train': None, 'val': None, 'test': True}
+        pred = self(data.z, data.pos, data.batch)
+        loss = self.criterion(pred, data.y)
+        self.log(
+            f"{task}_loss", loss.item(),
+            batch_size=data.batch_size,
+            on_epoch=on_epoch[task],
+        )
+        return loss
+    def training_step(self, data: Data, batch_idx: int):
+        return self.step('train', data, batch_idx)
+
+    def validation_step(self, data: Data, batch_idx: int):
+        return self.step('val', data, batch_idx)
+
+    def test_step(self, data: Data, batch_idx: int):
+        return self.step('test', data, batch_idx)

@@ -1,6 +1,5 @@
 import lightning as L
 from src.models.visnet import VisNetRyggrad
-from src.models.redskaber import tjek_args, prune_args
 import torch
 from typing import Tuple, List, Optional
 
@@ -27,8 +26,7 @@ class Grundmodel(L.LightningModule):
                  ):
         super().__init__()
         self.selvvejledt = None
-        args_dict = prune_args(args_dict, self.udgangsargsdict)
-        tjek_args(args_dict, self.udgangsargsdict)
+        self.tjek_args(args_dict, self.udgangsargsdict)
         self.args_dict = args_dict
         self.tjek_args(rygrad_args, VisNetRyggrad.args)
         self.rygrad = VisNetRyggrad(
@@ -38,8 +36,6 @@ class Grundmodel(L.LightningModule):
         self.save_hyperparameters()
 
     def tjek_args(self, givne_args, forventede_args):
-        forskel1 = set(givne_args.keys()) - set(forventede_args.keys())
-        assert len(forskel1) == 0, f'Følgende argumenter var uventede {forskel1}'
         forskel2 = set(forventede_args.keys()) - set(givne_args.keys())
         assert len(forskel2) == 0, f'Følgende argumenter mangler {forskel2}'
 
@@ -53,7 +49,9 @@ class Grundmodel(L.LightningModule):
 
     @property
     def udgangsargsdict(self):
-        return {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
+        # return {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
+        return {"lr": 0.00001, "step_size": 20, "gamma": 0.5, "ønsket_lr": 0.001, "opvarmningsperiode": 10}
+
 
 
     def configure_optimizers(self) -> Tuple[List[torch.optim.Optimizer], List[torch.optim.lr_scheduler]]:
