@@ -12,6 +12,7 @@ from torch_geometric.data.data import BaseData
 from src.redskaber import RiemannGaussian
 
 DATA_SPLITS_PATH = "data/QM9/processed/data_splits.pt"
+ROOT = "data/QM9"
 
 class QM9Contrastive(torch_geometric.datasets.QM9):
 
@@ -59,7 +60,7 @@ class QM9Bygger(L.LightningDataModule):
         super().__init__()
         if not fordeling:
             fordeling = [0.85, 0.0125, 0.085, 0.0125, 0.04]
-        self.root = "data/QM9"
+        self.root = ROOT
         self.fordeling = torch.tensor(fordeling)
         self.tasks = ['pretrain', 'preval', 'train', 'val', 'test']
         self.debug = debug
@@ -93,7 +94,7 @@ class QM9Bygger(L.LightningDataModule):
         return max(min(30, n), 1)
 
     def get_mother_dataset(self) -> torch_geometric.data.Dataset:
-        return torch_geometric.datasets.QM9(self.root)
+        return torch_geometric.datasets.QM9(ROOT)
     def check_splits(self):
         for debug_mode in [True, False]:
             for task1 in self.tasks:
@@ -142,20 +143,41 @@ class QM9Bygger(L.LightningDataModule):
         return self.get_dataloader('test', False)
 
 class QM9Bygger2(QM9Bygger):
-    def __init__(self, *args, eftertræningsmængde, **kwargs):
+    def __init__(self, *args, spænd, n_trin, **kwargs):
+        fordeling = self.get_fordeling(spænd[1])
+        if 'fordeling' in kwargs.keys():
+            assert fordeling == kwargs['fordeling']
+        else:
+            kwargs = {**kwargs, "fordeling": fordeling}
         super().__init__(*args, **kwargs)
+        self.eftertræningsmængder = torch.linspace(spænd[0],
+                                                   spænd[1],
+                                                   steps=n_trin)
         n = len(self.data_splits[False]['train'])
-        assert eftertræningsmængde <= n
-        self.eftertræningsandel = eftertræningsmængde/n
-        self.sample_train_reduced()
+        assert max(self.eftertræningsmængder) <= n
+        self.eftertræningsandele = self.eftertræningsmængder/n
+        self.sample_train_reduced(0)
 
-    def sample_train_reduced(self):
+    def get_fordeling(self, højre_interval):
+        n = len(self.get_mother_dataset())
+        assert højre_interval <= n
+        test = 0.04
+        train = højre_interval / n * 0.8
+        val = højre_interval / n * 0.2
+        pretrain = (1 - (test + train + val)) * 0.8
+        preval = (1 - (test + train + val)) * 0.2
+        return [pretrain, preval, train, val, test]
+
+    def get_eftertræningsmængde(self, i):
+        return self.eftertræningsmængder[i].item()
+
+    def sample_train_reduced(self, trin):
+        self.trin = trin
         for task in ['train', 'val']:
             for debug_mode in [True, False]:
                 data_split = self.data_splits[debug_mode][task]
-                k = max(int(self.eftertræningsandel * len(data_split)), 1)
-                if debug_mode == False and task == 'train':
-                    print(f"k = {k}")
+                andel = self.eftertræningsandele[trin]
+                k = max(int(andel * len(data_split)), 1)
                 self.data_splits[debug_mode][f'{task}_reduced'] = random.sample(data_split, k=k)
 
     def get_setup_tasks(self, stage: str):
@@ -165,13 +187,21 @@ class QM9Bygger2(QM9Bygger):
         return setup_tasks
 
     def train_dataloader(self):
-        assert len(self.data_splits[False]['train_reduced']) == int(self.eftertræningsandel * len(self.data_splits[False]['train']))
+        assert len(self.data_splits[False]['train_reduced']) == self.eftertræningsmængder[self.trin]
         task = 'pretrain' if self.trainer.model.selvvejledt else 'train_reduced'
         return self.get_dataloader(task, True)
 
     def val_dataloader(self):
         task = 'preval' if self.trainer.model.selvvejledt else 'val_reduced'
         return self.get_dataloader(task, False)
+
+    def state_dict(self):
+        state = super().state_dict()
+        return {**state, "eftertræningsandele": self.eftertræningsandele}
+
+    def load_state_dict(self, state_dict):
+        super().load_state_dict(state_dict)
+        self.eftertræningsandele = state_dict['eftertræningsandele']
 
 def get_metadata():
     root = "data/QM9"

@@ -3,6 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
+  n_trin: 5
+  spænd:
+    - 100
+    - 2000
 downstream:
   epoker: 200
   hoved:
@@ -17,9 +21,6 @@ downstream:
     opvarmningsperiode: 5
     predicted_attribute: 1
   patience: 20
-spænd:
-  - 100
-  - 2000
 rygrad:
   cutoff: 5.0
   hidden_channels: 512
@@ -51,4 +52,3 @@ selvvejledt:
     ønsket_lr: 5.0e-03
     opvarmningsperiode: 5
   patience: 20
-trin: 5
