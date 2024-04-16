@@ -23,7 +23,7 @@ downstream:
   patience: 20
 rygrad:
   cutoff: 5.0
-  hidden_channels: 512
+  hidden_channels: 128
   lmax: 1
   maskeringsandel: null
   max_num_neighbors: 32
@@ -53,5 +53,5 @@ selvvejledt:
     opvarmningsperiode: 10
     noise_fra: -1
     noise_til: 1
-    n_noise_trin: 1
+    n_noise_trin: 2
   patience: 20

@@ -39,11 +39,10 @@ def get_trainer(epoker, logger=None):
 
 class RiemannGaussian(L.LightningModule):
 
-    def __init__(self,
-                 T: int = 1,
-                 ):
+    def __init__(self):
         super().__init__()
-        self.T = T
+        # TODO: gør så man kan bruge T'er
+        self.T = 1
 
     @torch.no_grad()
     def get_s(self, pos_til, pos, batch, sigma):

@@ -49,7 +49,6 @@ class QM9Bygger(L.LightningDataModule):
             'debug': False,
             }
 
-
     def __init__(self,
                  delmængdestørrelse: float,
                  batch_size: int,

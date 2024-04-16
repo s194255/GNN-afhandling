@@ -1,11 +1,35 @@
+import time
+
 import lightning as L
 import src.models as m
+import src.data as d
+import src.redskaber as r
 import argparse
 
 import src.models.downstream
 import src.models.selvvejledt
 from src.redskaber import TQDMProgressBar, checkpoint_callback
 
+class Eskp1:
+
+    def __init__(self, args):
+        self.config = m.load_config(args.config_path)
+        self.udgaver = ['med', 'uden']
+        self.qm9Bygger = d.QM9Bygger(**self.config['datasæt'])
+
+    def fortræn(self):
+        selvvejledt = src.models.selvvejledt.Selvvejledt(rygrad_args=self.config['rygrad'],
+                                                         hoved_args=self.config['selvvejledt']['hoved'],
+                                                         args_dict=self.config['selvvejledt']['model'])
+        trainer = r.get_trainer(epoker=self.config['selvvejledt']['epoker'])
+        trainer.fit(selvvejledt, datamodule=self.qm9Bygger)
+        self.bedste_selvvejledt = m.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
+        time.sleep(1)
+    def main(self):
+        self.fortræn()
+        for frys_rygrad in [False, True]:
+            for udgave in self.udgaver:
+                self.eftertræn(udgave, frys_rygrad)
 
 def med_selvtræn():
     selvvejledt = src.models.selvvejledt.Selvvejledt(rygrad_args=m.load_config(args.rygrad_args_path),

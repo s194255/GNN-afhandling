@@ -1,12 +1,57 @@
-debug: False
-delmængdestørrelse: 1.0
-fordeling: [0.85, 0.0125, 0.085, 0.0125, 0.04]
-batch_size: 32
-num_workers: 4
-epoker_selvtræn: 20
-epoker_efterfølgende: 5
-frys_rygrad: True
-lr: 0.00001
-step_size: 20
-gamma: 0.5
-lambdaer: null
+datasæt:
+  batch_size: 128
+  debug: false
+  delmængdestørrelse: 1.0
+  num_workers: 4
+  n_trin: 1
+  spænd:
+    - 8000
+    - 2000
+downstream:
+  epoker: 10
+  hoved:
+    num_layers: 1
+    reduce_op: sum
+  min_delta: 0.1
+  model:
+    gamma: 0.1
+    lr: 1.0e-06
+    step_size: 10
+    ønsket_lr: 1.0e-05
+    opvarmningsperiode: 5
+    predicted_attribute: 1
+  patience: 20
+rygrad:
+  cutoff: 5.0
+  hidden_channels: 32
+  lmax: 1
+  maskeringsandel: null
+  max_num_neighbors: 32
+  max_z: 100
+  num_heads: 8
+  num_layers: 6
+  num_rbf: 32
+  trainable_rbf: false
+  trainable_vecnorm: false
+  vecnorm_type: null
+  vertex: false
+selvvejledt:
+  epoker: 1
+  hoved:
+    atomref: null
+    max_z: 100
+    mean: 0.0
+    reduce_op: sum
+    std: 1.0
+  min_delta: 0.001
+  model:
+    gamma: 0.1
+    lambdaer: null
+    lr: 1.0e-06
+    step_size: 10
+    ønsket_lr: 1.0e-04
+    opvarmningsperiode: 10
+    noise_fra: -1
+    noise_til: 1
+    n_noise_trin: 2
+  patience: 20
