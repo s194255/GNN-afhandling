@@ -48,6 +48,9 @@ selvvejledt:
     gamma: 0.1
     lambdaer: null
     lr: 1.0e-05
+    n_noise_trin: 2
+    noise_fra: -1
+    noise_til: 1
     opvarmningsperiode: 5
     step_size: 10
     ønsket_lr: 0.005

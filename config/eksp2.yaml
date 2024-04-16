@@ -51,4 +51,7 @@ selvvejledt:
     step_size: 10
     ønsket_lr: 5.0e-03
     opvarmningsperiode: 5
+    noise_fra: -1
+    noise_til: 1
+    n_noise_trin: 2
   patience: 20

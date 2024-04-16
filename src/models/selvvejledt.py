@@ -20,8 +20,11 @@ class Selvvejledt(Grundmodel):
             lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
         self.lambdaer = lambdaer
         self.tjek_args(hoved_args, HovedSelvvejledt.args)
-
-        self.register_buffer("noise_scales_options", torch.tensor([0.001, 0.01, 0.1, 1.0, 10, 100, 1000]))
+        self.register_buffer("noise_scales_options", torch.logspace(
+            self.hparams.args_dict['noise_fra'],
+            self.hparams.args_dict['noise_til'],
+            steps=self.hparams.args_dict['n_noise_trin'],
+        ))
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.riemannGaussian = RiemannGaussian()
         self.hoved = HovedSelvvejledt(
@@ -70,7 +73,10 @@ class Selvvejledt(Grundmodel):
 
     @property
     def udgangsargsdict(self):
-        udgangsargs = {'lambdaer': None}
+        udgangsargs = {'lambdaer': None,
+                       'noise_fra': -3,
+                       'noise_til': 3,
+                       'n_noise_trin': 4}
         return {**super().udgangsargsdict, **udgangsargs}
 
 
