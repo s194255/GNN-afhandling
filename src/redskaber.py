@@ -40,7 +40,7 @@ def get_trainer(epoker, logger=None):
 class RiemannGaussian(L.LightningModule):
 
     def __init__(self,
-                 T: int = 5,
+                 T: int = 1,
                  ):
         super().__init__()
         self.T = T
