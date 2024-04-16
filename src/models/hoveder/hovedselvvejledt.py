@@ -53,6 +53,9 @@ class HovedSelvvejledt(L.LightningModule):
         tabsopslag['globalt'] = self.globall(z, pos, batch, x, v, noise_idx, noise_scale)
         return tabsopslag
 
+    @property
+    def tabsnøgler(self):
+        return ['lokalt', 'globalt']
 
 class LokaltGradient(L.LightningModule):
 

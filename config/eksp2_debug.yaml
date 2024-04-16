@@ -15,11 +15,11 @@ downstream:
   min_delta: 0.1
   model:
     gamma: 0.1
-    lr: 0.001
+    lr: 1.0e-06
     opvarmningsperiode: 5
     predicted_attribute: 1
     step_size: 10
-    ønsket_lr: 0.005
+    ønsket_lr: 1.0e-05
   patience: 20
 rygrad:
   cutoff: 5.0
@@ -47,11 +47,11 @@ selvvejledt:
   model:
     gamma: 0.1
     lambdaer: null
-    lr: 1.0e-05
+    lr: 1.0e-06
     n_noise_trin: 2
     noise_fra: -1
     noise_til: 1
     opvarmningsperiode: 5
     step_size: 10
-    ønsket_lr: 0.005
+    ønsket_lr: 1.0e-05
   patience: 20
