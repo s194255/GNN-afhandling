@@ -32,6 +32,10 @@ def load_config(path, reference_dict=None):
         config_dict = {key: value for (key, value) in config_dict.items() if key in reference_dict.keys()}
     return config_dict
 
+def save_config(config, path):
+    with open(path, 'w', encoding='utf-8') as fil:
+        yaml.dump(config, fil, allow_unicode=True)
+
 if __name__ == "__main__":
     riemannGuassian = RiemannGaussian()
     pos = torch.randn((370, 3)) * 1 + 4

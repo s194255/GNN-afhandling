@@ -56,13 +56,13 @@ class Eksp2:
         self.init_kørsel_path()
         self.selv_ckpt_path = args.selv_ckpt_path
         self.config = m.load_config(args.eksp2_path)
-        with open(os.path.join(self.kørsel_path, "configs.yaml"), 'w', encoding='utf-8') as fil:
-            yaml.dump(self.config, fil, allow_unicode=True)
+        m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         self.init_df()
         if args.selv_ckpt_path:
             self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(self.selv_ckpt_path)
-            self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(self.selv_ckpt_path,
-                                                                   **self.config['datasæt'])
+            self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(self.selv_ckpt_path)
+            self.config['rygrad'] = self.bedste_selvvejledt.hparams.rygrad_args
+            m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         else:
             self.fortræn()
 
@@ -146,7 +146,7 @@ class Eksp2:
             for frys_rygrad in [True, False]:
                 udgave_resultat = self.eftertræn(i, udgave, frys_rygrad)
                 resultat = {**resultat, **udgave_resultat}
-        resultat['datamængde'] = [self.qm9Bygger2Hoved.get_eftertræningsmængde(i)]
+        resultat['datamængde'] = [self.qm9Bygger2Hoved.get_eftertræningsmængde()]
         resultat['i'] = [i]
         self.resultater = pd.concat([self.resultater, pd.DataFrame(data=resultat)], ignore_index=True)
         self.resultater.to_csv(os.path.join(self.kørsel_path, "logs_metrics.csv"), index=False)

@@ -150,26 +150,23 @@ class QM9Bygger2(QM9Bygger):
         else:
             kwargs = {**kwargs, "fordeling": fordeling}
         super().__init__(*args, **kwargs)
-        self.eftertræningsmængder = torch.linspace(spænd[0],
-                                                   spænd[1],
-                                                   steps=n_trin)
         n = len(self.data_splits[False]['train'])
-        assert max(self.eftertræningsmængder) <= n
-        self.eftertræningsandele = self.eftertræningsmængder/n
+        self.eftertræningsandele = torch.linspace(spænd[0], spænd[1], steps=n_trin)/n
+        self.eftertræningsandele = self.eftertræningsandele.clip(min=0, max=1)
         self.sample_train_reduced(0)
 
     def get_fordeling(self, højre_interval):
         n = len(self.get_mother_dataset())
         assert højre_interval <= n
         test = 0.04
-        train = højre_interval / n * 0.8
-        val = højre_interval / n * 0.2
+        train = højre_interval / n
+        val = 0.2/0.8*train
         pretrain = (1 - (test + train + val)) * 0.8
         preval = (1 - (test + train + val)) * 0.2
         return [pretrain, preval, train, val, test]
 
-    def get_eftertræningsmængde(self, i):
-        return self.eftertræningsmængder[i].item()
+    def get_eftertræningsmængde(self):
+        return len(self.data_splits[False]['train_reduced'])
 
     def sample_train_reduced(self, trin):
         self.trin = trin
@@ -187,7 +184,6 @@ class QM9Bygger2(QM9Bygger):
         return setup_tasks
 
     def train_dataloader(self):
-        assert len(self.data_splits[False]['train_reduced']) == self.eftertræningsmængder[self.trin]
         task = 'pretrain' if self.trainer.model.selvvejledt else 'train_reduced'
         return self.get_dataloader(task, True)
 
