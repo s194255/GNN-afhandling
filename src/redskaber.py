@@ -2,6 +2,7 @@ import lightning as L
 import torch
 from lightning.pytorch.loggers.tensorboard import TensorBoardLogger
 import os
+import wandb
 
 from torch_scatter import scatter_mean, scatter_add
 
@@ -35,6 +36,18 @@ def get_trainer(epoker, logger=None):
                         logger=logger,
                         )
     return trainer
+
+def get_next_wandb_kørselsid():
+    wandb.login()
+
+    # Hent informasjon om alle kjøringer (runs) i et prosjekt
+    # runs = wandb.Api().runs("your_username/your_project")
+    runs = wandb.Api().runs("afhandling")
+    kørselsider = []
+    for run in runs:
+        if hasattr(run, "kørselsid"):
+            kørselsider.append(run.kørselsid)
+    return max(kørselsider, default=-1)+1
 
 
 class RiemannGaussian(L.LightningModule):

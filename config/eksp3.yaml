@@ -5,7 +5,7 @@ datasæt:
   num_workers: 3
   n_train: 2000
 downstream:
-  epoker: 200
+  epoker: 100
   hoved:
     num_layers: 4
     reduce_op: sum
@@ -14,7 +14,7 @@ downstream:
     lr: 1.0e-06
     opvarmningsperiode: 10
     predicted_attribute: 1
-    step_size: 20
+    step_size: 25
     ønsket_lr: 1.0e-04
 rygrad:
   cutoff: 5.0
@@ -24,7 +24,7 @@ rygrad:
   max_num_neighbors: 32
   max_z: 100
   num_heads: 16
-  num_layers: 6
+  num_layers: 9
   num_rbf: 32
   trainable_rbf: false
   trainable_vecnorm: false
