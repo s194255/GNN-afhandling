@@ -2,10 +2,10 @@ datasæt:
   batch_size: 32
   debug: false
   delmængdestørrelse: 1.0
-  num_workers: 0
+  num_workers: 3
   n_train: 2000
 downstream:
-  epoker: 300
+  epoker: 100
   hoved:
     num_layers: 1
     reduce_op: sum
