@@ -18,7 +18,7 @@ downstream:
     ønsket_lr: 1.0e-04
 rygrad:
   cutoff: 5.0
-  hidden_channels: 8
+  hidden_channels: 1024
   lmax: 1
   maskeringsandel: null
   max_num_neighbors: 32

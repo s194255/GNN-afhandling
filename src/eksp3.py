@@ -60,7 +60,10 @@ class Eksp3:
             r.TQDMProgressBar(),
             L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
         ]
-        logger = WandbLogger(project='afhandling', log_model=True)
+        if self.config['datasæt']['debug']:
+            logger = None
+        else:
+            logger = WandbLogger(project='afhandling', log_model=True)
         trainer = L.Trainer(max_epochs=self.config['downstream']['epoker'],
                             callbacks=callbacks,
                             log_every_n_steps=10,
