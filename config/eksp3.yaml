@@ -5,9 +5,9 @@ datasæt:
   num_workers: 3
   n_train: 2000
 downstream:
-  epoker: 100
+  epoker: 200
   hoved:
-    num_layers: 1
+    num_layers: 4
     reduce_op: sum
   model:
     gamma: 0.1

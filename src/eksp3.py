@@ -69,6 +69,7 @@ class Eksp3:
                             log_every_n_steps=10,
                             logger=logger)
         trainer.fit(model=downstream, datamodule=qm9, ckpt_path=self.args.ckpt_path)
+        trainer.test(ckpt_path="best", datamodule=qm9)
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
     parser.add_argument('--eksp3_path', type=str, default="config/eksp3.yaml", help='Sti til eksp1 YAML fil')
