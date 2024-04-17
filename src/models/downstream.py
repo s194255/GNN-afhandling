@@ -23,7 +23,8 @@ class Downstream(Grundmodel):
             "stds": metadata['stds'][self.hparams.args_dict['predicted_attribute']],
             "hidden_channels": self.hparams.rygrad_args['hidden_channels'],
         }
-        if self.hparams.args_dict['predicted_attribute'] == 0:
+        self.target_idx = self.hparams.args_dict['predicted_attribute']
+        if self.target_idx == 0:
             self.hoved = PredictDipole(**hoved_args, max_z=self.hparams.rygrad_args['max_z'])
         else:
             self.hoved = PredictRegular(**hoved_args)
@@ -41,7 +42,7 @@ class Downstream(Grundmodel):
     def step(self, task, data, batch_idx):
         on_epoch = {'train': None, 'val': None, 'test': True}
         pred = self(data.z, data.pos, data.batch)
-        loss = 1000*self.criterion(pred, data.y[:, 0])
+        loss = 1000*self.criterion(pred, data.y[:, self.target_idx])
         self.log(
             f"{task}_loss", loss.item(),
             batch_size=data.batch_size,

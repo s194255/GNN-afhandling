@@ -59,11 +59,11 @@ class Eksp3:
             r.checkpoint_callback(),
             r.TQDMProgressBar()
         ]
-        logger = WandbLogger(project='afhandling', log_model='all')
+        logger = WandbLogger(project='afhandling', log_model=True)
         trainer = L.Trainer(max_epochs=self.config['downstream']['epoker'],
                             callbacks=callbacks,
+                            log_every_n_steps=10,
                             logger=logger)
-        # trainer = r.get_trainer(epoker=self.config['downstream']['epoker'])
         trainer.fit(model=downstream, datamodule=qm9, ckpt_path=self.args.ckpt_path)
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
