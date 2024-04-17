@@ -23,7 +23,7 @@ downstream:
   patience: 20
 rygrad:
   cutoff: 5.0
-  hidden_channels: 32
+  hidden_channels: 8
   lmax: 1
   maskeringsandel: null
   max_num_neighbors: 32

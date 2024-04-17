@@ -7,10 +7,13 @@ hoved_kørsel_path = "eksp2_logs_hpc/logging"
 kørsler = os.listdir(hoved_kørsel_path)
 
 for kørsel in kørsler:
+    if kørsel in ["kørsel_1", "kørsel_2", "kørsel_3", "kørsel_4", "kørsel_5", "kørsel_6"]:
+        continue
     kørsel_path = os.path.join(hoved_kørsel_path, kørsel)
     df = pd.read_csv(os.path.join(kørsel_path, "logs_metrics.csv"))
 
-
+    if kørsel in ["kørsel_0"]:
+        df = df.drop(0)
 
     # Plot
     for frys_rygrad in [True, False]:

@@ -92,3 +92,5 @@ target/
 /models/
 /eksp2_logs/
 /eksp2_logs_hpc/
+/wandb/
+/afhandling/
