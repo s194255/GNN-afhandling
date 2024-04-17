@@ -54,7 +54,7 @@ class Grundmodel(L.LightningModule):
 
 
 
-    def configure_optimizers(self) -> Tuple[List[torch.optim.Optimizer], List[torch.optim.lr_scheduler]]:
+    def configure_optimizers(self) -> Tuple[List[torch.optim.Optimizer], List[torch.optim.lr_scheduler.LRScheduler]]:
         lr = self.hparams.args_dict['lr']
         ønsket_lr = self.hparams.args_dict['ønsket_lr']
         opvarmningsperiode = self.hparams.args_dict['opvarmningsperiode']
