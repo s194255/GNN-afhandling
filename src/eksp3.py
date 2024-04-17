@@ -49,14 +49,10 @@ class Eksp3:
             qm9 = QM9Bygger3.load_from_checkpoint(self.args.ckpt_path)
         else:
             qm9 = QM9Bygger3(**self.config['datasæt'])
-            kørselsid = r.get_next_wandb_kørselsid()
-
             downstream = m.Downstream(
                 rygrad_args=self.config['rygrad'],
                 hoved_args=self.config['downstream']['hoved'],
                 args_dict=self.config['downstream']['model'],
-                eksp='eksp3',
-                kørselsid=kørselsid
             )
         if self.config['frys_rygrad']:
             downstream.frys_rygrad()
@@ -66,7 +62,8 @@ class Eksp3:
             r.TQDMProgressBar(),
             L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
         ]
-        logger = WandbLogger(project='afhandling', log_model=True)
+        logger = WandbLogger(project='afhandling', log_model=True, tags=['downstream'],
+                             group=f"eksp3")
         trainer = L.Trainer(max_epochs=self.config['downstream']['epoker'],
                             callbacks=callbacks,
                             log_every_n_steps=10,

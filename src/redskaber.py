@@ -45,6 +45,7 @@ def get_next_wandb_kørselsid():
     runs = wandb.Api().runs("afhandling")
     kørselsider = []
     for run in runs:
+        group = run.group
         if hasattr(run, "kørselsid"):
             kørselsider.append(run.kørselsid)
     return max(kørselsider, default=-1)+1

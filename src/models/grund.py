@@ -23,8 +23,6 @@ class Grundmodel(L.LightningModule):
     def __init__(self,
                  args_dict: dict,
                  rygrad_args: dict,
-                 eksp: str,
-                 kørselsid: int,
                  ):
         super().__init__()
         self.selvvejledt = None
