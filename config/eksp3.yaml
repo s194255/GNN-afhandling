@@ -5,7 +5,7 @@ datasæt:
   num_workers: 0
   n_train: 2000
 downstream:
-  epoker: 1000
+  epoker: 300
   hoved:
     num_layers: 1
     reduce_op: sum

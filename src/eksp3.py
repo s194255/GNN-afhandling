@@ -57,7 +57,8 @@ class Eksp3:
 
         callbacks = [
             r.checkpoint_callback(),
-            r.TQDMProgressBar()
+            r.TQDMProgressBar(),
+            L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
         ]
         logger = WandbLogger(project='afhandling', log_model=True)
         trainer = L.Trainer(max_epochs=self.config['downstream']['epoker'],
