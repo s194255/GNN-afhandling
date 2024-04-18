@@ -18,6 +18,8 @@ from torch_geometric.data import Data
 import pandas as pd
 import time
 import shutil
+from lightning.pytorch.loggers import WandbLogger
+import wandb
 
 LOG_ROOT = "eksp2_logs"
 
@@ -53,16 +55,17 @@ class Eksp2:
     def __init__(self, args):
         self.log_metrics = ['test_loss_std', 'test_loss_mean', 'test_loss_lower', 'test_loss_upper']
         self.udgaver = ['uden', 'med']
-        self.init_kørsel_path()
+        # self.init_kørsel_path()
         self.selv_ckpt_path = args.selv_ckpt_path
         self.config = m.load_config(args.eksp2_path)
-        m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
+        # m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         self.init_df()
+        self.init_kørselsid()
         if args.selv_ckpt_path:
             self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(self.selv_ckpt_path)
             self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(self.selv_ckpt_path)
             self.config['rygrad'] = self.bedste_selvvejledt.hparams.rygrad_args
-            m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
+            # m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         else:
             self.fortræn()
 
@@ -77,38 +80,55 @@ class Eksp2:
         self.resultater['i'] = []
         self.resultater = pd.DataFrame(data=self.resultater)
 
-    def init_kørsel_path(self):
-        a = os.path.join(LOG_ROOT, "logging")
-        if os.path.exists(a):
-            kørsler = os.listdir(a)
-            kørsler = [int(version.split("_")[1]) for version in kørsler]
-            self.kørsel = max(kørsler, default=-1)+1
-        else:
-            os.makedirs(os.path.join(a))
-            self.kørsel = 0
-        self.kørsel_path = os.path.join(
-            a,
-            f'kørsel_{self.kørsel}'
-        )
-        os.makedirs(self.kørsel_path)
+    # def init_kørsel_path(self):
+    #     a = os.path.join(LOG_ROOT, "logging")
+    #     if os.path.exists(a):
+    #         kørsler = os.listdir(a)
+    #         kørsler = [int(version.split("_")[1]) for version in kørsler]
+    #         self.kørsel = max(kørsler, default=-1)+1
+    #     else:
+    #         os.makedirs(os.path.join(a))
+    #         self.kørsel = 0
+    #     self.kørsel_path = os.path.join(
+    #         a,
+    #         f'kørsel_{self.kørsel}'
+    #     )
+    #     os.makedirs(self.kørsel_path)
+    def init_kørselsid(self):
+        wandb.login()
+        runs = wandb.Api().runs("afhandling")
+        kørselsider = []
+        for run in runs:
+            gruppe = run.group
+            if gruppe:
+                if gruppe.split("_")[0] == "eksp2":
+                    kørselsid = int(gruppe.split("_")[1])
+                    kørselsider.append(kørselsid)
+        self.kørselsid = max(kørselsider, default=-1)+1
 
-    def get_trainer(self, opgave, name, epoch=-1, dirpath=None):
+
+    def get_trainer(self, opgave, tags=[], epoch=-1):
         assert opgave in ['selvvejledt', 'downstream']
-        loggers = [
-            r.tensorBoardLogger(save_dir=self.kørsel_path, name=name),
-        ]
+        # loggers = [
+        #     r.tensorBoardLogger(save_dir=self.kørsel_path, name=name),
+        # ]
         trainer_dict = self.config[opgave]
         callbacks = [
-            r.checkpoint_callback(dirpath=dirpath),
+            # r.checkpoint_callback(),
             r.TQDMProgressBar(),
-            r.earlyStopping(trainer_dict['min_delta'], trainer_dict['patience']),
+            # r.earlyStopping(trainer_dict['min_delta'], trainer_dict['patience']),
             L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
         ]
+        if opgave == 'selvvejledt':
+            callbacks.append(r.checkpoint_callback())
+        log_models = {'selvvejledt': True, 'downstream': False}
+        logger = WandbLogger(project='afhandling', log_model=log_models[opgave], tags=[opgave]+tags,
+                             group=f"eksp2_{self.kørselsid}")
         max_epochs = max([trainer_dict['epoker'], epoch])
         trainer = L.Trainer(max_epochs=max_epochs,
                             log_every_n_steps=1,
                             callbacks=callbacks,
-                            logger=loggers,
+                            logger=logger,
                             )
         return trainer
     def fortræn(self):
@@ -117,13 +137,17 @@ class Eksp2:
                                                          args_dict=self.config['selvvejledt']['model'])
         self.qm9Bygger2Hoved = QM9Bygger2(**self.config['datasæt'])
         epoch = -1
-        trainer = self.get_trainer(opgave='selvvejledt', epoch=epoch, name="selvvejledt",
-                                   dirpath=os.path.join(LOG_ROOT, "checkpoints", f"kørsel_{self.kørsel}"))
+        trainer = self.get_trainer(opgave='selvvejledt', epoch=epoch)
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_ckpt_path)
         self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
         time.sleep(1)
+        wandb.finish()
 
     def eftertræn(self, trin, udgave, frys_rygrad):
+        frys_rygrad_tags = {
+            True: 'frossen',
+            False: 'optøet'
+        }
         self.qm9Bygger2Hoved.sample_train_reduced(trin)
 
         downstream = DownstreamEksp2(rygrad_args=self.config['rygrad'],
@@ -133,11 +157,12 @@ class Eksp2:
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if frys_rygrad:
             downstream.frys_rygrad()
-        trainer = self.get_trainer('downstream', name=f'downstream_{udgave}_{frys_rygrad}')
+        trainer = self.get_trainer('downstream', tags=[udgave, frys_rygrad_tags[frys_rygrad]])
         trainer.fit(model=downstream, datamodule=self.qm9Bygger2Hoved)
         resultat = trainer.test(ckpt_path="best", datamodule=self.qm9Bygger2Hoved)[0]
         time.sleep(1)
-        shutil.rmtree(os.path.join(trainer.log_dir, "checkpoints"))
+        wandb.finish()
+        # shutil.rmtree(os.path.join(trainer.log_dir, "checkpoints"))
         return {f'{udgave}_{frys_rygrad}_{log_metric}': [værdi] for log_metric, værdi in resultat.items()}
 
     def eksperiment_runde(self, i):
@@ -149,7 +174,7 @@ class Eksp2:
         resultat['datamængde'] = [self.qm9Bygger2Hoved.get_eftertræningsmængde()]
         resultat['i'] = [i]
         self.resultater = pd.concat([self.resultater, pd.DataFrame(data=resultat)], ignore_index=True)
-        self.resultater.to_csv(os.path.join(self.kørsel_path, "logs_metrics.csv"), index=False)
+        # self.resultater.to_csv(os.path.join(self.kørsel_path, "logs_metrics.csv"), index=False)
 
     def main(self):
         for i in range(len(self.qm9Bygger2Hoved.eftertræningsandele)):
