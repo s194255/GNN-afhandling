@@ -7,7 +7,7 @@ datasæt:
 downstream:
   epoker: 100
   hoved:
-    num_layers: 4
+    num_layers: 2
     reduce_op: sum
   model:
     gamma: 0.1
