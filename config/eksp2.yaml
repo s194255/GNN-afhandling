@@ -10,7 +10,7 @@ datasæt:
 downstream:
   epoker: 100
   hoved:
-    num_layers: 2
+    num_layers: 1
     reduce_op: sum
   min_delta: 0.1
   model:
