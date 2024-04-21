@@ -80,20 +80,6 @@ class Eksp2:
         self.resultater['i'] = []
         self.resultater = pd.DataFrame(data=self.resultater)
 
-    # def init_kørsel_path(self):
-    #     a = os.path.join(LOG_ROOT, "logging")
-    #     if os.path.exists(a):
-    #         kørsler = os.listdir(a)
-    #         kørsler = [int(version.split("_")[1]) for version in kørsler]
-    #         self.kørsel = max(kørsler, default=-1)+1
-    #     else:
-    #         os.makedirs(os.path.join(a))
-    #         self.kørsel = 0
-    #     self.kørsel_path = os.path.join(
-    #         a,
-    #         f'kørsel_{self.kørsel}'
-    #     )
-    #     os.makedirs(self.kørsel_path)
     def init_kørselsid(self):
         wandb.login()
         runs = wandb.Api().runs("afhandling")
