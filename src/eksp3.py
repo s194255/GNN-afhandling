@@ -1,13 +1,19 @@
 # from src.eksp1 import uden_selvtræn
 import argparse
+import shutil
+
+import wandb
+import os
+
 import src.models as m
 import lightning as L
 import src.data as d
 import src.redskaber as r
-import src.models.downstream
 from lightning.pytorch.loggers import WandbLogger
 
 N = 130831
+
+
 
 class QM9Bygger3(d.QM9Bygger):
 
@@ -70,6 +76,9 @@ class Eksp3:
                             logger=logger)
         trainer.fit(model=downstream, datamodule=qm9, ckpt_path=self.args.ckpt_path)
         trainer.test(ckpt_path="best", datamodule=qm9)
+        wandb_run_id = wandb.run.id
+        wandb.finish()
+        shutil.rmtree(os.path.join("afhandling", wandb_run_id))
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
     parser.add_argument('--eksp3_path', type=str, default="config/eksp3.yaml", help='Sti til eksp1 YAML fil')
