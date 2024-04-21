@@ -141,7 +141,9 @@ class Eksp2:
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_ckpt_path)
         self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
         time.sleep(1)
+        wandb_run_id = wandb.run.id
         wandb.finish()
+        shutil.rmtree(os.path.join("afhandling", wandb_run_id))
 
     def eftertræn(self, trin, udgave, frys_rygrad):
         frys_rygrad_tags = {
@@ -149,8 +151,7 @@ class Eksp2:
             False: 'optøet'
         }
         self.qm9Bygger2Hoved.sample_train_reduced(trin)
-
-        downstream = DownstreamEksp2(rygrad_args=self.config['rygrad'],
+        downstream = m.Downstream(rygrad_args=self.config['rygrad'],
                                      hoved_args=self.config['downstream']['hoved'],
                                      args_dict=self.config['downstream']['model'])
         if udgave == 'med':
@@ -161,8 +162,9 @@ class Eksp2:
         trainer.fit(model=downstream, datamodule=self.qm9Bygger2Hoved)
         resultat = trainer.test(ckpt_path="best", datamodule=self.qm9Bygger2Hoved)[0]
         time.sleep(1)
+        wandb_run_id = wandb.run.id
         wandb.finish()
-        # shutil.rmtree(os.path.join(trainer.log_dir, "checkpoints"))
+        shutil.rmtree(os.path.join("afhandling", wandb_run_id))
         return {f'{udgave}_{frys_rygrad}_{log_metric}': [værdi] for log_metric, værdi in resultat.items()}
 
     def eksperiment_runde(self, i):

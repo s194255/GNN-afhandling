@@ -10,7 +10,7 @@ datasæt:
 downstream:
   epoker: 1
   hoved:
-    num_layers: 1
+    num_layers: 2
     reduce_op: sum
   min_delta: 0.1
   model:
@@ -18,7 +18,7 @@ downstream:
     lr: 1.0e-06
     opvarmningsperiode: 10
     predicted_attribute: 1
-    step_size: 10
+    step_size: 50
     ønsket_lr: 0.0001
   patience: 20
 rygrad:
@@ -51,7 +51,7 @@ selvvejledt:
     n_noise_trin: 2
     noise_fra: -1
     noise_til: 1
-    opvarmningsperiode: 10
-    step_size: 10
-    ønsket_lr: 0.0001
+    opvarmningsperiode: 3
+    step_size: 500
+    ønsket_lr: 1.0e-05
   patience: 20
