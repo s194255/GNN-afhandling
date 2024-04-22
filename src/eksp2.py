@@ -28,13 +28,14 @@ class DownstreamEksp2(src.models.downstream.Downstream):
         if stage == 'test':
             self.metric = torchmetrics.BootStrapper(
                 torchmetrics.regression.MeanAbsoluteError(),
-                num_bootstraps=100,
+                num_bootstraps=1000,
                 quantile=torch.tensor([0.05, 0.95], device=self.device)
             )
 
     def test_step(self, data: Data, batch_idx: int) -> None:
+        super().test_step(data, batch_idx)
         pred = self(data.z, data.pos, data.batch)
-        self.metric.update(1000 * pred, 1000 * data.y[:, 0])
+        self.metric.update(1000 * pred, 1000 * data.y[:, self.target_idx])
 
     def on_test_epoch_end(self) -> None:
         data = self.metric.compute()
@@ -135,7 +136,7 @@ class Eksp2:
             False: 'optøet'
         }
         self.qm9Bygger2Hoved.sample_train_reduced(trin)
-        downstream = m.Downstream(rygrad_args=self.config['rygrad'],
+        downstream = DownstreamEksp2(rygrad_args=self.config['rygrad'],
                                      hoved_args=self.config['downstream']['hoved'],
                                      args_dict=self.config['downstream']['model'])
         if udgave == 'med':
