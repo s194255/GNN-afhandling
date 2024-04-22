@@ -11,7 +11,7 @@ import torch
 
 import src.models.downstream
 import src.models.selvvejledt
-from src.data import QM9Bygger2
+import src.data as d
 import src.redskaber as r
 import copy
 from torch_geometric.data import Data
@@ -68,7 +68,7 @@ class Eksp2:
             artefakt = api.artifact(args.selv_ckpt_path)
             artefakt_path = os.path.join(artefakt.download(), 'model.ckpt')
             self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(artefakt_path)
-            self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(artefakt_path, **self.config['datasæt'])
+            self.qm9Bygger2Hoved = d.QM9NyEksp2.load_from_checkpoint(artefakt_path, **self.config['datasæt'])
             self.config['rygrad'] = self.bedste_selvvejledt.hparams.rygrad_args
         else:
             self.fortræn()
@@ -131,7 +131,7 @@ class Eksp2:
         selvvejledt = src.models.selvvejledt.Selvvejledt(rygrad_args=self.config['rygrad'],
                                                          hoved_args=self.config['selvvejledt']['hoved'],
                                                          args_dict=self.config['selvvejledt']['model'])
-        self.qm9Bygger2Hoved = QM9Bygger2(**self.config['datasæt'])
+        self.qm9Bygger2Hoved = d.QM9NyEksp2(**self.config['datasæt'])
         epoch = -1
         trainer = self.get_trainer(opgave='selvvejledt', epoch=epoch)
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_ckpt_path)

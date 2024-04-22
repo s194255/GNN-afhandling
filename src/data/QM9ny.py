@@ -23,12 +23,12 @@ class QM9Ny(L.LightningDataModule):
                  debug: bool,
                  ):
         super().__init__()
+        self.save_hyperparameters()
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.debug = debug
         self.mother_indices = self.create_mother_indices(delmængdestørrelse)
         self.data_splits = self.create_data_splits()
-        self.save_hyperparameters()
 
     def create_mother_indices(self, delmængdestørrelse: float):
         mother_dataset = self.get_mother_dataset()
@@ -51,6 +51,7 @@ class QM9Ny(L.LightningDataModule):
                 data_splits[False][task],
                 k=debug_k
             )
+        return data_splits
 
     def setup(self, stage: str) -> None:
         self.check_splits()
@@ -130,7 +131,6 @@ class QM9NyEksp2(QM9Ny):
         self.eftertræningsandele = torch.linspace(spænd[0], spænd[1], steps=n_trin) / n
         self.eftertræningsandele = self.eftertræningsandele.clip(min=0, max=1)
         self.sample_train_reduced(0)
-        self.fordeling_cached = None
 
     def sample_train_reduced(self, trin):
         for task in ['train', 'val']:
@@ -154,17 +154,9 @@ class QM9NyEksp2(QM9Ny):
         task = 'preval' if self.trainer.model.selvvejledt else 'val_reduced'
         return self.get_dataloader(task, False)
 
-    def state_dict(self):
-        state = super().state_dict()
-        return {**state, "eftertræningsandele": self.eftertræningsandele}
-
-    def load_state_dict(self, state_dict):
-        super().load_state_dict(state_dict)
-        self.eftertræningsandele = state_dict['eftertræningsandele']
-
     @property
     def fordeling(self) -> torch.Tensor:
-        if not self.fordeling_cached:
+        if not hasattr(self, "fordeling_cached"):
             spænd = self.hparams.spænd
             n = len(self.mother_indices)
             assert spænd[1] <= n
@@ -175,3 +167,6 @@ class QM9NyEksp2(QM9Ny):
             preval = (1 - (test + train + val)) * 0.2
             self.fordeling_cached = torch.tensor([pretrain, preval, train, val, test])
         return self.fordeling_cached
+
+    def get_eftertræningsmængde(self):
+        return len(self.data_splits[False]['train_reduced'])
