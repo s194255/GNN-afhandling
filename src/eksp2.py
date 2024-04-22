@@ -62,8 +62,11 @@ class Eksp2:
         self.init_df()
         self.init_kørselsid()
         if args.selv_ckpt_path:
-            self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(self.selv_ckpt_path)
-            self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(self.selv_ckpt_path)
+            api = wandb.Api()
+            artefakt = api.artifact(args.selv_ckpt_path)
+            artefakt_path = os.path.join(artefakt.download(), 'model.ckpt')
+            self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(artefakt_path)
+            self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(artefakt_path, **self.config['datasæt'])
             self.config['rygrad'] = self.bedste_selvvejledt.hparams.rygrad_args
             # m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         else:
