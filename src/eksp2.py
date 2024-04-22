@@ -160,6 +160,7 @@ class Eksp2:
         wandb_run_id = wandb.run.id
         wandb.finish()
         shutil.rmtree(os.path.join("afhandling", wandb_run_id))
+        downstream.cpu()
         return {f'{udgave}_{frys_rygrad}_{log_metric}': [værdi] for log_metric, værdi in resultat.items()}
 
     def eksperiment_runde(self, i):
