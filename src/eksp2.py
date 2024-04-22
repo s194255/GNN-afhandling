@@ -62,6 +62,7 @@ class Eksp2:
         # m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         self.init_df()
         self.init_kørselsid()
+        self.init_csv_path()
         if args.selv_ckpt_path:
             api = wandb.Api()
             artefakt = api.artifact(args.selv_ckpt_path)
@@ -69,7 +70,6 @@ class Eksp2:
             self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(artefakt_path)
             self.qm9Bygger2Hoved = QM9Bygger2.load_from_checkpoint(artefakt_path, **self.config['datasæt'])
             self.config['rygrad'] = self.bedste_selvvejledt.hparams.rygrad_args
-            # m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         else:
             self.fortræn()
 
@@ -83,6 +83,16 @@ class Eksp2:
         self.resultater['datamængde'] = []
         self.resultater['i'] = []
         self.resultater = pd.DataFrame(data=self.resultater)
+
+    def init_csv_path(self):
+        if os.path.exists(LOG_ROOT):
+            kørsler = os.listdir(LOG_ROOT)
+            kørsler = [int(version.split("_")[-2]) for version in kørsler]
+            self.csv_id = max(kørsler, default=-1) + 1
+        else:
+            os.makedirs(LOG_ROOT)
+            self.csv_id = 0
+        self.csv_path = os.path.join(LOG_ROOT, f"log_metrics_{self.csv_id}_.csv")
 
     def init_kørselsid(self):
         wandb.login()
@@ -107,7 +117,7 @@ class Eksp2:
             L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
         ]
         log_models = {'selvvejledt': True, 'downstream': False}
-        logger = WandbLogger(project='afhandling', log_model=log_models[opgave], tags=[opgave]+tags,
+        logger = WandbLogger(project='afhandling', log_model=log_models[opgave], tags=[opgave, f"csv_id_{self.csv_id}"]+tags,
                              group=f"eksp2_{self.kørselsid}")
         max_epochs = max([trainer_dict['epoker'], epoch])
         trainer = L.Trainer(max_epochs=max_epochs,
@@ -154,14 +164,14 @@ class Eksp2:
 
     def eksperiment_runde(self, i):
         resultat = {}
-        for udgave in self.udgaver:
-            for frys_rygrad in [True, False]:
+        for frys_rygrad in [True, False]:
+            for udgave in self.udgaver:
                 udgave_resultat = self.eftertræn(i, udgave, frys_rygrad)
                 resultat = {**resultat, **udgave_resultat}
         resultat['datamængde'] = [self.qm9Bygger2Hoved.get_eftertræningsmængde()]
         resultat['i'] = [i]
         self.resultater = pd.concat([self.resultater, pd.DataFrame(data=resultat)], ignore_index=True)
-        # self.resultater.to_csv(os.path.join(self.kørsel_path, "logs_metrics.csv"), index=False)
+        self.resultater.to_csv(self.csv_path, index=False)
 
     def main(self):
         for i in range(len(self.qm9Bygger2Hoved.eftertræningsandele)):
