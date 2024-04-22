@@ -8,7 +8,7 @@ datasæt:
   - 2000
   - 2000
 downstream:
-  epoker: 1
+  epoker: 5
   hoved:
     num_layers: 2
     reduce_op: sum

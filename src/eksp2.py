@@ -95,18 +95,13 @@ class Eksp2:
 
     def get_trainer(self, opgave, tags=[], epoch=-1):
         assert opgave in ['selvvejledt', 'downstream']
-        # loggers = [
-        #     r.tensorBoardLogger(save_dir=self.kørsel_path, name=name),
-        # ]
         trainer_dict = self.config[opgave]
         callbacks = [
-            # r.checkpoint_callback(),
+            r.checkpoint_callback(),
             r.TQDMProgressBar(),
             # r.earlyStopping(trainer_dict['min_delta'], trainer_dict['patience']),
             L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
         ]
-        if opgave == 'selvvejledt':
-            callbacks.append(r.checkpoint_callback())
         log_models = {'selvvejledt': True, 'downstream': False}
         logger = WandbLogger(project='afhandling', log_model=log_models[opgave], tags=[opgave]+tags,
                              group=f"eksp2_{self.kørselsid}")
