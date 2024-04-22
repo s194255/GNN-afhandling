@@ -87,12 +87,13 @@ class Eksp2:
     def init_csv_path(self):
         if os.path.exists(LOG_ROOT):
             kørsler = os.listdir(LOG_ROOT)
-            kørsler = [int(version.split("_")[-2]) for version in kørsler]
+            kørsler = [int(version.split("_")[-1]) for version in kørsler]
             self.csv_id = max(kørsler, default=-1) + 1
         else:
-            os.makedirs(LOG_ROOT)
             self.csv_id = 0
-        self.csv_path = os.path.join(LOG_ROOT, f"log_metrics_{self.csv_id}_.csv")
+        csv_mappe = os.path.join(LOG_ROOT, f"csv_{self.csv_id}")
+        os.makedirs(csv_mappe)
+        self.csv_path = os.path.join(csv_mappe, 'log_metrics.csv')
 
     def init_kørselsid(self):
         wandb.login()
