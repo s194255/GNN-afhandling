@@ -1,11 +1,11 @@
 datasæt:
-  batch_size: 32
+  batch_size: 64
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 1
+  n_trin: 3
   spænd:
-    - 2000
+    - 500
     - 2000
 downstream:
   epoker: 100

@@ -11,7 +11,6 @@ from typing import List, Tuple
 from torch_geometric.data.data import BaseData
 from src.redskaber import RiemannGaussian
 
-DATA_SPLITS_PATH = "data/QM9/processed/data_splits.pt"
 ROOT = "data/QM9"
 
 class QM9Contrastive(torch_geometric.datasets.QM9):
@@ -68,7 +67,6 @@ class QM9Bygger(L.LightningDataModule):
         self.delmængdestørrelse = delmængdestørrelse
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.data_splits_path = DATA_SPLITS_PATH
         self.init_mother_indices()
         self.init_data_splits()
         self.save_hyperparameters()
