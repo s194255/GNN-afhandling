@@ -66,7 +66,10 @@ class Eksp2:
         self.config = src.redskaber.load_config(args.eksp2_path)
         # m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         self.init_kørselsid()
-        self.bedste_selvvejledt, self.qm9Bygger2Hoved, _ = r.get_selvvejledt(self.config, args.selv_ckpt_path)
+        self.fortræn_tags = []
+        self.bedste_selvvejledt, self.qm9Bygger2Hoved, _, run_id = r.get_selvvejledt(self.config, args.selv_ckpt_path)
+        if run_id:
+            self.fortræn_tags.append(run_id)
         if not args.selv_ckpt_path:
             self.fortræn()
 
@@ -121,14 +124,16 @@ class Eksp2:
             False: 'optøet'
         }
         self.qm9Bygger2Hoved.sample_train_reduced(trin)
-        downstream = DownstreamEksp2(rygrad_args=self.config['rygrad'],
+        rygrad_args = self.bedste_selvvejledt.hparams.rygrad_args
+        downstream = DownstreamEksp2(rygrad_args=rygrad_args,
                                      hoved_args=self.config['downstream']['hoved'],
                                      args_dict=self.config['downstream']['model'])
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if frys_rygrad:
             downstream.frys_rygrad()
-        trainer = self.get_trainer('downstream', tags=[udgave, frys_rygrad_tags[frys_rygrad], f"trin_{trin}"])
+        tags = [udgave, frys_rygrad_tags[frys_rygrad], f"trin_{trin}"]+self.fortræn_tags
+        trainer = self.get_trainer('downstream', tags=tags)
         trainer.fit(model=downstream, datamodule=self.qm9Bygger2Hoved)
         resultat = trainer.test(ckpt_path="best", datamodule=self.qm9Bygger2Hoved)[0]
         wandb_run_id = wandb.run.id

@@ -73,13 +73,15 @@ def get_selvvejledt(config, selv_ckpt_path):
         artefakt_sti = os.path.join(artefakt.download(), 'model.ckpt')
         selvvejledt = m.Selvvejledt.load_from_checkpoint(artefakt_sti)
         qm9bygger = d.QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
+        run_id = artefakt.logged_by().id
     else:
         selvvejledt = m.Selvvejledt(rygrad_args=config['rygrad'],
                                     hoved_args=config['selvvejledt']['hoved'],
                                     args_dict=config['selvvejledt']['model'])
         qm9bygger = d.QM9ByggerEksp2(**config['datasæt'])
         artefakt_sti = None
-    return selvvejledt, qm9bygger, artefakt_sti
+        run_id = None
+    return selvvejledt, qm9bygger, artefakt_sti, run_id
 
 class RiemannGaussian(L.LightningModule):
 

@@ -27,7 +27,7 @@ def main():
     if args.debug:
         manip_config(config)
 
-    selvvejledt, qm9bygger, artefakt_sti = r.get_selvvejledt(config, args.selv_ckpt_path)
+    selvvejledt, qm9bygger, artefakt_sti, _ = r.get_selvvejledt(config, args.selv_ckpt_path)
     logger = r.wandbLogger(log_model=True, tags=['selvvejledt'])
     trænede_epoker = r.get_n_epoker(artefakt_sti)
     trainer = r.get_trainer(config['selvvejledt']['epoker']+trænede_epoker, logger=logger)
