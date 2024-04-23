@@ -40,6 +40,6 @@ selvvejledt:
     ønsket_lr: 1.0e-05
     opvarmningsperiode: 3
     noise_fra: -2
-    noise_til: 2
-    n_noise_trin: 4
+    noise_til: 1
+    n_noise_trin: 50
   patience: 20
