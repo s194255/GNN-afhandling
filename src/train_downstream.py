@@ -8,7 +8,6 @@ import lightning as L
 import wandb
 
 # Importer nødvendige klasser og funktioner fra dit projekt
-from src.data import QM9Bygger2
 import src.redskaber as r
 import torch
 import torchmetrics

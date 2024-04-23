@@ -3,14 +3,14 @@ import matplotlib.pyplot as plt
 import os
 from farver import farvekort, farver
 
-hoved_kørsel_path = "eksp2_logs"
+hoved_kørsel_path = "eksp2_logs_hpc"
 kørsler = os.listdir(hoved_kørsel_path)
 
 for kørsel in kørsler:
     # if kørsel in ["kørsel_1", "kørsel_2", "kørsel_3", "kørsel_4", "kørsel_5", "kørsel_6"]:
     #     continue
     kørsel_path = os.path.join(hoved_kørsel_path, kørsel)
-    df = pd.read_csv(os.path.join(kørsel_path))
+    df = pd.read_csv(os.path.join(kørsel_path, "log_metrics.csv"))
     a = 2
     # if kørsel in ["kørsel_0"]:
     #     df = df.drop(0)

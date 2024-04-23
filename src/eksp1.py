@@ -15,7 +15,7 @@ class Eskp1:
     def __init__(self, args):
         self.config = m.load_config(args.config_path)
         self.udgaver = ['med', 'uden']
-        self.qm9Bygger = d.QM9Bygger(**self.config['datasæt'])
+        self.qm9Bygger = d.QM9ByggerEksp1(**self.config['datasæt'])
 
     def fortræn(self):
         selvvejledt = src.models.selvvejledt.Selvvejledt(rygrad_args=self.config['rygrad'],

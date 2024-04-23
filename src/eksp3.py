@@ -15,25 +15,25 @@ N = 130831
 
 
 
-class QM9Bygger3(d.QM9Bygger):
-
-    def __init__(self, *args, n_train, **kwargs):
-        fordeling = self.get_fordeling(n_train)
-        if 'fordeling' in kwargs.keys():
-            assert fordeling == kwargs['fordeling']
-        else:
-            kwargs = {**kwargs, "fordeling": fordeling}
-        super().__init__(*args, **kwargs)
-
-    def get_fordeling(self, n_train):
-        n = len(self.get_mother_dataset())
-        assert n_train < n
-        train = n_train/n
-        val = 0.25*train
-        test = 0.04
-        pretrain = (1 - (train+ val+test))*0.8
-        preval = (1 - (train + val + test)) * 0.2
-        return [pretrain, preval, train, val, test]
+# class QM9Bygger3(d.QM9Bygger):
+#
+#     def __init__(self, *args, n_train, **kwargs):
+#         fordeling = self.get_fordeling(n_train)
+#         if 'fordeling' in kwargs.keys():
+#             assert fordeling == kwargs['fordeling']
+#         else:
+#             kwargs = {**kwargs, "fordeling": fordeling}
+#         super().__init__(*args, **kwargs)
+#
+#     def get_fordeling(self, n_train):
+#         n = len(self.get_mother_dataset())
+#         assert n_train < n
+#         train = n_train/n
+#         val = 0.25*train
+#         test = 0.04
+#         pretrain = (1 - (train+ val+test))*0.8
+#         preval = (1 - (train + val + test)) * 0.2
+#         return [pretrain, preval, train, val, test]
 class Eksp3:
 
     def __init__(self, args):
@@ -52,9 +52,9 @@ class Eksp3:
     def main(self):
         if self.args.ckpt_path:
             downstream = m.Downstream.load_from_checkpoint(self.args.ckpt_path)
-            qm9 = QM9Bygger3.load_from_checkpoint(self.args.ckpt_path)
+            qm9 = d.QM9ByggerEksp3.load_from_checkpoint(self.args.ckpt_path, **self.config['datasæt'])
         else:
-            qm9 = QM9Bygger3(**self.config['datasæt'])
+            qm9 = d.QM9ByggerEksp3(**self.config['datasæt'])
             downstream = m.Downstream(
                 rygrad_args=self.config['rygrad'],
                 hoved_args=self.config['downstream']['hoved'],
