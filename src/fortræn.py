@@ -1,5 +1,8 @@
 import argparse
 import redskaber as r
+import wandb
+import os
+import shutil
 
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
@@ -17,6 +20,9 @@ def main():
     trænede_epoker = r.get_n_epoker(artefakt_sti)
     trainer = r.get_trainer(config['selvvejledt']['epoker']+trænede_epoker, logger=logger)
     trainer.fit(model=selvvejledt, datamodule=qm9bygger, ckpt_path=artefakt_sti)
+    wandb_run_id = wandb.run.id
+    wandb.finish()
+    shutil.rmtree(os.path.join("afhandling", wandb_run_id))
 
 if __name__ == "__main__":
     main()
