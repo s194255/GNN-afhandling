@@ -36,7 +36,8 @@ class Selvvejledt(Grundmodel):
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         tabsopslag = self(data.z, data.pos, data.batch)
-        loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
+        tabsopslag = {nøgle: self.lambdaer[nøgle]*værdi for nøgle, værdi in tabsopslag.items()}
+        loss = sum([værdi for værdi in tabsopslag.values()])
         self.log("train_loss", loss.item(), batch_size=data.batch_size)
         for nøgle in self.hoved.tabsnøgler:
             self.log(f"train_{nøgle}_loss", tabsopslag[nøgle].item(), batch_size=data.batch_size)
