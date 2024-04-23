@@ -5,8 +5,8 @@
 #BSUB -q gpuv100
 #BSUB -gpu "num=1:mode=exclusive_process"
 #BSUB -n 4
-#BSUB -R "rusage[mem=2G]"
-#BSUB -W 24:00
+#BSUB -R "rusage[mem=1G]"
+#BSUB -W 4:00
 #BSUB -N
 # end of BSUB options
 
@@ -18,4 +18,4 @@ module load cuda/11.3
 # activate the virtual environment
 source /zhome/2c/b/146593/Desktop/afhandling/env1/bin/activate
 
-python src/eksp2.py
+python src/eksp2.py --selv_ckpt_path s194255/afhandling/model-xrl9h4u2:v0

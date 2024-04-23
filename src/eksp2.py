@@ -139,7 +139,7 @@ class Eksp2:
 
     def eksperiment_runde(self, i):
         resultat = {}
-        for frys_rygrad in [True, False]:
+        for frys_rygrad in [False]:
             for udgave in self.udgaver:
                 udgave_resultat = self.eftertræn(i, udgave, frys_rygrad)
                 resultat = {**resultat, **udgave_resultat}
