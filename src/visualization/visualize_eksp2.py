@@ -34,7 +34,7 @@ for kørsel in kørsler:
         plt.ylabel("MAE")
         plt.legend()
         plt.grid(True)
-        plt.show()
-        # plt.savefig(os.path.join(kørsel_path, f'{kørsel}_{frys_rygrad}.jpg'))
+        # plt.show()
+        plt.savefig(os.path.join(kørsel_path, f'{kørsel}_{frys_rygrad}.jpg'))
         # if kørsel == 'kørsel_2':
         #     plt.savefig(os.path.join("..", "figurer", "resultater", f"{kørsel}.pdf"))

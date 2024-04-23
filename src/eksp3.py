@@ -8,6 +8,7 @@ import os
 import src.models as m
 import lightning as L
 import src.data as d
+import src.redskaber
 import src.redskaber as r
 from lightning.pytorch.loggers import WandbLogger
 
@@ -38,7 +39,7 @@ class Eksp3:
 
     def __init__(self, args):
         self.args = args
-        self.config = m.load_config(args.eksp3_path)
+        self.config = src.redskaber.load_config(args.eksp3_path)
 
     def get_fordeling(self, n_train):
 

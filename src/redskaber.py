@@ -1,8 +1,12 @@
 import lightning as L
+import lightning.pytorch
 import torch
+import yaml
 from lightning.pytorch.loggers.tensorboard import TensorBoardLogger
 import os
 import wandb
+import src.models as m
+import src.data as d
 
 from torch_scatter import scatter_mean, scatter_add
 
@@ -18,6 +22,9 @@ def checkpoint_callback(dirpath=None):
     return L.pytorch.callbacks.ModelCheckpoint(monitor='val_loss', mode='min',
                                                               save_top_k=1, filename='best', save_last=True,
                                                dirpath=dirpath)
+
+def learning_rate_monitor():
+    return L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
 def tensorBoardLogger(save_dir=None, name=None, version=None):
     if not save_dir:
         save_dir = os.getcwd()
@@ -25,10 +32,18 @@ def tensorBoardLogger(save_dir=None, name=None, version=None):
         name = "lightning_logs"
     return TensorBoardLogger(save_dir=save_dir, name=name, version=version)
 
+def wandbLogger(log_model=False, tags=None, group=None):
+    return lightning.pytorch.loggers.WandbLogger(
+        project='afhandling',
+        log_model=log_model,
+        tags=tags,
+        group=group)
+
 def get_trainer(epoker, logger=None):
     callbacks = [
         checkpoint_callback(),
         TQDMProgressBar(),
+        learning_rate_monitor()
     ]
     trainer = L.Trainer(max_epochs=epoker,
                         log_every_n_steps=1,
@@ -50,6 +65,20 @@ def get_next_wandb_kørselsid():
             kørselsider.append(run.kørselsid)
     return max(kørselsider, default=-1)+1
 
+def get_selvvejledt(config, selv_ckpt_path):
+    if selv_ckpt_path:
+        api = wandb.Api()
+        artefakt = api.artifact(selv_ckpt_path)
+        artefakt_sti = os.path.join(artefakt.download(), 'model.ckpt')
+        selvvejledt = m.Selvvejledt.load_from_checkpoint(artefakt_sti)
+        qm9bygger = d.QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
+    else:
+        selvvejledt = m.Selvvejledt(rygrad_args=config['rygrad'],
+                                    hoved_args=config['selvvejledt']['hoved'],
+                                    args_dict=config['selvvejledt']['model'])
+        qm9bygger = d.QM9ByggerEksp2(**config['datasæt'])
+        artefakt_sti = None
+    return selvvejledt, qm9bygger, artefakt_sti
 
 class RiemannGaussian(L.LightningModule):
 
@@ -92,3 +121,19 @@ class RiemannGaussian(L.LightningModule):
             pos_til = pos_til + (beta/alpha).view(-1, 1) * s + torch.sqrt(2*beta).view(-1, 1)*torch.randn_like(pos)
         target = (1/alpha).view(-1, 1) * s
         return pos_til, target
+
+
+def load_config(path, reference_dict=None):
+    with open(path, encoding='utf-8') as f:
+        config_dict = yaml.safe_load(f)
+    if reference_dict:
+        config_dict = {key: value for (key, value) in config_dict.items() if key in reference_dict.keys()}
+    return config_dict
+
+
+def get_n_epoker(artefakt_sti):
+    if artefakt_sti == None:
+        return 0
+    else:
+        state_dict = torch.load(artefakt_sti, map_location='cpu')
+        return state_dict['epoch']

@@ -12,6 +12,7 @@ import torch
 import src.models.downstream
 import src.models.selvvejledt
 import src.data as d
+import src.redskaber
 import src.redskaber as r
 import copy
 from torch_geometric.data import Data
@@ -58,19 +59,13 @@ class Eksp2:
         self.udgaver = ['uden', 'med']
         # self.init_kørsel_path()
         self.selv_ckpt_path = args.selv_ckpt_path
-        self.config = m.load_config(args.eksp2_path)
+        self.config = src.redskaber.load_config(args.eksp2_path)
         # m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         self.init_df()
         self.init_kørselsid()
         self.init_csv_path()
-        if args.selv_ckpt_path:
-            api = wandb.Api()
-            artefakt = api.artifact(args.selv_ckpt_path)
-            artefakt_path = os.path.join(artefakt.download(), 'model.ckpt')
-            self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(artefakt_path)
-            self.qm9Bygger2Hoved = d.QM9ByggerEksp2.load_from_checkpoint(artefakt_path, **self.config['datasæt'])
-            self.config['rygrad'] = self.bedste_selvvejledt.hparams.rygrad_args
-        else:
+        self.bedste_selvvejledt, self.qm9Bygger2Hoved = r.get_selvvejledt(self.config, args.selv_ckpt_path)
+        if not args.selv_ckpt_path:
             self.fortræn()
 
     def init_df(self):

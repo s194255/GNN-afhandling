@@ -3,6 +3,7 @@ import time
 import lightning as L
 import src.models as m
 import src.data as d
+import src.redskaber
 import src.redskaber as r
 import argparse
 
@@ -13,7 +14,7 @@ from src.redskaber import TQDMProgressBar, checkpoint_callback
 class Eskp1:
 
     def __init__(self, args):
-        self.config = m.load_config(args.config_path)
+        self.config = src.redskaber.load_config(args.config_path)
         self.udgaver = ['med', 'uden']
         self.qm9Bygger = d.QM9ByggerEksp1(**self.config['datasæt'])
 
@@ -32,17 +33,17 @@ class Eskp1:
                 self.eftertræn(udgave, frys_rygrad)
 
 def med_selvtræn():
-    selvvejledt = src.models.selvvejledt.Selvvejledt(rygrad_args=m.load_config(args.rygrad_args_path),
-                                                     hoved_args=m.load_config(args.selvvejledt_hoved_args_path),
-                                                     træn_args=m.load_config(args.eksp1_path, src.models.selvvejledt.Selvvejledt.udgngs_træn_args))
+    selvvejledt = src.models.selvvejledt.Selvvejledt(rygrad_args=src.redskaber.load_config(args.rygrad_args_path),
+                                                     hoved_args=src.redskaber.load_config(args.selvvejledt_hoved_args_path),
+                                                     træn_args=src.redskaber.load_config(args.eksp1_path, src.models.selvvejledt.Selvvejledt.udgngs_træn_args))
     trainer = L.Trainer(max_epochs=eksp1['epoker_selvtræn'],
                         callbacks=[checkpoint_callback(),
                                    TQDMProgressBar()])
     trainer.fit(model=selvvejledt)
 
-    downstream = src.models.downstream.Downstream(rygrad_args=m.load_config(args.rygrad_args_path),
-                                                  hoved_args=m.load_config(args.downstream_hoved_args_path),
-                                                  træn_args=m.load_config(args.eksp1_path, src.models.downstream.Downstream.udgngs_træn_args))
+    downstream = src.models.downstream.Downstream(rygrad_args=src.redskaber.load_config(args.rygrad_args_path),
+                                                  hoved_args=src.redskaber.load_config(args.downstream_hoved_args_path),
+                                                  træn_args=src.redskaber.load_config(args.eksp1_path, src.models.downstream.Downstream.udgngs_træn_args))
     downstream.indæs_selvvejledt_rygrad(
         src.models.selvvejledt.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path))
     if eksp1['frys_rygrad']:
@@ -54,9 +55,9 @@ def med_selvtræn():
     trainer.test(ckpt_path="best")
 
 def uden_selvtræn():
-    downstream = src.models.downstream.Downstream(rygrad_args=m.load_config(args.rygrad_args_path),
-                                                  hoved_args=m.load_config(args.downstream_hoved_args_path),
-                                                  træn_args=m.load_config(args.eksp1_path, src.models.downstream.Downstream.udgngs_træn_args)
+    downstream = src.models.downstream.Downstream(rygrad_args=src.redskaber.load_config(args.rygrad_args_path),
+                                                  hoved_args=src.redskaber.load_config(args.downstream_hoved_args_path),
+                                                  træn_args=src.redskaber.load_config(args.eksp1_path, src.models.downstream.Downstream.udgngs_træn_args)
                                                   )
     if eksp1['frys_rygrad']:
         downstream.frys_rygrad()
@@ -80,7 +81,7 @@ def parserargs():
 
 if __name__ == "__main__":
     args = parserargs()
-    eksp1 = m.load_config(args.eksp1_path)
+    eksp1 = src.redskaber.load_config(args.eksp1_path)
     eksp1_model = {key: value for (key, value) in eksp1.items() if key in src.models.selvvejledt.Selvvejledt.udgngs_træn_args.keys()}
 
     med_selvtræn()

@@ -1,4 +1,5 @@
 import src.models as m
+import src.redskaber
 from src.eksp2 import Eksp2
 import os
 import yaml
@@ -6,7 +7,7 @@ import yaml
 
 class Args:
     def __init__(self):
-        eksp2 = m.load_config("config/eksp2.yaml")
+        eksp2 = src.redskaber.load_config("config/eksp2.yaml")
         eksp2['datasæt']['debug'] = True
         eksp2['datasæt']['batch_size'] = 1
         eksp2['datasæt']['num_workers'] = 0

@@ -25,13 +25,6 @@ class Maskemager(L.LightningModule):
         return {'knuder': knudemaske, 'kanter': kantmaske}
 
 
-def load_config(path, reference_dict=None):
-    with open(path, encoding='utf-8') as f:
-        config_dict = yaml.safe_load(f)
-    if reference_dict:
-        config_dict = {key: value for (key, value) in config_dict.items() if key in reference_dict.keys()}
-    return config_dict
-
 def save_config(config, path):
     with open(path, 'w', encoding='utf-8') as fil:
         yaml.dump(config, fil, allow_unicode=True)
