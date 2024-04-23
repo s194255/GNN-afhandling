@@ -33,7 +33,7 @@ selvvejledt:
   model:
     gamma: 0.1
     lambdaer:
-      lokalt: 1000
+      lokalt: 100
       globalt: 1
     lr: 1.0e-06
     step_size: 10
