@@ -64,7 +64,7 @@ class Eksp2:
         self.init_df()
         self.init_kørselsid()
         self.init_csv_path()
-        self.bedste_selvvejledt, self.qm9Bygger2Hoved = r.get_selvvejledt(self.config, args.selv_ckpt_path)
+        self.bedste_selvvejledt, self.qm9Bygger2Hoved, _ = r.get_selvvejledt(self.config, args.selv_ckpt_path)
         if not args.selv_ckpt_path:
             self.fortræn()
 
