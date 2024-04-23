@@ -32,7 +32,9 @@ selvvejledt:
   min_delta: 0.001
   model:
     gamma: 0.1
-    lambdaer: null
+    lambdaer:
+      lokalt: 100
+      globalt: 1
     lr: 1.0e-06
     step_size: 10
     ønsket_lr: 1.0e-05

@@ -16,7 +16,8 @@ class Selvvejledt(Grundmodel):
                  **kwargs):
         super().__init__(*args, **kwargs)
         self.selvvejledt = True
-        if not self.args_dict['lambdaer']:
+        lambdaer = self.args_dict['lambdaer']
+        if not lambdaer:
             lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
         self.lambdaer = lambdaer
         self.tjek_args(hoved_args, HovedSelvvejledt.args)
