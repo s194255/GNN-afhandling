@@ -130,9 +130,11 @@ class QM9ByggerEksp2(QM9Bygger):
         n = len(self.data_splits[False]['train'])
         self.eftertræningsandele = torch.linspace(spænd[0], spænd[1], steps=n_trin) / n
         self.eftertræningsandele = self.eftertræningsandele.clip(min=0, max=1)
+        self.trin = None
         self.sample_train_reduced(0)
 
     def sample_train_reduced(self, trin):
+        self.trin = trin
         for task in ['train', 'val']:
             for debug_mode in [True, False]:
                 data_split = self.data_splits[debug_mode][task]
