@@ -37,8 +37,8 @@ selvvejledt:
       globalt: 1
     lr: 1.0e-06
     step_size: 10
-    ønsket_lr: 1.0e-05
-    opvarmningsperiode: 3
+    ønsket_lr: 1.0e-06
+    opvarmningsperiode: 1
     noise_fra: -2
     noise_til: 1
     n_noise_trin: 50

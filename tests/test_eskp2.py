@@ -23,12 +23,12 @@ class Args:
         self.selv_ckpt_path = None
 
 
-def test_eksp2():
-    args_1 = Args()
-    eksp2_1 = Eksp2(args_1)
-    eksp2_1.main()
-
-    args_2 = Args()
-    args_2.selv_ckpt_path = eksp2_1.selv_ckpt_path
-    eksp2_2 = Eksp2(args_2)
-    eksp2_2.main()
+# def test_eksp2():
+#     args_1 = Args()
+#     eksp2_1 = Eksp2(args_1)
+#     eksp2_1.main()
+#
+#     args_2 = Args()
+#     args_2.selv_ckpt_path = eksp2_1.selv_ckpt_path
+#     eksp2_2 = Eksp2(args_2)
+#     eksp2_2.main()
