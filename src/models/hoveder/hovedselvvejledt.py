@@ -7,6 +7,7 @@ from torch.autograd import grad
 from torch_geometric.utils import scatter
 
 from src.models.visnet import EquivariantScalar, Atomref
+from src.models.hoveder.hoveddownstream import PredictRegular
 
 
 class HovedSelvvejledt(L.LightningModule):
@@ -25,9 +26,18 @@ class HovedSelvvejledt(L.LightningModule):
                  reduce_op: str = args['reduce_op'],
                  mean: float = args['mean'],
                  std: float = args['std'],
+                 num_layers: int = 2,
                  ):
         super().__init__()
-        self.lokal = LokaltGradient(
+        # self.lokal = LokaltGradient(
+        #     hidden_channels=hidden_channels,
+        #     atomref=atomref,
+        #     max_z=max_z,
+        #     reduce_op=reduce_op,
+        #     mean=mean,
+        #     std=std,
+        # )
+        self.lokal = LokalGradientDumt(
             hidden_channels=hidden_channels,
             atomref=atomref,
             max_z=max_z,
@@ -38,7 +48,8 @@ class HovedSelvvejledt(L.LightningModule):
         self.globall = Globalt(
             hidden_channels=hidden_channels,
             reduce_op=reduce_op,
-            out_channels=out_channels
+            out_channels=out_channels,
+            num_layers=num_layers,
         )
         # self.globall = Globalt2(
         #     hidden_channels=hidden_channels,
@@ -111,7 +122,29 @@ class LokaltGradient(L.LightningModule):
         loss = loss.mean()
         return loss
 
+class LokalGradientDumt(LokaltGradient):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.motor = SimpelMotor(hidden_channels=kwargs['hidden_channels'])
 
+    def reset_parameters(self):
+        self.motor.reset_parameters()
+
+class SimpelMotor(L.LightningModule):
+    def __init__(self, hidden_channels):
+        super().__init__()
+        self.motor = torch.nn.Sequential(
+            torch.nn.Linear(hidden_channels, 1)
+        )
+    def forward(self, x, v):
+        return self.motor(x)
+
+    def reset_parameters(self):
+        for layer in self.motor:
+            if isinstance(layer, torch.nn.Linear):
+                torch.nn.init.xavier_uniform_(layer.weight)
+                if layer.bias is not None:
+                    torch.nn.init.zeros_(layer.bias)
 class LokaltLineær(L.LightningModule):
 
     def __init__(self,
@@ -148,15 +181,19 @@ class Globalt(L.LightningModule):
     def __init__(self,
                  hidden_channels: int = 128,
                  out_channels: int = 4,
+                 num_layers: int = 2,
                  reduce_op: str = "sum",
                  ):
         super().__init__()
         self.reduce_op = reduce_op
-        self.motor = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels, hidden_channels),
-            torch.nn.ReLU(),
+        self.motor = []
+        for i in range(num_layers-1):
+            self.motor.append(torch.nn.Linear(hidden_channels, hidden_channels))
+            self.motor.append(torch.nn.ReLU())
+        self.motor.append(
             torch.nn.Linear(hidden_channels, out_channels)
         )
+        self.motor = torch.nn.Sequential(*self.motor)
         self.criterion = torch.nn.CrossEntropyLoss()
         self.reset_parameters()
 
@@ -206,5 +243,22 @@ class Globalt2(L.LightningModule):
                 if m.bias is not None:
                     torch.nn.init.constant_(m.bias, 0.0)
 
+class HovedSelvvejledtDumt(HovedSelvvejledt):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.lokal = LokalGradientDumt(
+            hidden_channels=kwargs['hidden_channels'],
+            atomref=kwargs['atomref'],
+            max_z=kwargs['max_z'],
+            reduce_op=kwargs['reduce_op'],
+            mean=kwargs['mean'],
+            std=kwargs['std'],
+        )
+        self.globall = Globalt(
+            hidden_channels=kwargs['hidden_channels'],
+            reduce_op=kwargs['reduce_op'],
+            out_channels=kwargs['out_channels']
+        )
 
 

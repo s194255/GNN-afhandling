@@ -42,7 +42,12 @@ import torch
 # print("Artefakt downloadet til:", artefakt_dir)
 # model = m.Selvvejledt.load_from_checkpoint(os.path.join(artefakt_dir, "model.ckpt"))
 # a = 2
-pred = torch.tensor([0.1]*10).unsqueeze(0)
+n_klasser = 10
+n_forkert = n_klasser-1
+rigtig = 1.0
+forkert = (1-rigtig)/(n_forkert)
+pred = torch.tensor([rigtig]+[forkert]*n_forkert).unsqueeze(0)
+print(pred)
 target = torch.tensor([0], dtype=torch.int64)
 ce = torch.nn.functional.cross_entropy(pred, target)
 print(ce.item())
