@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 1
+  batch_size: 2
   debug: true
   delmængdestørrelse: 1.0
   n_trin: 1

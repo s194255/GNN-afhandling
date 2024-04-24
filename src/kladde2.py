@@ -1,6 +1,7 @@
 import wandb
 import src.models as m
 import os
+import torch
 
 # Logg inn på Weights and Biases-kontoen din
 # wandb.login()
@@ -34,10 +35,15 @@ import os
 # run.finish()
 
 
-api = wandb.Api()
-artefakt_reference = "s194255/afhandling/model-cbw60c7v:v0"
-artefakt = api.artifact(artefakt_reference)
-artefakt_dir = artefakt.download()
-print("Artefakt downloadet til:", artefakt_dir)
-model = m.Selvvejledt.load_from_checkpoint(os.path.join(artefakt_dir, "model.ckpt"))
-a = 2
+# api = wandb.Api()
+# artefakt_reference = "s194255/afhandling/model-cbw60c7v:v0"
+# artefakt = api.artifact(artefakt_reference)
+# artefakt_dir = artefakt.download()
+# print("Artefakt downloadet til:", artefakt_dir)
+# model = m.Selvvejledt.load_from_checkpoint(os.path.join(artefakt_dir, "model.ckpt"))
+# a = 2
+pred = torch.tensor([0.1]*10).unsqueeze(0)
+target = torch.tensor([0], dtype=torch.int64)
+ce = torch.nn.functional.cross_entropy(pred, target)
+print(ce.item())
+print(torch.exp(-ce))

@@ -35,10 +35,10 @@ selvvejledt:
     lambdaer:
       lokalt: 1
       globalt: 1
-    lr: 1.0e-06
+    lr: 1.0e-07
     step_size: 10
-    ønsket_lr: 1.0e-05
-    opvarmningsperiode: 1
+    ønsket_lr: 1.0e-06
+    opvarmningsperiode: 3
     noise_fra: -2
     noise_til: 1
     n_noise_trin: 10
