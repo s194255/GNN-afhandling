@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 32
+  batch_size: 256
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
@@ -25,7 +25,7 @@ selvvejledt:
   epoker: 30
   min_delta: 0.001
   model:
-    hovedtype: klogt
+    hovedtype: dumt
     gamma: 0.1
     lambdaer:
       lokalt: 1000
@@ -37,4 +37,5 @@ selvvejledt:
     noise_fra: -2
     noise_til: 1
     n_noise_trin: 10
+    log_gradient: false
   patience: 20

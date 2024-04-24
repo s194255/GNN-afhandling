@@ -27,6 +27,7 @@ class Selvvejledt(Grundmodel):
         ))
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.riemannGaussian = RiemannGaussian()
+        self.log_gradient = self.hparams.args_dict['log_gradient']
         if self.args_dict['hovedtype'] == "klogt":
             self.hoved = HovedSelvvejledt(
                 **self.args_dict['hoved'],
@@ -83,8 +84,9 @@ class Selvvejledt(Grundmodel):
         return loss
 
     def on_before_optimizer_step(self, optimizer: torch.optim.Optimizer) -> None:
-        norms = grad_norm(self, norm_type=2)
-        self.log_dict(norms)
+        if self.log_gradient:
+            norms = grad_norm(self, norm_type=2)
+            self.log_dict(norms)
 
     @property
     def udgangsargsdict(self):

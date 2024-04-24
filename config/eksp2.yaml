@@ -53,4 +53,5 @@ selvvejledt:
     noise_fra: -1
     noise_til: 1
     n_noise_trin: 2
+    log_gradient: false
   patience: 20
