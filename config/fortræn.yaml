@@ -33,9 +33,9 @@ selvvejledt:
   model:
     gamma: 0.1
     lambdaer:
-      lokalt: 1
+      lokalt: 1000
       globalt: 1
-    lr: 1.0e-07
+    lr: 1.0e-08
     step_size: 10
     ønsket_lr: 1.0e-06
     opvarmningsperiode: 3
