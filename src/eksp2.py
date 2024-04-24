@@ -21,6 +21,15 @@ import wandb
 
 LOG_ROOT = "eksp2_logs"
 
+def manip_config(config):
+    config['datasæt']['debug'] = True
+    config['datasæt']['batch_size'] = 1
+    config['datasæt']['num_workers'] = 0
+    config['datasæt']['n_trin'] = 1
+    config['downstream']['epoker'] = 1
+    config['selvvejledt']['epoker'] = 1
+    config['rygrad']['hidden_channels'] = 8
+
 class DownstreamEksp2(src.models.downstream.Downstream):
     def setup(self, stage: str) -> None:
         if stage == 'test':
@@ -54,6 +63,7 @@ def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
     parser.add_argument('--eksp2_path', type=str, default="config/eksp2.yaml", help='Sti til eksp2 YAML fil')
     parser.add_argument('--selv_ckpt_path', type=str, default=None, help='Sti til eksp2 YAML fil')
+    parser.add_argument('--debug', action='store_true', help='Sti til eksp2 YAML fil')
     args = parser.parse_args()
     return args
 
@@ -64,6 +74,8 @@ class Eksp2:
         # self.init_kørsel_path()
         self.selv_ckpt_path = args.selv_ckpt_path
         self.config = src.redskaber.load_config(args.eksp2_path)
+        if args.debug:
+            manip_config(self.config)
         # m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         self.init_kørselsid()
         self.fortræn_tags = []
@@ -108,7 +120,6 @@ class Eksp2:
         return trainer
     def fortræn(self):
         selvvejledt = src.models.selvvejledt.Selvvejledt(rygrad_args=self.config['rygrad'],
-                                                         hoved_args=self.config['selvvejledt']['hoved'],
                                                          args_dict=self.config['selvvejledt']['model'])
         self.qm9Bygger2Hoved = d.QM9ByggerEksp2(**self.config['datasæt'])
         epoch = -1
@@ -127,7 +138,6 @@ class Eksp2:
         self.qm9Bygger2Hoved.sample_train_reduced(trin)
         rygrad_args = self.bedste_selvvejledt.hparams.rygrad_args
         downstream = DownstreamEksp2(rygrad_args=rygrad_args,
-                                     hoved_args=self.config['downstream']['hoved'],
                                      args_dict=self.config['downstream']['model'])
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)

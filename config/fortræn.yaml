@@ -23,15 +23,9 @@ rygrad:
   vertex: false
 selvvejledt:
   epoker: 30
-  hoved:
-    atomref: null
-    max_z: 100
-    mean: 0.0
-    reduce_op: sum
-    std: 1.0
-    num_layers: 1
   min_delta: 0.001
   model:
+    hovedtype: klogt
     gamma: 0.1
     lambdaer:
       lokalt: 1000

@@ -19,7 +19,7 @@ def manip_config(config):
     config['datasæt']['n_trin'] = 1
     # config['downstream']['epoker'] = 1
     config['selvvejledt']['epoker'] = 1
-    # config['rygrad']['hidden_channels'] = 8
+    config['rygrad']['hidden_channels'] = 8
     # config['selvvejledt']['model']['lr'] = 10**(-3)
 
 def main():

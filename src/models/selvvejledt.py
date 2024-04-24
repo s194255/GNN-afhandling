@@ -5,7 +5,7 @@ from torch import Tensor
 from torch_geometric.data import Data
 
 from src.models.grund import Grundmodel
-from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
+from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt, HovedSelvvejledtDumt
 from src.redskaber import RiemannGaussian
 from torch_geometric.utils import scatter
 from lightning.pytorch.utilities import grad_norm
@@ -13,7 +13,6 @@ from lightning.pytorch.utilities import grad_norm
 
 class Selvvejledt(Grundmodel):
     def __init__(self, *args,
-                 hoved_args=HovedSelvvejledt.args,
                  **kwargs):
         super().__init__(*args, **kwargs)
         self.selvvejledt = True
@@ -21,7 +20,6 @@ class Selvvejledt(Grundmodel):
         if not lambdaer:
             lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
         self.lambdaer = lambdaer
-        self.tjek_args(hoved_args, HovedSelvvejledt.args)
         self.register_buffer("noise_scales_options", torch.logspace(
             self.hparams.args_dict['noise_fra'],
             self.hparams.args_dict['noise_til'],
@@ -29,11 +27,20 @@ class Selvvejledt(Grundmodel):
         ))
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.riemannGaussian = RiemannGaussian()
-        self.hoved = HovedSelvvejledt(
-            **hoved_args,
-            hidden_channels=self.hparams.rygrad_args['hidden_channels'],
-            out_channels=len(self.noise_scales_options)
-        )
+        if self.args_dict['hovedtype'] == "klogt":
+            self.hoved = HovedSelvvejledt(
+                **self.args_dict['hoved'],
+                hidden_channels=self.hparams.rygrad_args['hidden_channels'],
+                out_channels=len(self.noise_scales_options)
+            )
+        elif self.args_dict['hovedtype'] == "dumt":
+            self.hoved = HovedSelvvejledtDumt(
+                **self.args_dict['hoved'],
+                hidden_channels=self.hparams.rygrad_args['hidden_channels'],
+                out_channels=len(self.noise_scales_options)
+            )
+        else:
+            raise NotImplementedError
 
     def forward(
             self,

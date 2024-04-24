@@ -69,3 +69,35 @@ class PredictDipole(PredictRegular):
         res = scatter(res, batch, dim=0, reduce=self.reduce_op)
         res = torch.linalg.vector_norm(res, dim=1)
         return res
+
+class HovedDownstreamKlogt(L.LightningModule):
+    def __init__(self,
+                 hidden_channels: int,
+                 means: torch.Tensor,
+                 stds: torch.Tensor,
+                 target_idx: int,
+                 num_layers: int = 2,
+                 reduce_op: str = "sum",
+                 max_z: int = 100,
+                 ):
+        super().__init__()
+        if target_idx == 0:
+            self.motor = PredictDipole(
+                hidden_channels=hidden_channels,
+                means=means,
+                stds=stds,
+                num_layers=num_layers,
+                reduce_op=reduce_op,
+                max_z=max_z
+            )
+        else:
+            self.motor = PredictRegular(
+                hidden_channels=hidden_channels,
+                means=means,
+                stds=stds,
+                num_layers=num_layers,
+                reduce_op=reduce_op
+            )
+
+    def forward(self, z, pos, batch, x, v):
+        return self.motor(z, pos, batch, x, v)

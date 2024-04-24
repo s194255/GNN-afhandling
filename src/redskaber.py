@@ -76,7 +76,6 @@ def get_selvvejledt(config, selv_ckpt_path):
         run_id = artefakt.logged_by().id
     else:
         selvvejledt = m.Selvvejledt(rygrad_args=config['rygrad'],
-                                    hoved_args=config['selvvejledt']['hoved'],
                                     args_dict=config['selvvejledt']['model'])
         qm9bygger = d.QM9ByggerEksp2(**config['datasæt'])
         artefakt_sti = None
@@ -126,11 +125,16 @@ class RiemannGaussian(L.LightningModule):
         return pos_til, target
 
 
-def load_config(path, reference_dict=None):
+def load_config(path):
     with open(path, encoding='utf-8') as f:
         config_dict = yaml.safe_load(f)
-    if reference_dict:
-        config_dict = {key: value for (key, value) in config_dict.items() if key in reference_dict.keys()}
+    opgaver_in_config = set(config_dict.keys())-(set(config_dict.keys()) - {'downstream', 'selvvejledt'})
+    for opgave_in_config in opgaver_in_config:
+        hovedtype = config_dict[opgave_in_config]['model']['hovedtype']
+        hoved_config_path = os.path.join("config", opgave_in_config, f"{hovedtype}.yaml")
+        with open(hoved_config_path, encoding='utf-8') as f:
+            hoved_config_dict = yaml.safe_load(f)
+        config_dict[opgave_in_config]['model']['hoved'] = hoved_config_dict
     return config_dict
 
 
