@@ -40,6 +40,11 @@ class HovedSelvvejledt(L.LightningModule):
             reduce_op=reduce_op,
             out_channels=out_channels
         )
+        # self.globall = Globalt2(
+        #     hidden_channels=hidden_channels,
+        #     reduce_op=reduce_op,
+        #     out_channels=1
+        # )
         self.derivative = True
         self.reset_parameters()
 
@@ -159,6 +164,39 @@ class Globalt(L.LightningModule):
         x = scatter(x, batch, dim=0, reduce=self.reduce_op)
         x = self.motor(x)
         loss = self.criterion(x, noise_idx)
+        return loss
+
+    def reset_parameters(self):
+        for m in self.motor.modules():
+            if isinstance(m, torch.nn.Linear):
+                torch.nn.init.xavier_uniform_(m.weight)
+                if m.bias is not None:
+                    torch.nn.init.constant_(m.bias, 0.0)
+
+class Globalt2(L.LightningModule):
+    def __init__(self,
+                 hidden_channels: int = 128,
+                 out_channels: int = 1,
+                 reduce_op: str = "sum",
+                 ):
+        super().__init__()
+        assert out_channels == 1
+        self.reduce_op = reduce_op
+        self.motor = torch.nn.Sequential(
+            torch.nn.Linear(hidden_channels, hidden_channels),
+            torch.nn.ReLU(),
+            torch.nn.Linear(hidden_channels, out_channels)
+        )
+        self.criterion = torch.nn.MSELoss()
+        self.reset_parameters()
+
+    def forward(self, z, pos, batch, x, v, noise_idx, noise_scale) -> torch.Tensor:
+        x = scatter(x, batch, dim=0, reduce=self.reduce_op)
+        x = self.motor(x)
+
+        loss = self.criterion(x, torch.log10(noise_scale))
+        if loss > 10**5:
+            print(x, torch.log10(noise_scale),  loss.item())
         return loss
 
     def reset_parameters(self):

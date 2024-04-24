@@ -8,6 +8,7 @@ from src.models.grund import Grundmodel
 from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt
 from src.redskaber import RiemannGaussian
 from torch_geometric.utils import scatter
+from lightning.pytorch.utilities import grad_norm
 
 
 class Selvvejledt(Grundmodel):
@@ -34,6 +35,23 @@ class Selvvejledt(Grundmodel):
             out_channels=len(self.noise_scales_options)
         )
 
+    def forward(
+            self,
+            z: Tensor,
+            pos: Tensor,
+            batch: Tensor,
+    ) -> Tuple[Tensor, Tensor]:
+        noise_idxs = torch.randint(low=0, high=len(self.noise_scales_options),
+                                   size=torch.unique(batch).shape, device=self.device)
+        noise_scales = torch.gather(self.noise_scales_options, 0, noise_idxs)
+        sigma = torch.gather(noise_scales, 0, batch)
+        pos_til, target = self.riemannGaussian(pos, batch, sigma)
+        if self.hoved.derivative:
+            pos_til.requires_grad_(True)
+        x, v, edge_attr, _ = self.rygrad(z, pos_til, batch)
+        tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
+        return tabsopslag
+
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         tabsopslag = self(data.z, data.pos, data.batch)
         tabsopslag = {nøgle: self.lambdaer[nøgle]*værdi for nøgle, værdi in tabsopslag.items()}
@@ -57,22 +75,9 @@ class Selvvejledt(Grundmodel):
         self.log("test_loss", loss.item(), batch_size=data.batch_size, on_epoch=True)
         return loss
 
-    def forward(
-            self,
-            z: Tensor,
-            pos: Tensor,
-            batch: Tensor,
-    ) -> Tuple[Tensor, Tensor]:
-        noise_idxs = torch.randint(low=0, high=len(self.noise_scales_options),
-                                   size=torch.unique(batch).shape, device=self.device)
-        noise_scales = torch.gather(self.noise_scales_options, 0, noise_idxs)
-        sigma = torch.gather(noise_scales, 0, batch)
-        pos_til, target = self.riemannGaussian(pos, batch, sigma)
-        if self.hoved.derivative:
-            pos_til.requires_grad_(True)
-        x, v, edge_attr, _ = self.rygrad(z, pos_til, batch)
-        tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
-        return tabsopslag
+    def on_before_optimizer_step(self, optimizer: torch.optim.Optimizer) -> None:
+        norms = grad_norm(self, norm_type=2)
+        self.log_dict(norms)
 
     @property
     def udgangsargsdict(self):
