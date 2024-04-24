@@ -26,7 +26,7 @@ def main():
     args = parserargs()
     config = r.load_config(args.config)
     if args.debug:
-        manip_config(config)
+        r.debugify_config(config)
 
     selvvejledt, qm9bygger, artefakt_sti, _ = r.get_selvvejledt(config, args.selv_ckpt_path)
     logger = r.wandbLogger(log_model=True, tags=['selvvejledt'])

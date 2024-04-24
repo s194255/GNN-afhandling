@@ -75,7 +75,7 @@ class Eksp2:
         self.selv_ckpt_path = args.selv_ckpt_path
         self.config = src.redskaber.load_config(args.eksp2_path)
         if args.debug:
-            manip_config(self.config)
+            r.debugify_config(self.config)
         # m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         self.init_kørselsid()
         self.fortræn_tags = []
