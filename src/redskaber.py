@@ -143,7 +143,7 @@ def debugify_config(config):
     config['datasæt']['debug'] = True
     config['datasæt']['batch_size'] = 1
     config['datasæt']['num_workers'] = 0
-    config['datasæt']['n_trin'] = 1
+    config['datasæt']['n_trin'] = 3
     config['rygrad']['hidden_channels'] = 8
     for opgave in _get_opgaver_in_config(config):
         config[opgave]['epoker'] = 1

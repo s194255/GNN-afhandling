@@ -47,6 +47,12 @@ class Grundmodel(L.LightningModule):
     def frys_rygrad(self):
         self.rygrad.freeze()
 
+    def rygrad_param_sum(self):
+        total_sum = 0
+        for param in self.rygrad.parameters():
+            total_sum += param.sum().item()  # Konverter tensor til en enkel værdi
+        return total_sum
+
     @property
     def udgangsargsdict(self):
         # return {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
