@@ -109,7 +109,6 @@ class Eksp2:
         trainer = L.Trainer(max_epochs=max_epochs,
                             log_every_n_steps=1,
                             callbacks=callbacks,
-                            precision='16-mixed',
                             logger=logger,
                             )
         return trainer
