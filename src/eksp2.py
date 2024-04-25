@@ -30,18 +30,15 @@ class DownstreamEksp2(src.models.downstream.Downstream):
                 num_bootstraps=1000,
                 quantile=torch.tensor([0.05, 0.95], device=self.device)
             )
-            self.metric2 = torchmetrics.regression.MeanAbsoluteError()
 
     def test_step(self, data: Data, batch_idx: int) -> None:
         super().test_step(data, batch_idx)
         pred = self(data.z, data.pos, data.batch)
         self.metric.update(1000 * pred, 1000 * data.y[:, self.target_idx])
-        self.metric2.update(1000 * pred, 1000 * data.y[:, self.target_idx])
 
     def on_test_epoch_end(self) -> None:
         data = self.metric.compute()
         self.log("test_loss_mean", data['mean'])
-        self.log("test_loss_mean2", self.metric2.compute().item())
         self.log("test_loss_std", data['std'])
         self.log("test_loss_lower", data['quantile'][0].item())
         self.log("test_loss_upper", data['quantile'][1].item())
