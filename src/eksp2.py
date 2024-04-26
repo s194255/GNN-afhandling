@@ -118,7 +118,7 @@ class Eksp2:
                             log_every_n_steps=1,
                             callbacks=callbacks,
                             logger=logger,
-                            check_val_every_n_epoch=40,
+                            check_val_every_n_epoch=50,
                             )
         return trainer
     def fortræn(self):
