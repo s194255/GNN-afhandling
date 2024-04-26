@@ -101,3 +101,29 @@ class HovedDownstreamKlogt(L.LightningModule):
 
     def forward(self, z, pos, batch, x, v):
         return self.motor(z, pos, batch, x, v)
+
+class HovedDownstreamDumt(L.LightningModule):
+    def __init__(self,
+                hidden_channels: int,
+                means: torch.Tensor,
+                stds: torch.Tensor,
+                num_layers: int = 2,
+                reduce_op: str = "sum",
+                ):
+        super().__init__()
+        module_list = []
+        for i in range(num_layers-1):
+            module_list.append(torch.nn.Linear(hidden_channels, hidden_channels))
+            module_list.append(torch.nn.ReLU())
+        module_list.append(torch.nn.Linear(hidden_channels, 1))
+        self.motor = torch.nn.Sequential(*module_list)
+        self.reduce_op = reduce_op
+        self.register_buffer('means', means)
+        self.register_buffer('stds', stds)
+
+    def forward(self, z, pos, batch, x, v):
+        x = scatter(x, batch, dim=0, reduce=self.reduce_op)
+        x = self.motor(x)
+        x = x * self.stds + self.means
+        return x.squeeze(1)
+

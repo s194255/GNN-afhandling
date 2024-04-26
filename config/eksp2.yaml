@@ -11,7 +11,7 @@ downstream:
   epoker: 150
   min_delta: 0.1
   model:
-    hovedtype: klogt
+    hovedtype: dumt
     gamma: 0.1
     lr: 1.0e-06
     step_size: 30
