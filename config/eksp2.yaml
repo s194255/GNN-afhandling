@@ -15,8 +15,8 @@ downstream:
     gamma: 0.1
     lr: 1.0e-07
     step_size: 200
-    ønsket_lr: 1.0e-04
-    opvarmningsperiode: 1
+    ønsket_lr: 1.0e-06
+    opvarmningsperiode: 3
     predicted_attribute: 1
   patience: 20
 rygrad:
