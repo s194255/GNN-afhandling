@@ -38,18 +38,30 @@ class DownstreamEksp2(src.models.downstream.Downstream):
 
     def on_test_epoch_end(self) -> None:
         data = self.metric.compute()
-        self.log("test_loss_mean", data['mean'])
-        self.log("test_loss_std", data['std'])
-        self.log("test_loss_lower", data['quantile'][0].item())
-        self.log("test_loss_upper", data['quantile'][1].item())
-        self.log("eftertræningsmængde", self.get_eftertræningsmængde())
-        self.log("trin", self.trainer.datamodule.trin)
+        log_dict = {
+            "test_loss_mean": data['mean'],
+            "test_loss_std": data['std'],
+            "test_loss_lower": data['quantile'][0].item(),
+            "test_loss_upper": data['quantile'][1].item(),
+            "eftertræningsmængde": self.get_eftertræningsmængde(),
+            "trin": self.trainer.datamodule.trin
+        }
+        self.log_dict(log_dict)
         self.metric.reset()
 
     def get_eftertræningsmængde(self):
         debug = self.trainer.datamodule.debug
         data_split = self.trainer.datamodule.data_splits[debug]['train_reduced']
         return len(data_split)
+
+def debugify_config(config):
+    config['datasæt']['debug'] = True
+    config['datasæt']['batch_size'] = 1
+    config['datasæt']['num_workers'] = 0
+    config['datasæt']['n_trin'] = 1
+    config['rygrad']['hidden_channels'] = 8
+    for opgave in r.get_opgaver_in_config(config):
+        config[opgave]['epoker'] = 1
 
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
@@ -67,21 +79,14 @@ class Eksp2:
         self.selv_ckpt_path = args.selv_ckpt_path
         self.config = src.redskaber.load_config(args.eksp2_path)
         if args.debug:
-            r.debugify_config(self.config)
+            debugify_config(self.config)
         self.init_kørselsid()
         self.fortræn_tags = []
         self.bedste_selvvejledt, self.qm9Bygger2Hoved, _, run_id = r.get_selvvejledt(self.config, args.selv_ckpt_path)
-        self.max_steps_downstream = self.create_max_steps_downstream()
         if run_id:
             self.fortræn_tags.append(run_id)
         if not args.selv_ckpt_path:
             self.fortræn()
-
-    def create_max_steps_downstream(self):
-        epoker = self.config['downstream']['epoker']
-        n_højre = self.config['datasæt']['spænd'][1]
-        batch_size = self.config['datasæt']['batch_size']
-        return int(n_højre/batch_size*epoker)
 
     def init_kørselsid(self):
         wandb.login()
@@ -107,7 +112,7 @@ class Eksp2:
         log_models = {'selvvejledt': True, 'downstream': False}
         logger = WandbLogger(project='afhandling', log_model=log_models[opgave], tags=[opgave]+tags,
                              group=f"eksp2_{self.kørselsid}")
-        trainer = L.Trainer(max_steps=self.max_steps_downstream,
+        trainer = L.Trainer(max_epochs=self.config[opgave]['epoker'],
                             log_every_n_steps=1,
                             callbacks=callbacks,
                             logger=logger,

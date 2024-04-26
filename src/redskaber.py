@@ -124,13 +124,13 @@ class RiemannGaussian(L.LightningModule):
         target = (1/alpha).view(-1, 1) * s
         return pos_til, target
 
-def _get_opgaver_in_config(config):
+def get_opgaver_in_config(config):
     return list(set(config.keys())-(set(config.keys()) - {'downstream', 'selvvejledt'}))
 
 def load_config(path):
     with open(path, encoding='utf-8') as f:
         config_dict = yaml.safe_load(f)
-    opgaver_in_config = _get_opgaver_in_config(config_dict)
+    opgaver_in_config = get_opgaver_in_config(config_dict)
     for opgave_in_config in opgaver_in_config:
         hovedtype = config_dict[opgave_in_config]['model']['hovedtype']
         hoved_config_path = os.path.join("config", opgave_in_config, f"{hovedtype}.yaml")
@@ -145,7 +145,7 @@ def debugify_config(config):
     config['datasæt']['num_workers'] = 0
     config['datasæt']['n_trin'] = 1
     config['rygrad']['hidden_channels'] = 8
-    for opgave in _get_opgaver_in_config(config):
+    for opgave in get_opgaver_in_config(config):
         config[opgave]['epoker'] = 1
 
 
