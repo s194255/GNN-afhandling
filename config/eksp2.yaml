@@ -13,9 +13,9 @@ downstream:
   model:
     hovedtype: dumt
     gamma: 0.1
-    lr: 1.0e-04
-    step_size: 50
-    ønsket_lr: 1.0e-02
+    lr: 1.0e-05
+    step_size: 40
+    ønsket_lr: 1.0e-03
     opvarmningsperiode: 10
     predicted_attribute: 1
   patience: 20
