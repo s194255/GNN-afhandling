@@ -1,12 +1,12 @@
 datasæt:
-  batch_size: 32
+  batch_size: 128
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 3
+  n_trin: 1
   spænd:
-    - 100
-    - 2000
+    - 300
+    - 300
 downstream:
   epoker: 150
   min_delta: 0.1
@@ -14,9 +14,9 @@ downstream:
     hovedtype: dumt
     gamma: 0.1
     lr: 1.0e-07
-    step_size: 40
+    step_size: 200
     ønsket_lr: 1.0e-04
-    opvarmningsperiode: 10
+    opvarmningsperiode: 1
     predicted_attribute: 1
   patience: 20
 rygrad:
