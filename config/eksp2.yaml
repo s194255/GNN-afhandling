@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 1
+  n_trin: 2
   spænd:
     - 100
-    - 100
+    - 2000
 downstream:
   epoker: 150
   min_delta: 0.1
