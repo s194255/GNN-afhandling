@@ -8,14 +8,14 @@ datasæt:
     - 300
     - 300
 downstream:
-  epoker: 400
+  epoker: 200
   min_delta: 0.1
   model:
     hovedtype: dumt
     gamma: 0.1
-    lr: 1.0e-06
+    lr: 1.0e-04
     step_size: 400
-    ønsket_lr: 1.0e-06
+    ønsket_lr: 1.0e-04
     opvarmningsperiode: 1
     predicted_attribute: 1
   patience: 20
