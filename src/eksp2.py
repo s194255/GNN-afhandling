@@ -133,6 +133,8 @@ class Eksp2:
         shutil.rmtree(os.path.join("afhandling", wandb_run_id))
 
     def eftertræn(self, trin, udgave, temperatur):
+        assert temperatur in ['frossen', 'optøet']
+        assert udgave in ['med', 'uden']
         self.qm9Bygger2Hoved.sample_train_reduced(trin)
         rygrad_args = self.bedste_selvvejledt.hparams.rygrad_args
         downstream = DownstreamEksp2(rygrad_args=rygrad_args,
