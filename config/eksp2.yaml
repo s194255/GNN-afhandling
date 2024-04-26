@@ -14,7 +14,7 @@ downstream:
     hovedtype: dumt
     gamma: 0.1
     lr: 1.0e-04
-    step_size: 400
+    step_size: 250
     ønsket_lr: 1.0e-04
     opvarmningsperiode: 1
     predicted_attribute: 1
