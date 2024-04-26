@@ -43,6 +43,8 @@ class Grundmodel(L.LightningModule):
         assert grundmodel.hparams.rygrad_args == self.hparams.rygrad_args, 'downstreams rygrad skal bruge samme argumenter som den selvvejledte'
         state_dict = grundmodel.rygrad.state_dict()
         self.rygrad.load_state_dict(state_dict)
+        print(f"domstream rygrad = {self.rygrad_param_sum()}")
+        print(f"selvvejledt rygrad = {grundmodel.rygrad_param_sum()}")
 
     def frys_rygrad(self):
         self.rygrad.freeze()

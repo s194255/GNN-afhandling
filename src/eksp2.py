@@ -68,14 +68,20 @@ class Eksp2:
         self.config = src.redskaber.load_config(args.eksp2_path)
         if args.debug:
             r.debugify_config(self.config)
-        # m.save_config(self.config, os.path.join(self.kørsel_path, "configs.yaml"))
         self.init_kørselsid()
         self.fortræn_tags = []
         self.bedste_selvvejledt, self.qm9Bygger2Hoved, _, run_id = r.get_selvvejledt(self.config, args.selv_ckpt_path)
+        self.max_steps_downstream = self.create_max_steps_downstream()
         if run_id:
             self.fortræn_tags.append(run_id)
         if not args.selv_ckpt_path:
             self.fortræn()
+
+    def create_max_steps_downstream(self):
+        epoker = self.config['downstream']['epoker']
+        n_højre = self.config['datasæt']['spænd'][1]
+        batch_size = self.config['datasæt']['batch_size']
+        return int(n_højre/batch_size*epoker)
 
     def init_kørselsid(self):
         wandb.login()
@@ -90,9 +96,8 @@ class Eksp2:
         self.kørselsid = max(kørselsider, default=-1)+1
 
 
-    def get_trainer(self, opgave, tags=[], epoch=-1):
+    def get_trainer(self, opgave, tags=[]):
         assert opgave in ['selvvejledt', 'downstream']
-        trainer_dict = self.config[opgave]
         callbacks = [
             r.checkpoint_callback(),
             r.TQDMProgressBar(),
@@ -102,8 +107,7 @@ class Eksp2:
         log_models = {'selvvejledt': True, 'downstream': False}
         logger = WandbLogger(project='afhandling', log_model=log_models[opgave], tags=[opgave]+tags,
                              group=f"eksp2_{self.kørselsid}")
-        max_epochs = max([trainer_dict['epoker'], epoch])
-        trainer = L.Trainer(max_epochs=max_epochs,
+        trainer = L.Trainer(max_steps=self.max_steps_downstream,
                             log_every_n_steps=1,
                             callbacks=callbacks,
                             logger=logger,
@@ -121,39 +125,28 @@ class Eksp2:
         wandb.finish()
         shutil.rmtree(os.path.join("afhandling", wandb_run_id))
 
-    def eftertræn(self, trin, udgave, frys_rygrad):
-        frys_rygrad_tags = {
-            True: 'frossen',
-            False: 'optøet'
-        }
+    def eftertræn(self, trin, udgave, temperatur):
         self.qm9Bygger2Hoved.sample_train_reduced(trin)
         rygrad_args = self.bedste_selvvejledt.hparams.rygrad_args
         downstream = DownstreamEksp2(rygrad_args=rygrad_args,
                                      args_dict=self.config['downstream']['model'])
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
-        if frys_rygrad:
+        if temperatur == "frossen":
             downstream.frys_rygrad()
-        tags = [udgave, frys_rygrad_tags[frys_rygrad], f"trin_{trin}"]+self.fortræn_tags
+        tags = [udgave, temperatur, f"trin_{trin}"]+self.fortræn_tags
         trainer = self.get_trainer('downstream', tags=tags)
         trainer.fit(model=downstream, datamodule=self.qm9Bygger2Hoved)
-        resultat = trainer.test(ckpt_path="best", datamodule=self.qm9Bygger2Hoved)[0]
+        trainer.test(ckpt_path="best", datamodule=self.qm9Bygger2Hoved)[0]
         wandb_run_id = wandb.run.id
         wandb.finish()
         shutil.rmtree(os.path.join("afhandling", wandb_run_id))
         downstream.cpu()
-        return {f'{udgave}_{frys_rygrad}_{log_metric}': [værdi] for log_metric, værdi in resultat.items()}
 
     def eksperiment_runde(self, i):
-        resultat = {}
-        for frys_rygrad in [False]:
-            for udgave in self.udgaver:
-                udgave_resultat = self.eftertræn(i, udgave, frys_rygrad)
-                resultat = {**resultat, **udgave_resultat}
-        resultat['datamængde'] = [self.qm9Bygger2Hoved.get_eftertræningsmængde()]
-        resultat['i'] = [i]
-        # self.resultater = pd.concat([self.resultater, pd.DataFrame(data=resultat)], ignore_index=True)
-        # self.resultater.to_csv(self.csv_path, index=False)
+        for temperatur in self.config['temperaturer']:
+            for udgave in self.config['udgaver']:
+                self.eftertræn(i, udgave, temperatur)
 
     def main(self):
         for i in range(len(self.qm9Bygger2Hoved.eftertræningsandele)):
