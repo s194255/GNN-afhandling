@@ -3,20 +3,20 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 1
+  n_trin: 3
   spænd:
     - 100
-    - 150
+    - 2000
 downstream:
   epoker: 150
   min_delta: 0.1
   model:
     hovedtype: dumt
     gamma: 0.1
-    lr: 1.0e-08
+    lr: 1.0e-07
     step_size: 40
-    ønsket_lr: 1.0e-06
-    opvarmningsperiode: 2
+    ønsket_lr: 1.0e-04
+    opvarmningsperiode: 5
     predicted_attribute: 1
   patience: 20
 rygrad:
@@ -60,4 +60,3 @@ udgaver:
   - uden
 temperaturer:
   - frossen
-  - optøet

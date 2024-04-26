@@ -78,3 +78,4 @@ for group in groups:
         plt.legend()
         plt.grid(True)
         plt.savefig(os.path.join(kørsel_path, f"{temperatur}.jpg"))
+        plt.close()
