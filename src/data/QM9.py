@@ -127,11 +127,18 @@ class QM9ByggerEksp2(QM9Bygger):
 
     def __init__(self, *args, spænd: List, n_trin: int, **kwargs):
         super().__init__(*args, **kwargs)
-        n = len(self.data_splits[False]['train'])
-        self.eftertræningsandele = torch.linspace(spænd[0], spænd[1], steps=n_trin) / n
-        self.eftertræningsandele = self.eftertræningsandele.clip(min=0, max=1)
+        self.spænd = spænd
+        self.n_trin = n_trin
         self.trin = None
         self.sample_train_reduced(0)
+
+    @property
+    def eftertræningsandele(self) -> torch.Tensor:
+        n = len(self.data_splits[False]['train'])
+        eftertræningsandele = torch.linspace(self.spænd[0], self.spænd[1], steps=self.n_trin) / n
+        eftertræningsandele = eftertræningsandele.clip(min=0, max=1)
+        return eftertræningsandele
+
 
     def sample_train_reduced(self, trin):
         self.trin = trin

@@ -62,6 +62,8 @@ def debugify_config(config):
     config['rygrad']['hidden_channels'] = 8
     for opgave in r.get_opgaver_in_config(config):
         config[opgave]['epoker'] = 1
+    config['udgaver'] = ['med']
+    config['temperaturer'] = ['frossen']
 
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
@@ -153,7 +155,7 @@ class Eksp2:
                 self.eftertræn(i, udgave, temperatur)
 
     def main(self):
-        for i in range(len(self.qm9Bygger2Hoved.eftertræningsandele)):
+        for i in range(self.qm9Bygger2Hoved.n_trin):
             self.eksperiment_runde(i)
 
 
