@@ -3,12 +3,12 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 2
+  n_trin: 1
   spænd:
     - 100
-    - 2000
+    - 100
 downstream:
-  epoker: 100
+  epoker: 150
   min_delta: 0.1
   model:
     hovedtype: klogt
