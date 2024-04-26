@@ -122,8 +122,7 @@ class Eksp2:
         selvvejledt = src.models.selvvejledt.Selvvejledt(rygrad_args=self.config['rygrad'],
                                                          args_dict=self.config['selvvejledt']['model'])
         self.qm9Bygger2Hoved = d.QM9ByggerEksp2(**self.config['datasæt'])
-        epoch = -1
-        trainer = self.get_trainer(opgave='selvvejledt', epoch=epoch)
+        trainer = self.get_trainer(opgave='selvvejledt')
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_ckpt_path)
         self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
         wandb_run_id = wandb.run.id
