@@ -8,7 +8,7 @@ datasæt:
     - 300
     - 300
 downstream:
-  epoker: 200
+  epoker: 400
   min_delta: 0.1
   model:
     hovedtype: dumt
