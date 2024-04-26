@@ -21,6 +21,7 @@ import wandb
 
 LOG_ROOT = "eksp2_logs"
 
+# torch.set_float32_matmul_precision('medium')
 
 class DownstreamEksp2(src.models.downstream.Downstream):
     def setup(self, stage: str) -> None:
@@ -62,6 +63,7 @@ def debugify_config(config):
     config['rygrad']['hidden_channels'] = 8
     for opgave in r.get_opgaver_in_config(config):
         config[opgave]['epoker'] = 1
+        config[opgave]['check_val_every_n_epoch'] = 1
     config['udgaver'] = ['med']
     config['temperaturer'] = ['frossen']
 
@@ -118,7 +120,7 @@ class Eksp2:
                             log_every_n_steps=1,
                             callbacks=callbacks,
                             logger=logger,
-                            check_val_every_n_epoch=50,
+                            check_val_every_n_epoch=self.config[opgave]['check_val_every_n_epoch'],
                             )
         return trainer
     def fortræn(self):
@@ -143,7 +145,7 @@ class Eksp2:
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if temperatur == "frossen":
             downstream.frys_rygrad()
-        tags = [udgave, temperatur, f"trin_{trin}"]+self.fortræn_tags
+        tags = [udgave, temperatur]+self.fortræn_tags
         trainer = self.get_trainer('downstream', tags=tags)
         trainer.fit(model=downstream, datamodule=self.qm9Bygger2Hoved)
         trainer.test(ckpt_path="best", datamodule=self.qm9Bygger2Hoved)[0]
