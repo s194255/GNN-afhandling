@@ -47,11 +47,13 @@ class QM9Bygger(L.LightningDataModule):
         for i in range(len(self.tasks)):
             task = self.tasks[i]
             data_splits[False][task] = torch.where(a == i)[0].tolist()
+            random.shuffle(data_splits[False][task])
             debug_k = torch.tensor(30).clip(min=1, max=len(data_splits[False][task])).item()
             data_splits[True][task] = random.sample(
                 data_splits[False][task],
                 k=debug_k
             )
+            random.shuffle(data_splits[True][task])
         return data_splits
 
     def setup(self, stage: str) -> None:
@@ -147,7 +149,7 @@ class QM9ByggerEksp2(QM9Bygger):
                 data_split = self.data_splits[debug_mode][task]
                 andel = self.eftertræningsandele[trin]
                 k = max(int(andel * len(data_split)), 1)
-                self.data_splits[debug_mode][f'{task}_reduced'] = random.sample(data_split, k=k)
+                self.data_splits[debug_mode][f'{task}_reduced'] = data_split[:k]
 
     def get_setup_tasks(self, stage: str):
         setup_tasks = super().get_setup_tasks(stage)

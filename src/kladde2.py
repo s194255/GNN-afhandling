@@ -2,6 +2,7 @@ import wandb
 import src.models as m
 import os
 import torch
+from scipy.stats import entropy
 
 # Logg inn på Weights and Biases-kontoen din
 # wandb.login()
@@ -42,13 +43,20 @@ import torch
 # print("Artefakt downloadet til:", artefakt_dir)
 # model = m.Selvvejledt.load_from_checkpoint(os.path.join(artefakt_dir, "model.ckpt"))
 # a = 2
-n_klasser = 10
-n_forkert = n_klasser-1
-rigtig = 1.0
-forkert = (1-rigtig)/(n_forkert)
-pred = torch.tensor([rigtig]+[forkert]*n_forkert).unsqueeze(0)
-print(pred)
-target = torch.tensor([0], dtype=torch.int64)
-ce = torch.nn.functional.cross_entropy(pred, target)
-print(ce.item())
-print(torch.exp(-ce))
+
+
+#
+# n_klasser = 10
+# n_forkert = n_klasser-1
+# rigtig = 0.5
+# forkert = (1-rigtig)/(n_forkert)
+# pred = [rigtig]+[forkert]*n_forkert
+# target = [1.0]+[0.0]*n_forkert
+# print(pred, target)
+# print(sum(pred))
+# print(sum(target))
+# ce = entropy(pred, target)
+# print(ce)
+# print(torch.exp(torch.tensor(-ce)))
+
+r
