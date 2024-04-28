@@ -3,28 +3,7 @@ import redskaber as r
 import wandb
 import os
 import shutil
-import src.models as m
-import src.data as d
-
-
-class SelvvejledtQM9(m.Downstream):
-    @property
-    def selvvejledt(self):
-        return True
-
-def get_selvvejledtQM9(config, selv_ckpt_path):
-    if selv_ckpt_path:
-        artefakt_sti, run_id =  r.indlæs_selv_ckpt_path(selv_ckpt_path)
-        selvvejledt = SelvvejledtQM9.load_from_checkpoint(artefakt_sti)
-        qm9bygger = d.QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
-    else:
-        selvvejledt = SelvvejledtQM9(rygrad_args=config['rygrad'],
-                                    args_dict=config['downstream']['model'])
-        qm9bygger = d.QM9ByggerEksp2(**config['datasæt'])
-        artefakt_sti = None
-        run_id = None
-    return selvvejledt, qm9bygger, artefakt_sti, run_id
-
+from src.redskaber import get_selvvejledtQM9
 
 
 def parserargs():

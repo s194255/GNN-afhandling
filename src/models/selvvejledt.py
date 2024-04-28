@@ -4,6 +4,7 @@ import torch
 from torch import Tensor
 from torch_geometric.data import Data
 
+from src import models as m
 from src.models.grund import Grundmodel
 from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt, HovedSelvvejledtDumt
 from src.redskaber import RiemannGaussian
@@ -171,3 +172,9 @@ class SelvvejledtContrastive(Grundmodel):
 
     def test_step(self, data: Data, batch_idx: int):
         return self.step('test', data, batch_idx)
+
+
+class SelvvejledtQM9(m.Downstream):
+    @property
+    def selvvejledt(self):
+        return True

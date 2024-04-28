@@ -1,18 +1,18 @@
 datasæt:
-  batch_size: 32
+  batch_size: 128
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
   n_trin: 2
   spænd:
-    - 300
-    - 1000
+    - 10
+    - 100
 downstream:
   check_val_every_n_epoch: 5
   epoker: 100
   min_delta: 0.1
   model:
-    hovedtype: dumt
+    hovedtype: klogt
     gamma: 0.1
     lr: 1.0e-03
     step_size: 25

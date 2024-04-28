@@ -71,6 +71,7 @@ def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
     parser.add_argument('--eksp2_path', type=str, default="config/eksp2.yaml", help='Sti til eksp2 YAML fil')
     parser.add_argument('--selv_ckpt_path', type=str, default=None, help='Sti til eksp2 YAML fil')
+    parser.add_argument('--selvQM9', action='store_true', help='Sti til eksp2 YAML fil')
     parser.add_argument('--debug', action='store_true', help='Sti til eksp2 YAML fil')
     args = parser.parse_args()
     return args
@@ -86,7 +87,10 @@ class Eksp2:
             debugify_config(self.config)
         self.init_kørselsid()
         self.fortræn_tags = []
-        self.bedste_selvvejledt, self.qm9Bygger2Hoved, _, run_id = r.get_selvvejledt(self.config, args.selv_ckpt_path)
+        if args.selvQM9:
+            self.bedste_selvvejledt, self.qm9Bygger2Hoved, _, run_id = r.get_selvvejledtQM9(self.config, args.selv_ckpt_path)
+        else:
+            self.bedste_selvvejledt, self.qm9Bygger2Hoved, _, run_id = r.get_selvvejledt(self.config, args.selv_ckpt_path)
         if run_id:
             self.fortræn_tags.append(run_id)
         if not args.selv_ckpt_path:

@@ -10,6 +10,8 @@ import src.data as d
 
 from torch_scatter import scatter_mean, scatter_add
 
+from src import data as d
+
 
 def TQDMProgressBar():
     return L.pytorch.callbacks.TQDMProgressBar(refresh_rate=1000)
@@ -160,3 +162,17 @@ def get_n_epoker(artefakt_sti):
     else:
         state_dict = torch.load(artefakt_sti, map_location='cpu')
         return state_dict['epoch']
+
+
+def get_selvvejledtQM9(config, selv_ckpt_path):
+    if selv_ckpt_path:
+        artefakt_sti, run_id = indlæs_selv_ckpt_path(selv_ckpt_path)
+        selvvejledt = m.SelvvejledtQM9.load_from_checkpoint(artefakt_sti)
+        qm9bygger = d.QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
+    else:
+        selvvejledt = m.SelvvejledtQM9(rygrad_args=config['rygrad'],
+                                    args_dict=config['downstream']['model'])
+        qm9bygger = d.QM9ByggerEksp2(**config['datasæt'])
+        artefakt_sti = None
+        run_id = None
+    return selvvejledt, qm9bygger, artefakt_sti, run_id
