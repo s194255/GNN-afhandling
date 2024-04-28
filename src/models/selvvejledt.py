@@ -15,7 +15,6 @@ class Selvvejledt(Grundmodel):
     def __init__(self, *args,
                  **kwargs):
         super().__init__(*args, **kwargs)
-        self.selvvejledt = True
         lambdaer = self.args_dict['lambdaer']
         if not lambdaer:
             lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
@@ -95,6 +94,10 @@ class Selvvejledt(Grundmodel):
                        'noise_til': 3,
                        'n_noise_trin': 4}
         return {**super().udgangsargsdict, **udgangsargs}
+
+    @property
+    def selvvejledt(self):
+        return True
 
 
 class SelvvejledtBaseline(Selvvejledt):

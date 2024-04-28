@@ -25,7 +25,6 @@ class Grundmodel(L.LightningModule):
                  rygrad_args: dict,
                  ):
         super().__init__()
-        self.selvvejledt = None
         self.tjek_args(args_dict, self.udgangsargsdict)
         self.args_dict = args_dict
         self.tjek_args(rygrad_args, VisNetRyggrad.args)
@@ -59,6 +58,10 @@ class Grundmodel(L.LightningModule):
     def udgangsargsdict(self):
         # return {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
         return {"lr": 0.00001, "step_size": 20, "gamma": 0.5, "ønsket_lr": 0.001, "opvarmningsperiode": 10}
+
+    @property
+    def selvvejledt(self):
+        raise NotImplementedError
 
 
 

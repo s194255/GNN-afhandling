@@ -13,7 +13,6 @@ class Downstream(Grundmodel):
     def __init__(self, *args,
                  **kwargs):
         super().__init__(*args, **kwargs)
-        self.selvvejledt = False
         self.target_idx = self.hparams.args_dict['predicted_attribute']
         self.hoved = self.create_hoved()
         self.criterion = torch.nn.L1Loss()
@@ -70,3 +69,7 @@ class Downstream(Grundmodel):
     @property
     def udgangsargsdict(self):
         return {**super().udgangsargsdict, "predicted_attribute": 1}
+
+    @property
+    def selvvejledt(self):
+        return False

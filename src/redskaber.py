@@ -66,14 +66,19 @@ def get_next_wandb_kørselsid():
             kørselsider.append(run.kørselsid)
     return max(kørselsider, default=-1)+1
 
+def indlæs_selv_ckpt_path(selv_ckpt_path):
+    api = wandb.Api()
+    artefakt = api.artifact(selv_ckpt_path)
+    artefakt_sti = os.path.join(artefakt.download(), 'model.ckpt')
+    run_id = artefakt.logged_by().id
+    return artefakt_sti, run_id
+
+
 def get_selvvejledt(config, selv_ckpt_path):
     if selv_ckpt_path:
-        api = wandb.Api()
-        artefakt = api.artifact(selv_ckpt_path)
-        artefakt_sti = os.path.join(artefakt.download(), 'model.ckpt')
+        artefakt_sti, run_id =  indlæs_selv_ckpt_path(selv_ckpt_path)
         selvvejledt = m.Selvvejledt.load_from_checkpoint(artefakt_sti)
         qm9bygger = d.QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
-        run_id = artefakt.logged_by().id
     else:
         selvvejledt = m.Selvvejledt(rygrad_args=config['rygrad'],
                                     args_dict=config['selvvejledt']['model'])
