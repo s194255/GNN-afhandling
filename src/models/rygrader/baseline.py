@@ -12,7 +12,6 @@ class BaselineRygrad(L.LightningModule):
         self.motor = torch.nn.Embedding(max_z, hidden_channels)
 
     def forward(self, z, pos, batch):
-        n = z.shape[0]
         x = self.motor(z)
-        v = torch.zeros(size=(n, 3, self.hidden_channels), dtype=torch.float32, device=self.device)
+        v = pos.unsqueeze(-1).expand(-1, -1, self.hidden_channels)
         return x, v, None, None

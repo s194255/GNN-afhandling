@@ -1,8 +1,8 @@
 import lightning as L
 import torch.nn
 from torch_geometric.utils import scatter
-from src.models.rygrader.visnet import GatedEquivariantBlock
 from rdkit import Chem
+from src.models.hoveder.fælles import GatedEquivariantMotor, LinearMotor
 
 
 class PredictRegular(L.LightningModule):
@@ -19,24 +19,19 @@ class PredictRegular(L.LightningModule):
                  reduce_op: str = args['reduce_op'],
                  ):
         super().__init__()
-        self.motor = torch.nn.ModuleList([])
-        for i in range(num_layers - 1):
-            self.motor.append(GatedEquivariantBlock(hidden_channels,
-                                                    hidden_channels,
-                                                    scalar_activation=True))
-        self.motor.append(GatedEquivariantBlock(hidden_channels,
-                                                1,
-                                                scalar_activation=False))
-        self.reduce_op = reduce_op
-        self.register_buffer('means', means)
-        self.register_buffer('stds', stds)
+        self.motor = GatedEquivariantMotor(
+            hidden_channels=hidden_channels,
+            out_channels=1,
+            means=means,
+            stds=stds,
+            num_layers=num_layers,
+            reduce_op=reduce_op
+        )
 
     def forward(self, z, pos, batch, x, v):
-        for layer in self.motor:
-            x, v = layer(x, v)
-        x = x * self.stds + self.means
-        x = scatter(x, batch, dim=0, reduce=self.reduce_op)
+        x = self.motor(z, pos, batch, x, v)
         return x.squeeze(1)
+
 
 class PredictDipole(PredictRegular):
 
@@ -44,6 +39,7 @@ class PredictDipole(PredictRegular):
         super().__init__(*args, **kwargs)
         atom_weights = self.get_atom_weights(max_z)
         self.register_buffer('atom_weights', atom_weights)
+        raise NotImplementedError
 
     def get_atom_weights(self, max_z):
         atom_weights = []
@@ -60,9 +56,8 @@ class PredictDipole(PredictRegular):
         return weighted_pos.sum(dim=0)/total_mass
 
     def forward(self, z, pos, batch, x, v):
-        for layer in self.motor:
-            x, v = layer(x, v)
-        x = x*self.stds + self.means
+        x = self.motor(z, pos, batch, x, v)
+        x = x.squeeze(1)
         r_c = self.get_centre_of_mass(pos, z)
         diff = pos - r_c
         res = x*diff+v.squeeze(2)
@@ -111,19 +106,16 @@ class HovedDownstreamDumt(L.LightningModule):
                 reduce_op: str = "sum",
                 ):
         super().__init__()
-        module_list = []
-        for i in range(num_layers-1):
-            module_list.append(torch.nn.Linear(hidden_channels, hidden_channels))
-            module_list.append(torch.nn.ReLU())
-        module_list.append(torch.nn.Linear(hidden_channels, 1))
-        self.motor = torch.nn.Sequential(*module_list)
-        self.reduce_op = reduce_op
-        self.register_buffer('means', means)
-        self.register_buffer('stds', stds)
+        self.motor = LinearMotor(
+            hidden_channels=hidden_channels,
+            out_channels=1,
+            means=means,
+            stds=stds,
+            num_layers=num_layers,
+            reduce_op=reduce_op
+        )
 
     def forward(self, z, pos, batch, x, v):
-        x = scatter(x, batch, dim=0, reduce=self.reduce_op)
-        x = self.motor(x)
-        x = x * self.stds + self.means
+        x = self.motor(z, pos, batch, x, v)
         return x.squeeze(1)
 

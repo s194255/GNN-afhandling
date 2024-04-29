@@ -6,7 +6,7 @@ from torch_geometric.data import Data
 
 from src import models as m
 from src.models.grund import Grundmodel
-from src.models.hoveder.hovedselvvejledt import HovedSelvvejledt, HovedSelvvejledtDumt
+from src.models.hoveder.hovedselvvejledt import HovedSelvvejledtKlogt, HovedSelvvejledtDumt
 from src.redskaber import RiemannGaussian
 from torch_geometric.utils import scatter
 from lightning.pytorch.utilities import grad_norm
@@ -31,16 +31,16 @@ class Selvvejledt(Grundmodel):
 
     def create_hoved(self):
         if self.args_dict['hovedtype'] == "klogt":
-            return HovedSelvvejledt(
+            return HovedSelvvejledtKlogt(
                 **self.args_dict['hoved'],
                 hidden_channels=self.hidden_channels,
-                out_channels=self.args_dict['n_noise_trin']
+                n_noise_trin=self.args_dict['n_noise_trin']
             )
         elif self.args_dict['hovedtype'] == "dumt":
             return HovedSelvvejledtDumt(
                 **self.args_dict['hoved'],
                 hidden_channels=self.hidden_channels,
-                out_channels=self.args_dict['n_noise_trin']
+                n_noise_trin=self.args_dict['n_noise_trin']
             )
         else:
             raise NotImplementedError
