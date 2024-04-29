@@ -7,7 +7,7 @@ from torch_geometric.data import Data
 from src import models as m
 from src.models.grund import Grundmodel
 from src.models.hoveder.hovedselvvejledt import HovedSelvvejledtKlogt, HovedSelvvejledtDumt
-from src.redskaber import RiemannGaussian
+from src.models.redskaber import RiemannGaussian
 from torch_geometric.utils import scatter
 from lightning.pytorch.utilities import grad_norm
 

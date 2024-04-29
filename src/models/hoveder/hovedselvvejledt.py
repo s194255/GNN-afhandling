@@ -66,8 +66,8 @@ class HovedSelvvejledtKlogt(L.LightningModule):
         return ['lokalt', 'globalt']
 
 class HovedSelvvejledtDumt(HovedSelvvejledtKlogt):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         raise NotImplementedError
 
 

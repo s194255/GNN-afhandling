@@ -24,7 +24,7 @@ class Grundmodel(L.LightningModule):
                  args_dict: dict,
                  ):
         super().__init__()
-        args_dict.update({"model_name": self.__class__.__name__})
+        args_dict.update({"modelklasse": self.__class__.__name__})
         self.args_dict = args_dict
         self.rygrad = self.create_rygrad()
         self.hoved = self.create_hoved()

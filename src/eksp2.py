@@ -86,10 +86,9 @@ class Eksp2:
             debugify_config(self.config)
         self.init_kørselsid()
         self.fortræn_tags = []
-        if args.selvQM9:
-            self.bedste_selvvejledt, self.qm9Bygger2Hoved, _, run_id = r.get_selvvejledtQM9(self.config, args.selv_ckpt_path)
-        else:
-            self.bedste_selvvejledt, self.qm9Bygger2Hoved, _, run_id = r.get_selvvejledt(self.config, args.selv_ckpt_path)
+        modelklasse_str = 'SelvvejledtQM9' if args.selvQM9 else 'Selvvejledt'
+        self.bedste_selvvejledt, self.qm9Bygger2Hoved, _, run_id = r.get_selvvejledt(self.config, args.selv_ckpt_path,
+                                                                                     modelklasse_str)
         if run_id:
             self.fortræn_tags.append(run_id)
         if not args.selv_ckpt_path:

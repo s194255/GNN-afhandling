@@ -5,13 +5,21 @@ import yaml
 from lightning.pytorch.loggers.tensorboard import TensorBoardLogger
 import os
 import wandb
-import src.models as m
-import src.data as d
+from src.models.selvvejledt import Selvvejledt, SelvvejledtQM9
+from src.models.downstream import Downstream
+from src.data.QM9 import QM9ByggerEksp2
 
-from torch_scatter import scatter_mean, scatter_add
+# from src import data as d
 
-from src import data as d
+MODELKLASSER = {
+    'Selvvejledt': Selvvejledt,
+    'SelvvejledtQM9': SelvvejledtQM9
+}
 
+MODELOPGAVER = {
+    'Selvvejledt': 'selvvejledt',
+    'SelvvejledtQM9': 'downstream'
+}
 
 def TQDMProgressBar():
     return L.pytorch.callbacks.TQDMProgressBar(refresh_rate=1000)
@@ -55,80 +63,6 @@ def get_trainer(epoker, logger=None):
                         )
     return trainer
 
-def get_next_wandb_kørselsid():
-    wandb.login()
-
-    # Hent informasjon om alle kjøringer (runs) i et prosjekt
-    # runs = wandb.Api().runs("your_username/your_project")
-    runs = wandb.Api().runs("afhandling")
-    kørselsider = []
-    for run in runs:
-        group = run.group
-        if hasattr(run, "kørselsid"):
-            kørselsider.append(run.kørselsid)
-    return max(kørselsider, default=-1)+1
-
-def indlæs_selv_ckpt_path(selv_ckpt_path):
-    api = wandb.Api()
-    artefakt = api.artifact(selv_ckpt_path)
-    artefakt_sti = os.path.join(artefakt.download(), 'model.ckpt')
-    run_id = artefakt.logged_by().id
-    return artefakt_sti, run_id
-
-
-def get_selvvejledt(config, selv_ckpt_path):
-    if selv_ckpt_path:
-        artefakt_sti, run_id =  indlæs_selv_ckpt_path(selv_ckpt_path)
-        selvvejledt = m.Selvvejledt.load_from_checkpoint(artefakt_sti)
-        qm9bygger = d.QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
-    else:
-        selvvejledt = m.Selvvejledt(args_dict=config['selvvejledt']['model'])
-        qm9bygger = d.QM9ByggerEksp2(**config['datasæt'])
-        artefakt_sti = None
-        run_id = None
-    return selvvejledt, qm9bygger, artefakt_sti, run_id
-
-class RiemannGaussian(L.LightningModule):
-
-    def __init__(self):
-        super().__init__()
-        # TODO: gør så man kan bruge T'er
-        self.T = 1
-
-    @torch.no_grad()
-    def get_s(self, pos_til, pos, batch, sigma):
-        v = pos.shape[-1]
-        center = scatter_mean(pos, batch, dim=-2)  # B * 3
-        perturbed_center = scatter_mean(pos_til, batch, dim=-2)  # B * 3
-        pos_c = pos - center[batch]
-        perturbed_pos_c = pos_til - perturbed_center[batch]
-        perturbed_pos_c_left = perturbed_pos_c.repeat_interleave(v, dim=-1)
-        perturbed_pos_c_right = perturbed_pos_c.repeat([1, v])
-        pos_c_left = pos_c.repeat_interleave(v, dim=-1)
-        ptp = scatter_add(perturbed_pos_c_left * perturbed_pos_c_right, batch, dim=-2).reshape(-1, v,
-                                                                                               v)  # B * 3 * 3
-        otp = scatter_add(pos_c_left * perturbed_pos_c_right, batch, dim=-2).reshape(-1, v, v)  # B * 3 * 3
-        ptp = ptp[batch]
-        otp = otp[batch]
-        # s = - 2 * (perturbed_pos_c.unsqueeze(1) @ ptp - pos_c.unsqueeze(1) @ otp).squeeze(1) / (
-        #         torch.norm(ptp, dim=(1, 2)) + torch.norm(otp, dim=(1, 2))).unsqueeze(-1).repeat([1, 3])
-        s = (perturbed_pos_c.unsqueeze(1) @ ptp - pos_c.unsqueeze(1) @ otp).squeeze(1)
-        s = -(1/sigma**2).view(-1, 1) * s
-        alpha = (torch.norm(ptp, dim=(1, 2)) + torch.norm(otp, dim=(1, 2)))/2
-        return s, alpha
-    @torch.no_grad()
-    def forward(self,
-                pos: torch.Tensor,
-                batch: torch.Tensor,
-                sigma: torch.Tensor,
-                ):
-        pos_til = pos.clone()
-        for t in range(1, self.T+1):
-            beta = (sigma**2)/(2**t)
-            s, alpha = self.get_s(pos_til, pos, batch, sigma)
-            pos_til = pos_til + (beta/alpha).view(-1, 1) * s + torch.sqrt(2*beta).view(-1, 1)*torch.randn_like(pos)
-        target = (1/alpha).view(-1, 1) * s
-        return pos_til, target
 
 def get_opgaver_in_config(config):
     return list(set(config.keys())-(set(config.keys()) - {'downstream', 'selvvejledt'}))
@@ -155,9 +89,9 @@ def debugify_config(config):
     config['datasæt']['batch_size'] = 1
     config['datasæt']['num_workers'] = 0
     config['datasæt']['n_trin'] = 1
-    config['rygrad']['hidden_channels'] = 8
     for opgave in get_opgaver_in_config(config):
         config[opgave]['epoker'] = 1
+        config[opgave]['model']['rygrad']['hidden_channels'] = 8
 
 
 def get_n_epoker(artefakt_sti):
@@ -167,16 +101,55 @@ def get_n_epoker(artefakt_sti):
         state_dict = torch.load(artefakt_sti, map_location='cpu')
         return state_dict['epoch']
 
+def indlæs_selv_ckpt_path(selv_ckpt_path):
+    api = wandb.Api()
+    artefakt = api.artifact(selv_ckpt_path)
+    artefakt_sti = os.path.join(artefakt.download(), 'model.ckpt')
+    run_id = artefakt.logged_by().id
+    return artefakt_sti, run_id
 
-def get_selvvejledtQM9(config, selv_ckpt_path):
+def _get_modelklasse(ckpt_path):
+    state_dict = torch.load(ckpt_path, map_location='cpu')
+    modelklasse_str = state_dict['rygrad_args']['modelklasse']
+    return MODELKLASSER[modelklasse_str]
+
+def get_selvvejledt(config, selv_ckpt_path, modelklasse_str='Selvvejledt'):
     if selv_ckpt_path:
-        artefakt_sti, run_id = indlæs_selv_ckpt_path(selv_ckpt_path)
-        selvvejledt = m.SelvvejledtQM9.load_from_checkpoint(artefakt_sti)
-        qm9bygger = d.QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
+        ckpt_path, run_id = indlæs_selv_ckpt_path(selv_ckpt_path)
+        modelklasse = _get_modelklasse(ckpt_path)
+        selvvejledt = modelklasse.load_from_checkpoint(ckpt_path)
+        qm9bygger = QM9ByggerEksp2.load_from_checkpoint(ckpt_path, **config['datasæt'])
     else:
-        selvvejledt = m.SelvvejledtQM9(rygrad_args=config['rygrad'],
-                                    args_dict=config['downstream']['model'])
-        qm9bygger = d.QM9ByggerEksp2(**config['datasæt'])
-        artefakt_sti = None
+        modelklasse = MODELKLASSER[modelklasse_str]
+        opgave = MODELOPGAVER[modelklasse_str]
+        selvvejledt = modelklasse(args_dict=config[opgave]['model'])
+        qm9bygger = QM9ByggerEksp2(**config['datasæt'])
+        ckpt_path = None
         run_id = None
-    return selvvejledt, qm9bygger, artefakt_sti, run_id
+    return selvvejledt, qm9bygger, ckpt_path, run_id
+
+
+# def get_selvvejledtQM9(config, selv_ckpt_path):
+#     if selv_ckpt_path:
+#         artefakt_sti, run_id = indlæs_selv_ckpt_path(selv_ckpt_path)
+#         selvvejledt = SelvvejledtQM9.load_from_checkpoint(artefakt_sti)
+#         qm9bygger = QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
+#     else:
+#         selvvejledt = SelvvejledtQM9(rygrad_args=config['rygrad'],
+#                                     args_dict=config['downstream']['model'])
+#         qm9bygger = QM9ByggerEksp2(**config['datasæt'])
+#         artefakt_sti = None
+#         run_id = None
+#     return selvvejledt, qm9bygger, artefakt_sti, run_id
+
+# def get_model(config, ckpt_path, modelklasse_str=None):
+#     if ckpt_path:
+#         state_dict = torch.load(ckpt_path, map_location='cpu')
+#         modelklasse_str = state_dict['rygrad_args']['modelklasse']
+#         modelklasse = MODELKLASSER[modelklasse_str]
+#         model = modelklasse.load_from_checkpoint(ckpt_path)
+#         qm9bygger = d.QM9ByggerEksp2.load_from_checkpoint(ckpt_path)
+#     else:
+#         modelklasse = MODELKLASSER[modelklasse_str]
+#         model = modelklasse(args_dict=args_dict)
+#     return model

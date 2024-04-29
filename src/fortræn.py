@@ -3,7 +3,6 @@ import redskaber as r
 import wandb
 import os
 import shutil
-from src.redskaber import get_selvvejledtQM9
 
 
 def parserargs():
@@ -29,10 +28,9 @@ def main():
     if args.debug:
         r.debugify_config(config)
 
-    if args.selvQM9:
-        selvvejledt, qm9bygger, artefakt_sti, _ = get_selvvejledtQM9(config, args.selv_ckpt_path)
-    else:
-        selvvejledt, qm9bygger, artefakt_sti, _ = r.get_selvvejledt(config, args.selv_ckpt_path)
+    modelklasse_str = 'SelvvejledtQM9' if args.selvQM9 else 'Selvvejledt'
+    selvvejledt, qm9bygger, artefakt_sti, run_id = r.get_selvvejledt(config, args.selv_ckpt_path,
+                                                                                 modelklasse_str)
     logger = r.wandbLogger(log_model=True, tags=['selvvejledt'])
     trænede_epoker = r.get_n_epoker(artefakt_sti)
     trainer = r.get_trainer(config['selvvejledt']['epoker']+trænede_epoker, logger=logger)

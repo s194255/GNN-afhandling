@@ -10,7 +10,7 @@ from torch_geometric.loader import DataLoader
 from typing import List, Tuple
 import itertools
 from torch_geometric.data.data import BaseData
-from src.redskaber import RiemannGaussian
+from src.models.redskaber import RiemannGaussian
 
 ROOT = "data/QM9"
 

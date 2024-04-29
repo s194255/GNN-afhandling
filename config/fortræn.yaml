@@ -7,6 +7,7 @@ datasæt:
   spænd:
     - 500
     - 2000
+  val_reduced: false
 rygradtype: visnet
 selvvejledt:
   epoker: 30
