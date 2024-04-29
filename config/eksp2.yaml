@@ -16,7 +16,7 @@ downstream:
     hovedtype: klogt
     gamma: 0.1
     lr: 1.0e-02
-    step_size: 5000
+    step_size: 50
     ønsket_lr: 1.0e-02
     opvarmningsperiode: 1
     predicted_attribute: 1
