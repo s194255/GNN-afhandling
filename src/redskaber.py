@@ -110,7 +110,7 @@ def indlæs_selv_ckpt_path(selv_ckpt_path):
 
 def _get_modelklasse(ckpt_path):
     state_dict = torch.load(ckpt_path, map_location='cpu')
-    modelklasse_str = state_dict['args_dict']['modelklasse']
+    modelklasse_str = state_dict['hyper_parameters']['args_dict']['modelklasse']
     return MODELKLASSER[modelklasse_str]
 
 def get_selvvejledt(config, selv_ckpt_path, modelklasse_str='Selvvejledt'):
