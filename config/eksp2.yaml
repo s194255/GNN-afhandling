@@ -1,48 +1,44 @@
 datasæt:
-  batch_size: 128
+  batch_size: 512
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
   n_trin: 2
   spænd:
-    - 10
     - 100
+    - 2000
   val_reduced: true
 downstream:
   check_val_every_n_epoch: 5
-  epoker: 100
+  epoker: 200
   min_delta: 0.1
   model:
-    hovedtype: dumt
+    hovedtype: klogt
     gamma: 0.1
     lr: 1.0e-03
-    step_size: 25
+    step_size: 50
     ønsket_lr: 1.0e-03
     opvarmningsperiode: 1
     predicted_attribute: 1
   patience: 20
 rygradtype: visnet
 selvvejledt:
-  check_val_every_n_epoch: 50
-  epoker: 15
-  hoved:
-    atomref: null
-    max_z: 100
-    mean: 0.0
-    reduce_op: sum
-    std: 1.0
+  check_val_every_n_epoch: 1
+  epoker: 50
   min_delta: 0.001
   model:
     hovedtype: klogt
     gamma: 0.1
-    lambdaer: null
-    lr: 1.0e-06
-    step_size: 500
-    ønsket_lr: 1.0e-05
+    lambdaer:
+      lokalt: 1000
+      globalt: 1
+    lr: 1.0e-08
+    step_size: 10
+    ønsket_lr: 1.0e-06
     opvarmningsperiode: 3
-    noise_fra: -1
+    noise_fra: -2
     noise_til: 1
-    n_noise_trin: 2
+    n_noise_trin: 10
     log_gradient: false
   patience: 20
 udgaver:
