@@ -60,10 +60,10 @@ def debugify_config(config):
     config['datasæt']['batch_size'] = 4
     config['datasæt']['num_workers'] = 0
     config['datasæt']['n_trin'] = 1
-    config['rygrad']['hidden_channels'] = 8
     for opgave in r.get_opgaver_in_config(config):
         config[opgave]['epoker'] = 1
         config[opgave]['check_val_every_n_epoch'] = 1
+        config[opgave]['model']['rygrad']['hidden_channels'] = 8
     config['udgaver'] = ['med']
     config['temperaturer'] = ['frossen']
 
@@ -128,8 +128,7 @@ class Eksp2:
                             )
         return trainer
     def fortræn(self):
-        selvvejledt = src.models.selvvejledt.Selvvejledt(rygrad_args=self.config['rygrad'],
-                                                         args_dict=self.config['selvvejledt']['model'])
+        selvvejledt = src.models.selvvejledt.Selvvejledt(args_dict=self.config['selvvejledt']['model'])
         self.qm9Bygger2Hoved = d.QM9ByggerEksp2(**self.config['datasæt'])
         trainer = self.get_trainer(opgave='selvvejledt')
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_ckpt_path)
@@ -138,13 +137,10 @@ class Eksp2:
         wandb.finish()
         shutil.rmtree(os.path.join("afhandling", wandb_run_id))
 
-    def eftertræn(self, trin, udgave, temperatur):
+    def eftertræn(self, udgave, temperatur):
         assert temperatur in ['frossen', 'optøet']
         assert udgave in ['med', 'uden']
-        self.qm9Bygger2Hoved.sample_train_reduced(trin)
-        rygrad_args = self.bedste_selvvejledt.hparams.rygrad_args
-        downstream = DownstreamEksp2(rygrad_args=rygrad_args,
-                                     args_dict=self.config['downstream']['model'])
+        downstream = DownstreamEksp2(args_dict=self.config['downstream']['model'])
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if temperatur == "frossen":
@@ -152,16 +148,17 @@ class Eksp2:
         tags = [udgave, temperatur]+self.fortræn_tags
         trainer = self.get_trainer('downstream', tags=tags)
         trainer.fit(model=downstream, datamodule=self.qm9Bygger2Hoved)
-        trainer.test(ckpt_path="best", datamodule=self.qm9Bygger2Hoved)[0]
+        trainer.test(ckpt_path="best", datamodule=self.qm9Bygger2Hoved)
         wandb_run_id = wandb.run.id
         wandb.finish()
         shutil.rmtree(os.path.join("afhandling", wandb_run_id))
         downstream.cpu()
 
     def eksperiment_runde(self, i):
+        self.qm9Bygger2Hoved.sample_train_reduced(i)
         for temperatur in self.config['temperaturer']:
             for udgave in self.config['udgaver']:
-                self.eftertræn(i, udgave, temperatur)
+                self.eftertræn(udgave, temperatur)
 
     def main(self):
         for i in range(self.qm9Bygger2Hoved.n_trin):

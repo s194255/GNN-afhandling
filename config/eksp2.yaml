@@ -7,6 +7,7 @@ datasæt:
   spænd:
     - 10
     - 100
+  val_reduced: true
 downstream:
   check_val_every_n_epoch: 5
   epoker: 100
@@ -20,20 +21,7 @@ downstream:
     opvarmningsperiode: 1
     predicted_attribute: 1
   patience: 20
-rygrad:
-  cutoff: 5.0
-  hidden_channels: 512
-  lmax: 1
-  maskeringsandel: null
-  max_num_neighbors: 32
-  max_z: 100
-  num_heads: 8
-  num_layers: 6
-  num_rbf: 32
-  trainable_rbf: false
-  trainable_vecnorm: false
-  vecnorm_type: null
-  vertex: false
+rygradtype: visnet
 selvvejledt:
   check_val_every_n_epoch: 50
   epoker: 15

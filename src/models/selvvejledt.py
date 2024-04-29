@@ -21,24 +21,26 @@ class Selvvejledt(Grundmodel):
             lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
         self.lambdaer = lambdaer
         self.register_buffer("noise_scales_options", torch.logspace(
-            self.hparams.args_dict['noise_fra'],
-            self.hparams.args_dict['noise_til'],
-            steps=self.hparams.args_dict['n_noise_trin'],
+            self.args_dict['noise_fra'],
+            self.args_dict['noise_til'],
+            steps=self.args_dict['n_noise_trin'],
         ))
         self.criterion = torch.nn.MSELoss(reduction='mean')
         self.riemannGaussian = RiemannGaussian()
-        self.log_gradient = self.hparams.args_dict['log_gradient']
+        self.log_gradient = self.args_dict['log_gradient']
+
+    def create_hoved(self):
         if self.args_dict['hovedtype'] == "klogt":
-            self.hoved = HovedSelvvejledt(
+            return HovedSelvvejledt(
                 **self.args_dict['hoved'],
-                hidden_channels=self.hparams.rygrad_args['hidden_channels'],
-                out_channels=len(self.noise_scales_options)
+                hidden_channels=self.hidden_channels,
+                out_channels=self.args_dict['n_noise_trin']
             )
         elif self.args_dict['hovedtype'] == "dumt":
-            self.hoved = HovedSelvvejledtDumt(
+            return HovedSelvvejledtDumt(
                 **self.args_dict['hoved'],
-                hidden_channels=self.hparams.rygrad_args['hidden_channels'],
-                out_channels=len(self.noise_scales_options)
+                hidden_channels=self.hidden_channels,
+                out_channels=self.args_dict['n_noise_trin']
             )
         else:
             raise NotImplementedError

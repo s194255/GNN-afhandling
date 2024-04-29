@@ -1,7 +1,7 @@
 import lightning as L
-from src.models.visnet import VisNetRyggrad
+import src.models.rygrader as rygrader
 import torch
-from typing import Tuple, List, Optional
+from typing import Tuple, List
 
 
 class WarmUpStepLR(torch.optim.lr_scheduler.StepLR):
@@ -22,24 +22,30 @@ class WarmUpStepLR(torch.optim.lr_scheduler.StepLR):
 class Grundmodel(L.LightningModule):
     def __init__(self,
                  args_dict: dict,
-                 rygrad_args: dict,
                  ):
         super().__init__()
-        self.tjek_args(args_dict, self.udgangsargsdict)
         self.args_dict = args_dict
-        self.tjek_args(rygrad_args, VisNetRyggrad.args)
-        self.rygrad = VisNetRyggrad(
-            **rygrad_args
-        )
-        self.hoved = L.LightningModule()
+        self.rygrad = self.create_rygrad()
+        self.hoved = self.create_hoved()
         self.save_hyperparameters()
 
-    def tjek_args(self, givne_args, forventede_args):
-        forskel2 = set(forventede_args.keys()) - set(givne_args.keys())
-        assert len(forskel2) == 0, f'Følgende argumenter mangler {forskel2}'
+    def create_rygrad(self):
+        rygrad_args = self.args_dict['rygrad']
+        if self.args_dict['rygradtype'] == 'visnet':
+            return rygrader.VisNetRyggrad(**rygrad_args)
+        elif self.args_dict['rygradtype'] == 'baseline':
+            return rygrader.BaselineRygrad(**rygrad_args)
+
+    @property
+    def hidden_channels(self):
+        return self.args_dict['rygrad']['hidden_channels']
+
+    def create_hoved(self):
+        raise NotImplementedError
 
     def indæs_selvvejledt_rygrad(self, grundmodel):
-        assert grundmodel.hparams.rygrad_args == self.hparams.rygrad_args, 'downstreams rygrad skal bruge samme argumenter som den selvvejledte'
+        assert self.args_dict['rygradtype'] == grundmodel.args_dict['rygradtype'], 'downstreams rygradtype skal være det samme som den selvvejledte'
+        assert self.args_dict['rygrad'] == grundmodel.args_dict['rygrad'], 'downstreams rygrad skal bruge samme argumenter som den selvvejledte'
         state_dict = grundmodel.rygrad.state_dict()
         self.rygrad.load_state_dict(state_dict)
         print(f"domstream rygrad = {self.rygrad_param_sum()}")

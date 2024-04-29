@@ -6,8 +6,7 @@ from torch import Tensor
 from torch.autograd import grad
 from torch_geometric.utils import scatter
 
-from src.models.visnet import EquivariantScalar, Atomref
-from src.models.hoveder.hoveddownstream import PredictRegular
+from src.models.rygrader.visnet import EquivariantScalar, Atomref
 
 
 class HovedSelvvejledt(L.LightningModule):

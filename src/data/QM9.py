@@ -127,12 +127,18 @@ class QM9ByggerEksp1(QM9Bygger):
 
 class QM9ByggerEksp2(QM9Bygger):
 
-    def __init__(self, *args, spænd: List, n_trin: int, **kwargs):
+    def __init__(self,
+                 *args,
+                 spænd: List,
+                 n_trin: int,
+                 val_reduced: bool,
+                 **kwargs):
         super().__init__(*args, **kwargs)
         self.spænd = spænd
         self.n_trin = n_trin
         self.trin = None
-        self.sample_train_reduced(0)
+        self.val_reduced = val_reduced
+
 
     @property
     def eftertræningsandele(self) -> torch.Tensor:
@@ -147,7 +153,10 @@ class QM9ByggerEksp2(QM9Bygger):
         for task in ['train', 'val']:
             for debug_mode in [True, False]:
                 data_split = self.data_splits[debug_mode][task]
-                andel = self.eftertræningsandele[trin]
+                if task == 'val' and (not self.val_reduced):
+                    andel = 1.0
+                else:
+                    andel = self.eftertræningsandele[trin]
                 k = max(int(andel * len(data_split)), 1)
                 self.data_splits[debug_mode][f'{task}_reduced'] = data_split[:k]
 

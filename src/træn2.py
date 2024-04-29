@@ -1,12 +1,9 @@
 # print("importerer ...")
-import lightning as L
-from src.models import visnet
-import torch
 # print("færdig ...")
 #
-# # model = visnet.VisNetSelvvejledt(debug=True)
-# # model = visnet.VisNetSelvvejledt2(debug=True)
-# model = visnet.VisNetDownstream(debug=True, reduce_op='sum', eftertræningsandel=0.20)
+# # model = visnet.yaml.VisNetSelvvejledt(debug=True)
+# # model = visnet.yaml.VisNetSelvvejledt2(debug=True)
+# model = visnet.yaml.VisNetDownstream(debug=True, reduce_op='sum', eftertræningsandel=0.20)
 # model.frys_rygrad()
 #
 #
@@ -38,7 +35,6 @@ import torch
 # print(c)
 
 import torch_geometric
-import random
 from torch_geometric.loader import DataLoader
 
 dataset = torch_geometric.datasets.MD17("data/MD17", "malonaldehyde")

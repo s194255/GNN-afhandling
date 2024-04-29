@@ -13,9 +13,11 @@ class Downstream(Grundmodel):
     def __init__(self, *args,
                  **kwargs):
         super().__init__(*args, **kwargs)
-        self.target_idx = self.hparams.args_dict['predicted_attribute']
-        self.hoved = self.create_hoved()
         self.criterion = torch.nn.L1Loss()
+
+    @property
+    def target_idx(self):
+        return self.args_dict['predicted_attribute']
 
     def create_hoved(self):
         metadata = get_metadata()
@@ -24,16 +26,16 @@ class Downstream(Grundmodel):
                 **self.args_dict['hoved'],
                 means=metadata['means'][self.target_idx],
                 stds=metadata['stds'][self.target_idx],
-                hidden_channels=self.hparams.rygrad_args['hidden_channels'],
+                hidden_channels=self.hidden_channels,
                 target_idx=self.target_idx,
-                max_z=self.hparams.rygrad_args['max_z'],
+                max_z=self.args_dict['rygrad']['max_z'],
             )
         elif self.args_dict['hovedtype'] == "dumt":
             return HovedDownstreamDumt(
                 **self.args_dict['hoved'],
                 means=metadata['means'][self.target_idx],
                 stds=metadata['stds'][self.target_idx],
-                hidden_channels=self.hparams.rygrad_args['hidden_channels'],
+                hidden_channels=self.hidden_channels,
             )
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:

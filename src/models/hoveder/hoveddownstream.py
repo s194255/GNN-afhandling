@@ -1,7 +1,7 @@
 import lightning as L
 import torch.nn
 from torch_geometric.utils import scatter
-from src.models.visnet import GatedEquivariantBlock
+from src.models.rygrader.visnet import GatedEquivariantBlock
 from rdkit import Chem
 
 

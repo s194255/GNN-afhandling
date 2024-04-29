@@ -82,8 +82,7 @@ def get_selvvejledt(config, selv_ckpt_path):
         selvvejledt = m.Selvvejledt.load_from_checkpoint(artefakt_sti)
         qm9bygger = d.QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
     else:
-        selvvejledt = m.Selvvejledt(rygrad_args=config['rygrad'],
-                                    args_dict=config['selvvejledt']['model'])
+        selvvejledt = m.Selvvejledt(args_dict=config['selvvejledt']['model'])
         qm9bygger = d.QM9ByggerEksp2(**config['datasæt'])
         artefakt_sti = None
         run_id = None
@@ -137,6 +136,9 @@ def get_opgaver_in_config(config):
 def load_config(path):
     with open(path, encoding='utf-8') as f:
         config_dict = yaml.safe_load(f)
+    rygradtype = config_dict['rygradtype']
+    with open(os.path.join("config", "rygrader", f"{rygradtype}.yaml"), encoding='utf-8') as f:
+        rygrad = yaml.safe_load(f)
     opgaver_in_config = get_opgaver_in_config(config_dict)
     for opgave_in_config in opgaver_in_config:
         hovedtype = config_dict[opgave_in_config]['model']['hovedtype']
@@ -144,6 +146,8 @@ def load_config(path):
         with open(hoved_config_path, encoding='utf-8') as f:
             hoved_config_dict = yaml.safe_load(f)
         config_dict[opgave_in_config]['model']['hoved'] = hoved_config_dict
+        config_dict[opgave_in_config]['model']['rygradtype'] = rygradtype
+        config_dict[opgave_in_config]['model']['rygrad'] = rygrad
     return config_dict
 
 def debugify_config(config):
