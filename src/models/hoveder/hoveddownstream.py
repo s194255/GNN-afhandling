@@ -33,13 +33,27 @@ class PredictRegular(L.LightningModule):
         return x.squeeze(1)
 
 
-class PredictDipole(PredictRegular):
+class PredictDipole(GatedEquivariantMotor):
 
-    def __init__(self, *args, max_z: int, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self,
+                 hidden_channels: int,
+                 means: torch.Tensor,
+                 stds: torch.Tensor,
+                 num_layers: int,
+                 reduce_op: str,
+                 max_z: int,
+                 ):
+        super().__init__(
+            hidden_channels=hidden_channels,
+            out_channels=1,
+            means=means,
+            stds=stds,
+            num_layers=num_layers,
+            reduce_op=reduce_op
+        )
+        self.reduce_op = reduce_op
         atom_weights = self.get_atom_weights(max_z)
         self.register_buffer('atom_weights', atom_weights)
-        raise NotImplementedError
 
     def get_atom_weights(self, max_z):
         atom_weights = []
@@ -56,8 +70,9 @@ class PredictDipole(PredictRegular):
         return weighted_pos.sum(dim=0)/total_mass
 
     def forward(self, z, pos, batch, x, v):
-        x = self.motor(z, pos, batch, x, v)
-        x = x.squeeze(1)
+        for layer in self.motor:
+            x, v = layer(x, v)
+        x = x * self.stds + self.means
         r_c = self.get_centre_of_mass(pos, z)
         diff = pos - r_c
         res = x*diff+v.squeeze(2)
