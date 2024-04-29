@@ -22,38 +22,6 @@ LOG_ROOT = "eksp2_logs"
 
 torch.set_float32_matmul_precision('medium')
 
-class DownstreamEksp2(src.models.downstream.Downstream):
-    def setup(self, stage: str) -> None:
-        if stage == 'test':
-            self.metric = torchmetrics.BootStrapper(
-                torchmetrics.regression.MeanAbsoluteError(),
-                num_bootstraps=1000,
-                quantile=torch.tensor([0.05, 0.95], device=self.device)
-            )
-
-    def test_step(self, data: Data, batch_idx: int) -> None:
-        super().test_step(data, batch_idx)
-        pred = self(data.z, data.pos, data.batch)
-        self.metric.update(1000 * pred, 1000 * data.y[:, self.target_idx])
-
-    def on_test_epoch_end(self) -> None:
-        data = self.metric.compute()
-        log_dict = {
-            "test_loss_mean": data['mean'],
-            "test_loss_std": data['std'],
-            "test_loss_lower": data['quantile'][0].item(),
-            "test_loss_upper": data['quantile'][1].item(),
-            "eftertræningsmængde": self.get_eftertræningsmængde(),
-            "trin": self.trainer.datamodule.trin
-        }
-        self.log_dict(log_dict)
-        self.metric.reset()
-
-    def get_eftertræningsmængde(self):
-        debug = self.trainer.datamodule.debug
-        data_split = self.trainer.datamodule.data_splits[debug]['train_reduced']
-        return len(data_split)
-
 def debugify_config(config):
     config['datasæt']['debug'] = True
     config['datasæt']['batch_size'] = 4
@@ -138,7 +106,7 @@ class Eksp2:
     def eftertræn(self, udgave, temperatur):
         assert temperatur in ['frossen', 'optøet']
         assert udgave in ['med', 'uden']
-        downstream = DownstreamEksp2(args_dict=self.config['downstream']['model'])
+        downstream = m.Downstream(args_dict=self.config['downstream']['model'])
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if temperatur == "frossen":
