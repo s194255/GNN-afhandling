@@ -9,7 +9,7 @@ datasæt:
     - 500
   val_reduced: false
 downstream:
-  check_val_every_n_epoch: 10
+  check_val_every_n_epoch: 50
   epoker: 1000
   min_delta: 0.1
   model:
