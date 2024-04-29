@@ -33,7 +33,7 @@ selvvejledt:
       lokalt: 1000
       globalt: 1
     lr: 1.0e-08
-    step_size: 10
+    step_size: 15
     ønsket_lr: 1.0e-06
     opvarmningsperiode: 3
     noise_fra: -2

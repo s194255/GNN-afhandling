@@ -14,14 +14,13 @@ import src.data as d
 import src.redskaber
 import src.redskaber as r
 from torch_geometric.data import Data
-import pandas as pd
 import shutil
 from lightning.pytorch.loggers import WandbLogger
 import wandb
 
 LOG_ROOT = "eksp2_logs"
 
-# torch.set_float32_matmul_precision('medium')
+torch.set_float32_matmul_precision('medium')
 
 class DownstreamEksp2(src.models.downstream.Downstream):
     def setup(self, stage: str) -> None:
