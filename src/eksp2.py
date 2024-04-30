@@ -124,7 +124,7 @@ class Eksp2:
         shutil.rmtree(os.path.join("afhandling", wandb_run_id))
         downstream.cpu()
 
-    def eksperiment_runde(self, i):
+    def eksperiment_runde_parallelt(self, i):
         self.qm9Bygger2Hoved.sample_train_reduced(i)
         sub_processes = []
         for temperatur in self.config['temperaturer']:
@@ -145,6 +145,11 @@ class Eksp2:
                 sub_processes.append(process)
         for process in sub_processes:
             process.wait()
+    def eksperiment_runde(self, i):
+        self.qm9Bygger2Hoved.sample_train_reduced(i)
+        for temperatur in self.config['temperaturer']:
+            for udgave in self.config['udgaver']:
+                self.eftertræn(udgave, temperatur)
 
     def main(self):
         for i in range(self.qm9Bygger2Hoved.n_trin):

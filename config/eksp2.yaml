@@ -7,7 +7,7 @@ datasæt:
   spænd:
     - 10
     - 500
-  val_reduced: false
+  val_reduced: true
 downstream:
   check_val_every_n_epoch: 50
   epoker: 1000
