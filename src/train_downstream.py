@@ -24,7 +24,7 @@ def parse_args():
     parser.add_argument('--config_path', type=str, required=True, help='Sti til konfigurationsfil')
     parser.add_argument('--artefakt_sti', type=str, required=True, help='Sti til checkpoint-fil')
     parser.add_argument('--kørselsid', type=int, required=True, help='Kørsels-ID (unik værdi)')
-    parser.add_argument('--debug', type=bool, required=True, help='Sti til eksp2 YAML fil')
+    parser.add_argument('--debug', type=str, required=True, help='Sti til eksp2 YAML fil')
     parser.add_argument('--run_id', type=str, required=True)
 
     return parser.parse_args()
@@ -48,7 +48,8 @@ def get_trainer(config, kørselsid, tags=[]):
 def main():
     args = parse_args()
     config = r.load_config(args.config_path)
-    if args.debug:
+    debug = args.debug == 'True'
+    if debug:
         debugify_config(config)
 
     # selvvejledt, qm9Bygger, _, run_id = r.get_selvvejledt_fra_wandb(config, args.selv_ckpt_path)
