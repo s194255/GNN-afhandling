@@ -13,7 +13,7 @@ downstream:
   epoker: 100
   min_delta: 0.1
   model:
-    hovedtype: dumt
+    hovedtype: klogt
     gamma: 0.95
     lr: 1.0e-02
     step_size: 1
@@ -44,6 +44,6 @@ selvvejledt:
 udgaver:
   - med
 temperaturer:
-  - optøet
+  - frossen
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: 119
+kørselsid: null
