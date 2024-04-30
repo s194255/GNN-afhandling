@@ -42,8 +42,8 @@ selvvejledt:
     log_gradient: false
   patience: 20
 udgaver:
-  - uden
+  - med
 temperaturer:
   - frossen
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: null
+kørselsid: 118
