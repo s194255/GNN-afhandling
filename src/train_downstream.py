@@ -1,19 +1,13 @@
 import argparse
-import time
-import subprocess
 import os
-import yaml
-import pandas as pd
 import lightning as L
 import wandb
 
 import src.redskaber as r
-import torch
-import torchmetrics
 import src.models as m
-from torch_geometric.data import Data
 from lightning.pytorch.loggers import WandbLogger
 from src.eksp2 import debugify_config
+import shutil
 
 
 def parse_args():
@@ -32,7 +26,7 @@ def parse_args():
 def get_trainer(config, kørselsid, tags=[]):
     callbacks = [
         r.checkpoint_callback(),
-        r.TQDMProgressBar(),
+        # r.TQDMProgressBar(),
         L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
     ]
     logger = WandbLogger(project='afhandling', log_model=False, tags=['downstream']+tags,
@@ -42,6 +36,7 @@ def get_trainer(config, kørselsid, tags=[]):
                         callbacks=callbacks,
                         logger=logger,
                         check_val_every_n_epoch=config['downstream']['check_val_every_n_epoch'],
+                        enable_progress_bar=False,
                         )
     return trainer
 
@@ -69,6 +64,9 @@ def main():
     # Kør træning
     trainer.fit(model=downstream, datamodule=qm9Bygger)
     trainer.test(ckpt_path="best", datamodule=qm9Bygger)
+    wandb_run_id = wandb.run.id
+    wandb.finish()
+    shutil.rmtree(os.path.join("afhandling", wandb_run_id))
 
 if __name__ == "__main__":
     main()
