@@ -50,32 +50,37 @@ class Eksp2:
         self.log_metrics = ['test_loss_std', 'test_loss_mean', 'test_loss_lower', 'test_loss_upper']
         self.udgaver = ['uden', 'med']
         # self.init_kørsel_path()
-        self.selv_ckpt_path = args.selv_ckpt_path
         self.args = args
         self.config = src.redskaber.load_config(args.eksp2_path)
+        self.selv_ckpt_path = self.config['selv_ckpt_path']
         if args.debug:
             debugify_config(self.config)
         self.init_kørselsid()
         self.fortræn_tags = []
         modelklasse_str = 'SelvvejledtQM9' if args.selvQM9 else 'Selvvejledt'
-        self.bedste_selvvejledt, self.qm9Bygger2Hoved, self.artefakt_sti, self.run_id = r.get_selvvejledt_fra_wandb(self.config, args.selv_ckpt_path,
+        self.bedste_selvvejledt, self.qm9Bygger2Hoved, self.artefakt_sti, self.run_id = r.get_selvvejledt_fra_wandb(self.config,
+                                                                                                                    self.selv_ckpt_path,
                                                                                                                     modelklasse_str)
+        self.config['downstream']['model']['rygrad'] = self.bedste_selvvejledt.args_dict['rygrad']
         if self.run_id:
             self.fortræn_tags.append(self.run_id)
-        if not args.selv_ckpt_path:
+        if not self.selv_ckpt_path:
             self.fortræn()
 
     def init_kørselsid(self):
-        wandb.login()
-        runs = wandb.Api().runs("afhandling")
-        kørselsider = []
-        for run in runs:
-            gruppe = run.group
-            if gruppe:
-                if gruppe.split("_")[0] == "eksp2":
-                    kørselsid = int(gruppe.split("_")[1])
-                    kørselsider.append(kørselsid)
-        self.kørselsid = max(kørselsider, default=-1)+1
+        if self.config['kørselsid'] == None:
+            wandb.login()
+            runs = wandb.Api().runs("afhandling")
+            kørselsider = []
+            for run in runs:
+                gruppe = run.group
+                if gruppe:
+                    if gruppe.split("_")[0] == "eksp2":
+                        kørselsid = int(gruppe.split("_")[1])
+                        kørselsider.append(kørselsid)
+            self.kørselsid = max(kørselsider, default=-1)+1
+        else:
+            self.kørselsid = self.config['kørselsid']
 
 
     def get_trainer(self, opgave, tags=[]):
