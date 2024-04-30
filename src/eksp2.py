@@ -126,6 +126,7 @@ class Eksp2:
 
     def eksperiment_runde(self, i):
         self.qm9Bygger2Hoved.sample_train_reduced(i)
+        print(self.args.debug)
         sub_processes = []
         for temperatur in self.config['temperaturer']:
             for udgave in self.config['udgaver']:
