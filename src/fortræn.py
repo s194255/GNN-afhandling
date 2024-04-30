@@ -29,8 +29,8 @@ def main():
         r.debugify_config(config)
 
     modelklasse_str = 'SelvvejledtQM9' if args.selvQM9 else 'Selvvejledt'
-    selvvejledt, qm9bygger, artefakt_sti, run_id = r.get_selvvejledt(config, args.selv_ckpt_path,
-                                                                                 modelklasse_str)
+    selvvejledt, qm9bygger, artefakt_sti, run_id = r.get_selvvejledt_fra_wandb(config, args.selv_ckpt_path,
+                                                                               modelklasse_str)
     logger = r.wandbLogger(log_model=True, tags=['selvvejledt'])
     trænede_epoker = r.get_n_epoker(artefakt_sti)
     trainer = r.get_trainer(config['selvvejledt']['epoker']+trænede_epoker, logger=logger)

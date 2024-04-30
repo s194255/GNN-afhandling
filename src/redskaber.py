@@ -113,43 +113,22 @@ def _get_modelklasse(ckpt_path):
     modelklasse_str = state_dict['hyper_parameters']['args_dict']['modelklasse']
     return MODELKLASSER[modelklasse_str]
 
-def get_selvvejledt(config, selv_ckpt_path, modelklasse_str='Selvvejledt'):
+def get_selvvejledt_fra_artefakt_sti(config, artefakt_sti):
+    modelklasse = _get_modelklasse(artefakt_sti)
+    selvvejledt = modelklasse.load_from_checkpoint(artefakt_sti)
+    qm9bygger = QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
+    return selvvejledt, qm9bygger
+
+def get_selvvejledt_fra_wandb(config, selv_ckpt_path, modelklasse_str='Selvvejledt'):
     if selv_ckpt_path:
-        ckpt_path, run_id = indlæs_selv_ckpt_path(selv_ckpt_path)
-        modelklasse = _get_modelklasse(ckpt_path)
-        selvvejledt = modelklasse.load_from_checkpoint(ckpt_path)
-        qm9bygger = QM9ByggerEksp2.load_from_checkpoint(ckpt_path, **config['datasæt'])
+        artefakt_sti, run_id = indlæs_selv_ckpt_path(selv_ckpt_path)
+        selvvejledt, qm9bygger = get_selvvejledt_fra_artefakt_sti(config, artefakt_sti)
     else:
         modelklasse = MODELKLASSER[modelklasse_str]
         opgave = MODELOPGAVER[modelklasse_str]
         selvvejledt = modelklasse(args_dict=config[opgave]['model'])
         qm9bygger = QM9ByggerEksp2(**config['datasæt'])
-        ckpt_path = None
+        artefakt_sti = None
         run_id = None
-    return selvvejledt, qm9bygger, ckpt_path, run_id
+    return selvvejledt, qm9bygger, artefakt_sti, run_id
 
-
-# def get_selvvejledtQM9(config, selv_ckpt_path):
-#     if selv_ckpt_path:
-#         artefakt_sti, run_id = indlæs_selv_ckpt_path(selv_ckpt_path)
-#         selvvejledt = SelvvejledtQM9.load_from_checkpoint(artefakt_sti)
-#         qm9bygger = QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
-#     else:
-#         selvvejledt = SelvvejledtQM9(rygrad_args=config['rygrad'],
-#                                     args_dict=config['downstream']['model'])
-#         qm9bygger = QM9ByggerEksp2(**config['datasæt'])
-#         artefakt_sti = None
-#         run_id = None
-#     return selvvejledt, qm9bygger, artefakt_sti, run_id
-
-# def get_model(config, ckpt_path, modelklasse_str=None):
-#     if ckpt_path:
-#         state_dict = torch.load(ckpt_path, map_location='cpu')
-#         modelklasse_str = state_dict['rygrad_args']['modelklasse']
-#         modelklasse = MODELKLASSER[modelklasse_str]
-#         model = modelklasse.load_from_checkpoint(ckpt_path)
-#         qm9bygger = d.QM9ByggerEksp2.load_from_checkpoint(ckpt_path)
-#     else:
-#         modelklasse = MODELKLASSER[modelklasse_str]
-#         model = modelklasse(args_dict=args_dict)
-#     return model

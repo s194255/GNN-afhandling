@@ -13,7 +13,7 @@ def manip_config(config):
 def test_qm9bygger2():
     config = r.load_config("config/fortræn.yaml")
     manip_config(config)
-    selvvejledt, qm9bygger, _, _ = r.get_selvvejledt(config, None)
+    selvvejledt, qm9bygger, _, _ = r.get_selvvejledt_fra_wandb(config, None)
     trainer = r.get_trainer(config['selvvejledt']['epoker'])
     trainer.fit(model=selvvejledt, datamodule=qm9bygger)
 

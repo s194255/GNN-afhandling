@@ -17,6 +17,8 @@ from torch_geometric.data import Data
 import shutil
 from lightning.pytorch.loggers import WandbLogger
 import wandb
+import subprocess
+import sys
 
 LOG_ROOT = "eksp2_logs"
 
@@ -28,10 +30,10 @@ def debugify_config(config):
     config['datasæt']['num_workers'] = 0
     config['datasæt']['n_trin'] = 1
     for opgave in r.get_opgaver_in_config(config):
-        config[opgave]['epoker'] = 1
+        config[opgave]['epoker'] = 5
         config[opgave]['check_val_every_n_epoch'] = 1
         config[opgave]['model']['rygrad']['hidden_channels'] = 8
-    config['udgaver'] = ['med']
+    config['udgaver'] = ['med', 'uden']
     config['temperaturer'] = ['frossen']
 
 def parserargs():
@@ -49,16 +51,17 @@ class Eksp2:
         self.udgaver = ['uden', 'med']
         # self.init_kørsel_path()
         self.selv_ckpt_path = args.selv_ckpt_path
+        self.args = args
         self.config = src.redskaber.load_config(args.eksp2_path)
         if args.debug:
             debugify_config(self.config)
         self.init_kørselsid()
         self.fortræn_tags = []
         modelklasse_str = 'SelvvejledtQM9' if args.selvQM9 else 'Selvvejledt'
-        self.bedste_selvvejledt, self.qm9Bygger2Hoved, _, run_id = r.get_selvvejledt(self.config, args.selv_ckpt_path,
-                                                                                     modelklasse_str)
-        if run_id:
-            self.fortræn_tags.append(run_id)
+        self.bedste_selvvejledt, self.qm9Bygger2Hoved, self.artefakt_sti, self.run_id = r.get_selvvejledt_fra_wandb(self.config, args.selv_ckpt_path,
+                                                                                                                    modelklasse_str)
+        if self.run_id:
+            self.fortræn_tags.append(self.run_id)
         if not args.selv_ckpt_path:
             self.fortræn()
 
@@ -98,10 +101,11 @@ class Eksp2:
         self.qm9Bygger2Hoved = d.QM9ByggerEksp2(**self.config['datasæt'])
         trainer = self.get_trainer(opgave='selvvejledt')
         trainer.fit(selvvejledt, datamodule=self.qm9Bygger2Hoved, ckpt_path=self.selv_ckpt_path)
-        self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path)
-        wandb_run_id = wandb.run.id
+        self.artefakt_sti = trainer.checkpoint_callback.best_model_path
+        self.bedste_selvvejledt = src.models.selvvejledt.Selvvejledt.load_from_checkpoint(self.artefakt_sti)
+        self.run_id = wandb.run.id
         wandb.finish()
-        shutil.rmtree(os.path.join("afhandling", wandb_run_id))
+        # shutil.rmtree(os.path.join("afhandling", self.run_id))
 
     def eftertræn(self, udgave, temperatur):
         assert temperatur in ['frossen', 'optøet']
@@ -122,9 +126,25 @@ class Eksp2:
 
     def eksperiment_runde(self, i):
         self.qm9Bygger2Hoved.sample_train_reduced(i)
+        sub_processes = []
         for temperatur in self.config['temperaturer']:
             for udgave in self.config['udgaver']:
-                self.eftertræn(udgave, temperatur)
+                cmd = [
+                    sys.executable,
+                    "src/train_downstream.py",  # Ændre til den korrekte sti for subprocess-scriptet
+                    "--udgave", udgave,
+                    "--trin", str(i),
+                    "--temperatur", temperatur,
+                    "--config_path", self.args.eksp2_path,
+                    "--artefakt_sti", self.artefakt_sti,
+                    "--run_id", self.run_id,
+                    "--kørselsid", str(self.kørselsid),
+                    "--debug", str(self.args.debug)
+                ]
+                process = subprocess.Popen(cmd)
+                sub_processes.append(process)
+        for process in sub_processes:
+            process.wait()
 
     def main(self):
         for i in range(self.qm9Bygger2Hoved.n_trin):

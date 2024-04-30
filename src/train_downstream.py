@@ -7,50 +7,67 @@ import pandas as pd
 import lightning as L
 import wandb
 
-# Importer nødvendige klasser og funktioner fra dit projekt
 import src.redskaber as r
 import torch
 import torchmetrics
 import src.models as m
 from torch_geometric.data import Data
+from lightning.pytorch.loggers import WandbLogger
+from src.eksp2 import debugify_config
 
 
-# Parser arguments
 def parse_args():
     parser = argparse.ArgumentParser(description='Eftertræning')
-    parser.add_argument('--udgave', type=str, required=True, help='Udgave')
-    parser.add_argument('--trin', type=int, required=True, help='Eftertræningstrin')
-    parser.add_argument('--frys_rygrad', type=bool, required=True, help='Frys rygrad')
+    parser.add_argument('--udgave', type=str, required=True, help='Udgave (f.eks. med eller uden)')
+    parser.add_argument('--trin', type=int, required=True, help='Eftertræningstrin (heltal)')
+    parser.add_argument('--temperatur', type=str, required=True, help='Temperatur (f.eks. frossen eller optøet)')
     parser.add_argument('--config_path', type=str, required=True, help='Sti til konfigurationsfil')
-    parser.add_argument('--selv_ckpt_path', type=str, default=None, help='Sti til eksp2 YAML fil')
+    parser.add_argument('--artefakt_sti', type=str, required=True, help='Sti til checkpoint-fil')
+    parser.add_argument('--kørselsid', type=int, required=True, help='Kørsels-ID (unik værdi)')
+    parser.add_argument('--debug', type=bool, required=True, help='Sti til eksp2 YAML fil')
+    parser.add_argument('--run_id', type=str, required=True)
+
     return parser.parse_args()
+
+def get_trainer(config, kørselsid, tags=[]):
+    callbacks = [
+        r.checkpoint_callback(),
+        r.TQDMProgressBar(),
+        L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
+    ]
+    logger = WandbLogger(project='afhandling', log_model=False, tags=['downstream']+tags,
+                         group=f"eksp2_{kørselsid}")
+    trainer = L.Trainer(max_epochs=config['downstream']['epoker'],
+                        log_every_n_steps=1,
+                        callbacks=callbacks,
+                        logger=logger,
+                        check_val_every_n_epoch=config['downstream']['check_val_every_n_epoch'],
+                        )
+    return trainer
 
 def main():
     args = parse_args()
     config = r.load_config(args.config_path)
+    if args.debug:
+        debugify_config(config)
 
-
+    # selvvejledt, qm9Bygger, _, run_id = r.get_selvvejledt_fra_wandb(config, args.selv_ckpt_path)
+    selvvejledt, qm9Bygger = r.get_selvvejledt_fra_artefakt_sti(config, args.artefakt_sti)
+    config['downstream']['model']['rygrad'] = selvvejledt.args_dict['rygrad']
     downstream = m.Downstream(args_dict=config['downstream']['model'])
-    downstream.sample_train_reduced(args.trin)
+    qm9Bygger.sample_train_reduced(args.trin)
 
     if args.udgave == 'med':
-        selvvejledt = m.Selvvejledt.load_from_checkpoint()
-        downstream.indæs_selvvejledt_rygrad(config['bedste_selvvejledt'])
-
-    if args.frys_rygrad:
+        downstream.indæs_selvvejledt_rygrad(selvvejledt)
+    if args.temperatur == "frossen":
         downstream.frys_rygrad()
 
-    # Indstil træner
-    trainer = L.Trainer(...)
+    tags = [args.udgave, args.temperatur, args.run_id]
+    trainer = get_trainer(config, args.kørselsid, tags)
 
     # Kør træning
-    trainer.fit(model=downstream)
-
-    # Test og få resultater
-    resultater = trainer.test()[0]
-
-    # Returner resultater
-    print(yaml.dump(resultater))
+    trainer.fit(model=downstream, datamodule=qm9Bygger)
+    trainer.test(ckpt_path="best", datamodule=qm9Bygger)
 
 if __name__ == "__main__":
     main()
