@@ -28,7 +28,7 @@ def debugify_config(config):
     config['datasæt']['debug'] = True
     config['datasæt']['batch_size'] = 4
     config['datasæt']['num_workers'] = 0
-    config['datasæt']['n_trin'] = 1
+    config['datasæt']['n_trin'] = 3
     for opgave in r.get_opgaver_in_config(config):
         for variant in config[opgave].keys():
             config[opgave][variant]['epoker'] = 5
@@ -124,6 +124,7 @@ class Eksp2:
 
     def eksperiment_runde(self, i):
         self.qm9Bygger2Hoved.sample_train_reduced(i)
+        torch.manual_seed(42)
         for temperatur in self.config['temperaturer']:
             for udgave in self.config['udgaver']:
                 self.eftertræn(udgave, temperatur)

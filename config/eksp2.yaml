@@ -10,8 +10,8 @@ datasæt:
   val_reduced: true
 downstream:
   optøet:
-    check_val_every_n_epoch: 10
-    epoker: 200
+    check_val_every_n_epoch: 40
+    epoker: 400
     min_delta: 0.1
     model:
       hovedtype: klogt
