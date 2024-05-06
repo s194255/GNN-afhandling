@@ -3,18 +3,18 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 5
+  n_trin: 3
   spænd:
     - 10
     - 2000
   val_reduced: true
 downstream:
-  check_val_every_n_epoch: 5
-  epoker: 100
+  check_val_every_n_epoch: 10
+  epoker: 200
   min_delta: 0.1
   model:
     hovedtype: klogt
-    gamma: 0.99
+    gamma: 0.95
     lr: 1.0e-03
     step_size: 1
     ønsket_lr: 1.0e-03
