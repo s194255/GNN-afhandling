@@ -123,4 +123,4 @@ class DownstreamBaselineMean(Downstream):
                 pos: Tensor,
                 batch: Tensor):
         batch_size = len(torch.unique(batch))
-        return self.mean*torch.ones(size=(batch_size,))
+        return self.mean*torch.ones(size=(batch_size,), device=self.device)
