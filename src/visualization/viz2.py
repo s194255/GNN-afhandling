@@ -62,6 +62,8 @@ for group in groups:
     print(run_group)
     for temperatur in ['frossen', 'optøet']:
         run_group_temperatur = list(filter(lambda w: rygrad_temperatur(w, temperatur), run_group))
+        if len(run_group_temperatur) == 0:
+            continue
         plt.figure(figsize=(10, 6))
         for i, mode in enumerate(['med', 'uden']):
             run_group_temperatur_opgave = list(filter(lambda w: has_mode(w, mode), run_group_temperatur))
@@ -75,6 +77,7 @@ for group in groups:
 
         plt.xlabel("Datamængde")
         plt.ylabel("MAE")
+        plt.yscale("log")
         plt.legend()
         plt.grid(True)
         plt.savefig(os.path.join(kørsel_path, f"{temperatur}.jpg"))

@@ -43,7 +43,8 @@ selvvejledt:
   patience: 20
 udgaver:
   - uden
+  - med
 temperaturer:
-  - frossen
+  - optøet
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: 120
+kørselsid: null
