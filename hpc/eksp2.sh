@@ -18,4 +18,4 @@ module load cuda/11.3
 # activate the virtual environment
 source /zhome/2c/b/146593/Desktop/afhandling/env1/bin/activate
 
-python src/eksp2.py --selv_ckpt_path s194255/afhandling/model-4ci6vjyd:v0
+python src/eksp2.py 
