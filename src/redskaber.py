@@ -75,13 +75,14 @@ def load_config(path):
         rygrad = yaml.safe_load(f)
     opgaver_in_config = get_opgaver_in_config(config_dict)
     for opgave_in_config in opgaver_in_config:
-        hovedtype = config_dict[opgave_in_config]['model']['hovedtype']
-        hoved_config_path = os.path.join("config", opgave_in_config, f"{hovedtype}.yaml")
-        with open(hoved_config_path, encoding='utf-8') as f:
-            hoved_config_dict = yaml.safe_load(f)
-        config_dict[opgave_in_config]['model']['hoved'] = hoved_config_dict
-        config_dict[opgave_in_config]['model']['rygradtype'] = rygradtype
-        config_dict[opgave_in_config]['model']['rygrad'] = rygrad
+        for variant in config_dict[opgave_in_config].keys():
+            hovedtype = config_dict[opgave_in_config][variant]['model']['hovedtype']
+            hoved_config_path = os.path.join("config", opgave_in_config, f"{hovedtype}.yaml")
+            with open(hoved_config_path, encoding='utf-8') as f:
+                hoved_config_dict = yaml.safe_load(f)
+            config_dict[opgave_in_config][variant]['model']['hoved'] = hoved_config_dict
+            config_dict[opgave_in_config][variant]['model']['rygradtype'] = rygradtype
+            config_dict[opgave_in_config][variant]['model']['rygrad'] = rygrad
     return config_dict
 
 def debugify_config(config):

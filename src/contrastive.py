@@ -13,7 +13,7 @@ class QM9ByggerContrastive(d.QM9Bygger):
         return src.data.QM9ny.QM9Contrastive(self.root)
 
 trainer = r.get_trainer(epoker=10)
-eksp2 = src.redskaber.load_config("config/eksp2_debug.yaml")
+eksp2 = src.redskaber.load_config("config/eksp2_forældet.yaml")
 eksp2['datasæt']['debug'] = False
 model = m.SelvvejledtContrastive(rygrad_args=eksp2['rygrad'],
                                 args_dict=eksp2['selvvejledt']['model'])

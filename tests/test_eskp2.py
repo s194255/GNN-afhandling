@@ -15,7 +15,7 @@ class Args:
         eksp2['downstream']['epoker'] = 1
         eksp2['selvvejledt']['epoker'] = 1
         eksp2['rygrad']['hidden_channels'] = 8
-        self.eksp2_path = "config/eksp2_debug.yaml"
+        self.eksp2_path = "config/eksp2_forældet.yaml"
         if os.path.exists(self.eksp2_path):
             os.remove(self.eksp2_path)
         with open(self.eksp2_path, 'w', encoding='utf-8') as fil:
