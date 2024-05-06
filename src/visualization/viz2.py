@@ -40,45 +40,52 @@ def get_df(runs):
         resultater = pd.concat([resultater, pd.DataFrame(data=resultat)], ignore_index=True)
     return resultater
 
+def main_filter(run, temperatur, mode, group):
+    if run.group == None:
+        return False
+    if run.group != group:
+        return False
+    if mode not in run.tags:
+        return False
+    if mode in ['med', 'uden'] and temperatur not in run.tags:
+        return False
+    return True
+
 if os.path.exists("eksp2_logs"):
     shutil.rmtree("eksp2_logs")
 
 runs = wandb.Api().runs("afhandling")
-print(len(runs))
 runs = list(filter(is_downstream, runs))
 runs = list(filter(has_suitable_metrics, runs))
-print(len(runs))
 groups = []
-# runs = []
 for run in runs:
     groups.append(run.group)
 groups = list(set(groups))
 groups = list(filter(is_eksp2, groups))
-print(groups)
 for group in groups:
-    run_group = list(filter(lambda w: is_in_group(w, group), runs))
+    # run_group = list(filter(lambda w: is_in_group(w, group), runs))
     kørsel_path = os.path.join("eksp2_logs", group)
     os.makedirs(kørsel_path)
-    print(run_group)
     for temperatur in ['frossen', 'optøet']:
-        run_group_temperatur = list(filter(lambda w: rygrad_temperatur(w, temperatur), run_group))
-        if len(run_group_temperatur) == 0:
-            continue
-        plt.figure(figsize=(10, 6))
-        for i, mode in enumerate(['med', 'uden']):
-            run_group_temperatur_opgave = list(filter(lambda w: has_mode(w, mode), run_group_temperatur))
-            df = get_df(run_group_temperatur_opgave)
-            prefix = f'{mode}_{temperatur}'
-            plt.scatter(df["eftertræningsmængde"], df[f"test_loss_mean"], label=prefix, color=farver[i])
-            plt.fill_between(df["eftertræningsmængde"], df[f"test_loss_lower"], df[f"test_loss_upper"],
-                             color=farver[i],
-                             alpha=0.3)
-        plt.title(f'{group} {temperatur}')
+        try:
+            plt.figure(figsize=(10, 6))
+            for i, mode in enumerate(['med', 'uden', 'baseline']):
+                runs_filtered = list(filter(lambda w: main_filter(w, temperatur, mode, group), runs))
+                # run_group_temperatur_opgave = list(filter(lambda w: has_mode(w, mode), runs_filtered))
+                df = get_df(runs_filtered)
+                prefix = f'{mode}_{temperatur}'
+                plt.scatter(df["eftertræningsmængde"], df[f"test_loss_mean"], label=prefix, color=farver[i])
+                plt.fill_between(df["eftertræningsmængde"], df[f"test_loss_lower"], df[f"test_loss_upper"],
+                                 color=farver[i],
+                                 alpha=0.3)
+            plt.title(f'{group} {temperatur}')
 
-        plt.xlabel("Datamængde")
-        plt.ylabel("MAE")
-        plt.yscale("log")
-        plt.legend()
-        plt.grid(True)
-        plt.savefig(os.path.join(kørsel_path, f"{temperatur}.jpg"))
-        plt.close()
+            plt.xlabel("Datamængde")
+            plt.ylabel("MAE")
+            plt.yscale("log")
+            plt.legend()
+            plt.grid(True)
+            plt.savefig(os.path.join(kørsel_path, f"{temperatur}.jpg"))
+            plt.close()
+        except ValueError:
+            pass
