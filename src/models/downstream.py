@@ -8,6 +8,7 @@ from src.data import get_metadata
 from src.models.grund import Grundmodel
 from src.models.hoveder.hoveddownstream import HovedDownstreamKlogt, HovedDownstreamDumt
 import torchmetrics
+import lightning as L
 
 
 class Downstream(Grundmodel):
@@ -103,3 +104,23 @@ class Downstream(Grundmodel):
         debug = self.trainer.datamodule.debug
         data_split = self.trainer.datamodule.data_splits[debug]['train_reduced']
         return len(data_split)
+
+class DownstreamBaselineMean(Downstream):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        metadata = get_metadata()
+        self.register_buffer("mean", torch.tensor(metadata['means'][self.target_idx]))
+
+    def create_rygrad(self):
+        return L.LightningModule()
+
+    def create_hoved(self):
+        return L.LightningModule()
+
+    def forward(self,
+                z: Tensor,
+                pos: Tensor,
+                batch: Tensor):
+        batch_size = len(torch.unique(batch))
+        return self.mean*torch.ones(size=(batch_size,))

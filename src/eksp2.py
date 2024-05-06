@@ -34,8 +34,8 @@ def debugify_config(config):
             config[opgave][variant]['epoker'] = 5
             config[opgave][variant]['check_val_every_n_epoch'] = 1
             config[opgave][variant]['model']['rygrad']['hidden_channels'] = 8
-    config['udgaver'] = ['med', 'uden']
-    config['temperaturer'] = ['frossen']
+    # config['udgaver'] = ['med', 'uden']
+    # config['temperaturer'] = ['frossen']
 
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
@@ -98,8 +98,9 @@ class Eksp2:
 
     def eftertræn(self, udgave, temperatur):
         assert temperatur in ['frossen', 'optøet']
-        assert udgave in ['med', 'uden']
-        downstream = m.Downstream(args_dict=self.config['downstream'][temperatur]['model'])
+        assert udgave in ['med', 'uden', 'baseline']
+        args_dict = self.config['downstream'][temperatur]['model']
+        downstream = m.Downstream(args_dict=args_dict)
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if temperatur == "frossen":
@@ -113,11 +114,21 @@ class Eksp2:
         shutil.rmtree(os.path.join("afhandling", wandb_run_id))
         downstream.cpu()
 
+    def eftertræn_baseline(self):
+        args_dict = self.config['downstream']['optøet']['model']
+        downstream = m.DownstreamBaselineMean(args_dict=args_dict)
+        tags = ['baseline'] + self.fortræn_tags
+        trainer = self.get_trainer('optøet', tags=tags)
+        trainer.test(model=downstream, datamodule=self.qm9Bygger2Hoved)
+        wandb.finish()
+
     def eksperiment_runde(self, i):
         self.qm9Bygger2Hoved.sample_train_reduced(i)
         for temperatur in self.config['temperaturer']:
             for udgave in self.config['udgaver']:
                 self.eftertræn(udgave, temperatur)
+        self.eftertræn_baseline()
+
 
     def main(self):
         for i in range(self.qm9Bygger2Hoved.n_trin):
