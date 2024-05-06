@@ -15,9 +15,9 @@ downstream:
   model:
     hovedtype: klogt
     gamma: 0.95
-    lr: 1.0e-05
+    lr: 1.0e-03
     step_size: 1
-    ønsket_lr: 1.0e-05
+    ønsket_lr: 1.0e-03
     opvarmningsperiode: 1
     predicted_attribute: 1
   patience: 20
