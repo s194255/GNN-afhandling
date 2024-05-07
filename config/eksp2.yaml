@@ -10,17 +10,17 @@ datasæt:
   val_reduced: true
 downstream:
   optøet:
-    check_val_every_n_epoch: 40
-    epoker: 400
+    check_val_every_n_epoch: 5
+    epoker: 100
     min_delta: 0.1
     model:
       hovedtype: klogt
-      gamma: 0.99
-      lr: 1.0e-03
+      gamma: 0.95
+      lr: 1.0e-02
       step_size: 1
-      ønsket_lr: 1.0e-03
+      ønsket_lr: 1.0e-02
       opvarmningsperiode: 1
-      predicted_attribute: 0
+      predicted_attribute: 1
     patience: 20
   frossen:
     check_val_every_n_epoch: 5
@@ -33,7 +33,7 @@ downstream:
       step_size: 1
       ønsket_lr: 1.0e-02
       opvarmningsperiode: 1
-      predicted_attribute: 0
+      predicted_attribute: 1
     patience: 20
 rygradtype: visnet
 udgaver:
