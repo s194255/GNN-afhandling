@@ -16,9 +16,9 @@ downstream:
     model:
       hovedtype: klogt
       gamma: 0.99
-      lr: 3.0e-03
+      lr: 2.5e-03
       step_size: 1
-      ønsket_lr: 3.0e-03
+      ønsket_lr: 2.5e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
     patience: 20
@@ -41,4 +41,4 @@ udgaver:
 temperaturer:
   - optøet
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: 140
+kørselsid: null
