@@ -3,23 +3,23 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 5
+  n_trin: 1
   spænd:
-    - 10
-    - 2000
-  val_reduced: true
+    - 500
+    - 500
+  val_reduced: false
 downstream:
   optøet:
-    check_val_every_n_epoch: 10
-    epoker: 200
+    check_val_every_n_epoch: 40
+    epoker: 400
     min_delta: 0.1
     model:
       hovedtype: klogt
       gamma: 0.99
-      lr: 5.0e-06
+      lr: 1.0e-03
       step_size: 1
-      ønsket_lr: 5.0e-03
-      opvarmningsperiode: 5
+      ønsket_lr: 1.0e-03
+      opvarmningsperiode: 1
       predicted_attribute: 1
     patience: 20
   frossen:
