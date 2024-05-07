@@ -5,8 +5,8 @@ datasæt:
   num_workers: 4
   n_trin: 3
   spænd:
-    - 100
-    - 1000
+    - 10
+    - 500
   val_reduced: false
 downstream:
   optøet:
@@ -41,4 +41,4 @@ udgaver:
 temperaturer:
   - optøet
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: 138
+kørselsid: null
