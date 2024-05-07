@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 256
+  batch_size: 512
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
@@ -39,6 +39,6 @@ rygradtype: visnet
 udgaver:
   - uden
 temperaturer:
-  - optøet
+  - frossen
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: 142
+kørselsid: null
