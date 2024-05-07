@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 128
+  batch_size: 256
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
@@ -20,7 +20,7 @@ downstream:
       step_size: 1
       ønsket_lr: 1.0e-03
       opvarmningsperiode: 1
-      predicted_attribute: 1
+      predicted_attribute: 0
     patience: 20
   frossen:
     check_val_every_n_epoch: 5
@@ -33,7 +33,7 @@ downstream:
       step_size: 1
       ønsket_lr: 1.0e-02
       opvarmningsperiode: 1
-      predicted_attribute: 1
+      predicted_attribute: 0
     patience: 20
 rygradtype: visnet
 udgaver:
