@@ -37,7 +37,7 @@ downstream:
     patience: 20
 rygradtype: visnet
 udgaver:
-  - uden
+  - med
 temperaturer:
   - optøet
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
