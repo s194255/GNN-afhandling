@@ -23,12 +23,12 @@ downstream:
       predicted_attribute: 1
     patience: 20
   frossen:
-    check_val_every_n_epoch: 20
-    epoker: 200
+    check_val_every_n_epoch: 40
+    epoker: 400
     min_delta: 0.1
     model:
       hovedtype: klogt
-      gamma: 0.95
+      gamma: 0.99
       lr: 1.0e-02
       step_size: 1
       ønsket_lr: 1.0e-02
@@ -41,4 +41,4 @@ udgaver:
 temperaturer:
   - frossen
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: 143
+kørselsid: null
