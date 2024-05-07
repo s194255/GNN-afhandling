@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 1
+  n_trin: 3
   spænd:
-    - 500
-    - 500
+    - 100
+    - 1000
   val_reduced: false
 downstream:
   optøet:
@@ -41,4 +41,4 @@ udgaver:
 temperaturer:
   - optøet
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: 137
+kørselsid: null
