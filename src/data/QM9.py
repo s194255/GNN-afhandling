@@ -112,6 +112,13 @@ class QM9Bygger(L.LightningDataModule):
     def test_dataloader(self):
         return self.get_dataloader('test', False)
 
+    def get_metadata2(self, task):
+        dataset = self.get_mother_dataset()
+        idxs = self.data_splits[False][task]
+        means = dataset.y[idxs].mean(dim=0)
+        stds = dataset.y[idxs].std(dim=0)
+        return {'means': means, 'stds': stds}
+
 class QM9ByggerEksp1(QM9Bygger):
 
     def __init__(self,
@@ -240,10 +247,3 @@ class QM9Contrastive(torch_geometric.datasets.QM9):
         # torch_geometric.data.Data()
         return torch_geometric.data.Data(pos=pos, z=z, y=y)
 
-
-def get_metadata():
-    root = "data/QM9"
-    mother_dataset = torch_geometric.datasets.QM9(root)
-    stds = mother_dataset.y.std(dim=0)
-    means = mother_dataset.y.mean(dim=0)
-    return {'means': means, 'stds': stds}

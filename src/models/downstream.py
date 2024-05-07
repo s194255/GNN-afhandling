@@ -4,16 +4,18 @@ import torch
 from torch import Tensor
 from torch_geometric.data import Data
 
-from src.data import get_metadata
 from src.models.grund import Grundmodel
 from src.models.hoveder.hoveddownstream import HovedDownstreamKlogt, HovedDownstreamDumt
 import torchmetrics
 import lightning as L
+import copy
 
 
 class Downstream(Grundmodel):
     def __init__(self, *args,
+                 metadata: dict,
                  **kwargs):
+        self.metadata = metadata
         super().__init__(*args, **kwargs)
         self.criterion = torch.nn.L1Loss()
 
@@ -32,12 +34,12 @@ class Downstream(Grundmodel):
         return self.args_dict['predicted_attribute']
 
     def create_hoved(self):
-        metadata = get_metadata()
+        # metadata = get_metadata()
         if self.args_dict['hovedtype'] == "klogt":
             return HovedDownstreamKlogt(
                 **self.args_dict['hoved'],
-                means=metadata['means'][self.target_idx],
-                stds=metadata['stds'][self.target_idx],
+                means=self.metadata['means'][self.target_idx],
+                stds=self.metadata['stds'][self.target_idx],
                 hidden_channels=self.hidden_channels,
                 target_idx=self.target_idx,
                 max_z=self.args_dict['rygrad']['max_z'],
@@ -45,8 +47,8 @@ class Downstream(Grundmodel):
         elif self.args_dict['hovedtype'] == "dumt":
             return HovedDownstreamDumt(
                 **self.args_dict['hoved'],
-                means=metadata['means'][self.target_idx],
-                stds=metadata['stds'][self.target_idx],
+                means=self.metadata['means'][self.target_idx],
+                stds=self.metadata['stds'][self.target_idx],
                 hidden_channels=self.hidden_channels,
             )
 
@@ -109,8 +111,7 @@ class DownstreamBaselineMean(Downstream):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        metadata = get_metadata()
-        self.register_buffer("mean", torch.tensor(metadata['means'][self.target_idx]))
+        self.register_buffer("mean", copy.deepcopy(self.metadata['means'][self.target_idx]))
 
     def create_rygrad(self):
         return L.LightningModule()

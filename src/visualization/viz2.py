@@ -73,7 +73,7 @@ for group in groups:
                 runs_filtered = list(filter(lambda w: main_filter(w, temperatur, mode, group), runs))
                 # run_group_temperatur_opgave = list(filter(lambda w: has_mode(w, mode), runs_filtered))
                 df = get_df(runs_filtered)
-                prefix = f'{mode}_{temperatur}'
+                prefix = f'{mode}'
                 plt.scatter(df["eftertræningsmængde"], df[f"test_loss_mean"], label=prefix, color=farver[i])
                 plt.fill_between(df["eftertræningsmængde"], df[f"test_loss_lower"], df[f"test_loss_upper"],
                                  color=farver[i],

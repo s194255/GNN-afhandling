@@ -100,7 +100,8 @@ class Eksp2:
         assert temperatur in ['frossen', 'optøet']
         assert udgave in ['med', 'uden', 'baseline']
         args_dict = self.config['downstream'][temperatur]['model']
-        downstream = m.Downstream(args_dict=args_dict)
+        downstream = m.Downstream(args_dict=args_dict,
+                                  metadata=self.qm9Bygger2Hoved.get_metadata2('train_reduced'))
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if temperatur == "frossen":
@@ -116,7 +117,10 @@ class Eksp2:
 
     def eftertræn_baseline(self):
         args_dict = self.config['downstream']['optøet']['model']
-        downstream = m.DownstreamBaselineMean(args_dict=args_dict)
+        downstream = m.DownstreamBaselineMean(
+            args_dict=args_dict,
+            metadata=self.qm9Bygger2Hoved.get_metadata2('train_reduced')
+        )
         tags = ['baseline'] + self.fortræn_tags
         trainer = self.get_trainer('optøet', tags=tags)
         trainer.test(model=downstream, datamodule=self.qm9Bygger2Hoved)

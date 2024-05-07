@@ -7,7 +7,7 @@ datasæt:
   spænd:
     - 10
     - 500
-  val_reduced: false
+  val_reduced: true
 downstream:
   optøet:
     check_val_every_n_epoch: 80
@@ -41,4 +41,4 @@ udgaver:
 temperaturer:
   - optøet
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: 139
+kørselsid: null
