@@ -10,15 +10,15 @@ datasæt:
   val_reduced: true
 downstream:
   optøet:
-    check_val_every_n_epoch: 5
-    epoker: 100
+    check_val_every_n_epoch: 10
+    epoker: 200
     min_delta: 0.1
     model:
       hovedtype: klogt
-      gamma: 0.95
-      lr: 1.0e-02
+      gamma: 0.99
+      lr: 5.0e-03
       step_size: 1
-      ønsket_lr: 1.0e-02
+      ønsket_lr: 5.0e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
     patience: 20
@@ -41,4 +41,4 @@ udgaver:
 temperaturer:
   - optøet
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: 136
+kørselsid: null
