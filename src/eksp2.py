@@ -18,11 +18,20 @@ LOG_ROOT = "eksp2_logs"
 
 torch.set_float32_matmul_precision('medium')
 
+class DownstreamEksp2(m.Downstream):
+
+    def __init__(self, *args, seed, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.seed = seed
+    def on_train_start(self) -> None:
+        self.log('seed', self.seed)
+
 def debugify_config(config):
     config['datasæt']['debug'] = True
     config['datasæt']['batch_size'] = 4
     config['datasæt']['num_workers'] = 0
-    config['datasæt']['n_trin'] = 1
+    config['datasæt']['n_trin'] = 2
+    config['kørselsid'] = None
     for opgave in r.get_opgaver_in_config(config):
         for variant in config[opgave].keys():
             config[opgave][variant]['epoker'] = 5
@@ -88,12 +97,13 @@ class Eksp2:
                             )
         return trainer
 
-    def eftertræn(self, udgave, temperatur):
+    def eftertræn(self, udgave, temperatur, seed):
         assert temperatur in ['frossen', 'optøet']
         assert udgave in ['med', 'uden', 'baseline']
         args_dict = self.config['Downstream'][temperatur]['model']
-        downstream = m.Downstream(args_dict=args_dict,
-                                  metadata=self.qm9Bygger2Hoved.get_metadata2('train_reduced'))
+        downstream = DownstreamEksp2(args_dict=args_dict,
+                                     metadata=self.qm9Bygger2Hoved.get_metadata2('train_reduced'),
+                                     seed=seed)
         if udgave == 'med':
             downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
         if temperatur == "frossen":
@@ -120,10 +130,12 @@ class Eksp2:
 
     def eksperiment_runde(self, i, temperatur):
         self.qm9Bygger2Hoved.sample_train_reduced(i)
-        torch.manual_seed(self.config['Downstream'][temperatur]['seed'])
+        seed = self.config['Downstream'][temperatur]['seed']
+        torch.manual_seed(seed)
         for udgave in self.config['udgaver']:
-            self.eftertræn(udgave, temperatur)
-        self.eftertræn_baseline()
+            self.eftertræn(udgave, temperatur, seed)
+        if self.config['run_baseline']:
+            self.eftertræn_baseline()
 
     def main(self):
         for temperatur in self.config['temperaturer']:
