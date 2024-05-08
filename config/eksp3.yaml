@@ -10,10 +10,10 @@ Downstream:
     min_delta: 0.1
     model:
       hovedtype: klogt
-      gamma: 0.99
-      lr: 2.5e-03
+      gamma: 0.95
+      lr: 1e-04
       step_size: 1
-      ønsket_lr: 2.5e-03
+      ønsket_lr: 1e-04
       opvarmningsperiode: 1
       predicted_attribute: 1
     patience: 20
