@@ -29,6 +29,11 @@ class DownstreamEksp2(m.Downstream):
         super().on_train_start()
         self.log('seed', self.seed)
 
+    def get_eftertræningsmængde(self):
+        debug = self.trainer.datamodule.debug
+        data_split = self.trainer.datamodule.data_splits[debug]['train_reduced']
+        return len(data_split)
+
 def debugify_config(config):
     config['datasæt']['debug'] = True
     config['datasæt']['batch_size'] = 4

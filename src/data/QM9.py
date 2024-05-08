@@ -199,26 +199,21 @@ class QM9ByggerEksp2(QM9Bygger):
         return len(self.data_splits[False]['train_reduced'])
 
 class QM9ByggerEksp3(QM9Bygger):
-    def __init__(self, *args, n_train: int, **kwargs):
-        self.fordeling_cached = None
+    def __init__(self, *args, **kwargs):
+        self.fordeling_cached = self.create_fordeling_cached()
         super().__init__(*args, **kwargs)
+
+    def create_fordeling_cached(self):
+        test = 0.04
+        pretrain = 0.0
+        preval = 0.0
+        train = (1 - test) * 0.8
+        val = (1 - test) * 0.2
+        return torch.tensor([pretrain, preval, train, val, test])
 
     @property
     def fordeling(self) -> torch.Tensor:
-        if self.fordeling_cached:
-            n = len(self.mother_indices)
-            n_train = self.hparams.n_train
-            assert n_train < n
-            train = n_train / n
-            val = 0.25 * train
-            test = 0.04
-            pretrain = (1 - (train + val + test)) * 0.8
-            preval = (1 - (train + val + test)) * 0.2
-            self.fordeling_cached = torch.tensor([pretrain, preval, train, val, test])
         return self.fordeling_cached
-
-
-
 
 class QM9Contrastive(torch_geometric.datasets.QM9):
 

@@ -98,14 +98,13 @@ class Downstream(Grundmodel):
             "test_loss_lower": data['quantile'][0].item(),
             "test_loss_upper": data['quantile'][1].item(),
             "eftertræningsmængde": self.get_eftertræningsmængde(),
-            "trin": self.trainer.datamodule.trin
         }
         self.log_dict(log_dict)
         self.metric.reset()
 
     def get_eftertræningsmængde(self):
         debug = self.trainer.datamodule.debug
-        data_split = self.trainer.datamodule.data_splits[debug]['train_reduced']
+        data_split = self.trainer.datamodule.data_splits[debug]['train']
         return len(data_split)
 
     def indæs_selvvejledt_rygrad(self, selvvejledt):

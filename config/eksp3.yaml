@@ -1,33 +1,21 @@
 datasæt:
-  batch_size: 8
+  batch_size: 256
   debug: false
   delmængdestørrelse: 1.0
-  num_workers: 3
-  n_train: 2000
-downstream:
-  epoker: 150
-  hoved:
-    num_layers: 2
-    reduce_op: sum
-  model:
-    gamma: 0.1
-    lr: 1.0e-06
-    opvarmningsperiode: 10
-    predicted_attribute: 1
-    step_size: 30
-    ønsket_lr: 1.0e-04
-rygrad:
-  cutoff: 5.0
-  hidden_channels: 1024
-  lmax: 1
-  maskeringsandel: null
-  max_num_neighbors: 32
-  max_z: 100
-  num_heads: 16
-  num_layers: 6
-  num_rbf: 32
-  trainable_rbf: false
-  trainable_vecnorm: false
-  vecnorm_type: null
-  vertex: false
-frys_rygrad: false
+  num_workers: 4
+Downstream:
+  variant1:
+    check_val_every_n_epoch: 80
+    epoker: 100
+    min_delta: 0.1
+    model:
+      hovedtype: klogt
+      gamma: 0.99
+      lr: 2.5e-03
+      step_size: 1
+      ønsket_lr: 2.5e-03
+      opvarmningsperiode: 1
+      predicted_attribute: 1
+    patience: 20
+    seed: 42
+rygradtype: visnet
