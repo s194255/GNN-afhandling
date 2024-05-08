@@ -44,14 +44,6 @@ class Grundmodel(L.LightningModule):
     def create_hoved(self):
         raise NotImplementedError
 
-    def indæs_selvvejledt_rygrad(self, grundmodel):
-        assert self.args_dict['rygradtype'] == grundmodel.args_dict['rygradtype'], 'downstreams rygradtype skal være det samme som den selvvejledte'
-        assert self.args_dict['rygrad'] == grundmodel.args_dict['rygrad'], 'downstreams rygrad skal bruge samme argumenter som den selvvejledte'
-        state_dict = grundmodel.rygrad.state_dict()
-        self.rygrad.load_state_dict(state_dict)
-        print(f"domstream rygrad = {self.rygrad_param_sum()}")
-        print(f"selvvejledt rygrad = {grundmodel.rygrad_param_sum()}")
-
     def frys_rygrad(self):
         self.rygrad.freeze()
 

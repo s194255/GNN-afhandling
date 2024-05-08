@@ -4,6 +4,7 @@ import lightning as L
 from lightning.pytorch.loggers import CSVLogger
 
 import src.models as m
+import src.data as d
 import argparse
 import torch
 
@@ -13,6 +14,7 @@ import src.redskaber as r
 import shutil
 from lightning.pytorch.loggers import WandbLogger
 import wandb
+import copy
 
 LOG_ROOT = "eksp2_logs"
 
@@ -24,13 +26,14 @@ class DownstreamEksp2(m.Downstream):
         super().__init__(*args, **kwargs)
         self.seed = seed
     def on_train_start(self) -> None:
+        super().on_train_start()
         self.log('seed', self.seed)
 
 def debugify_config(config):
     config['datasæt']['debug'] = True
     config['datasæt']['batch_size'] = 4
     config['datasæt']['num_workers'] = 0
-    config['datasæt']['n_trin'] = 2
+    config['datasæt']['n_trin'] = 1
     config['kørselsid'] = None
     for opgave in r.get_opgaver_in_config(config):
         for variant in config[opgave].keys():
@@ -41,8 +44,6 @@ def debugify_config(config):
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
     parser.add_argument('--eksp2_path', type=str, default="config/eksp2.yaml", help='Sti til eksp2 YAML fil')
-    parser.add_argument('--selv_ckpt_path', type=str, default=None, help='Sti til eksp2 YAML fil')
-    parser.add_argument('--selvQM9', action='store_true', help='Sti til eksp2 YAML fil')
     parser.add_argument('--debug', action='store_true', help='Sti til eksp2 YAML fil')
     args = parser.parse_args()
     return args
@@ -53,16 +54,11 @@ class Eksp2:
         self.udgaver = ['uden', 'med']
         self.args = args
         self.config = src.redskaber.load_config(args.eksp2_path)
-        self.selv_ckpt_path = self.config['selv_ckpt_path']
         if args.debug:
             debugify_config(self.config)
         self.init_kørselsid()
         self.fortræn_tags = []
-        self.bedste_selvvejledt, self.qm9Bygger2Hoved, self.artefakt_sti, self.run_id = r.get_selvvejledt_fra_wandb(self.config,
-                                                                                                                    self.selv_ckpt_path)
-        self.fortræn_tags.append(self.run_id)
-        for variant in self.config['Downstream'].keys():
-            self.config['Downstream'][variant]['model']['rygrad'] = self.bedste_selvvejledt.args_dict['rygrad']
+        _, self.qm9Bygger2Hoved, _, _ = r.get_selvvejledt_fra_wandb(self.config, self.config['qm9_path'])
 
     def init_kørselsid(self):
         if self.config['kørselsid'] == None:
@@ -97,18 +93,31 @@ class Eksp2:
                             )
         return trainer
 
+    def create_downstream(self, udgave, temperatur, seed):
+        args_dict = copy.deepcopy(self.config['Downstream'][temperatur]['model'])
+        metadata = self.qm9Bygger2Hoved.get_metadata2('train_reduced')
+        tags = [temperatur]
+        if udgave != 'uden':
+            selvvejledt, _, _, run_id = r.get_selvvejledt_fra_wandb(self.config, udgave)
+            args_dict['rygrad'] = selvvejledt.args_dict['rygrad']
+            downstream = DownstreamEksp2(
+                args_dict=args_dict,
+                metadata=metadata,
+                seed=seed
+            )
+            downstream.indæs_selvvejledt_rygrad(selvvejledt)
+            tags = tags + [run_id, selvvejledt.__class__.__name__]
+        else:
+            downstream = DownstreamEksp2(args_dict=args_dict,
+                                         metadata=self.qm9Bygger2Hoved.get_metadata2('train_reduced'),
+                                         seed=seed)
+            tags.append('uden')
+        return downstream, tags
     def eftertræn(self, udgave, temperatur, seed):
         assert temperatur in ['frossen', 'optøet']
-        assert udgave in ['med', 'uden', 'baseline']
-        args_dict = self.config['Downstream'][temperatur]['model']
-        downstream = DownstreamEksp2(args_dict=args_dict,
-                                     metadata=self.qm9Bygger2Hoved.get_metadata2('train_reduced'),
-                                     seed=seed)
-        if udgave == 'med':
-            downstream.indæs_selvvejledt_rygrad(self.bedste_selvvejledt)
+        downstream, tags = self.create_downstream(udgave, temperatur, seed)
         if temperatur == "frossen":
             downstream.frys_rygrad()
-        tags = [udgave, temperatur]+self.fortræn_tags
         trainer = self.get_trainer(temperatur, tags=tags)
         trainer.fit(model=downstream, datamodule=self.qm9Bygger2Hoved)
         trainer.test(ckpt_path="best", datamodule=self.qm9Bygger2Hoved)
@@ -128,19 +137,19 @@ class Eksp2:
         trainer.test(model=downstream, datamodule=self.qm9Bygger2Hoved)
         wandb.finish()
 
-    def eksperiment_runde(self, i, temperatur):
+    def eksperiment_runde(self, i):
         self.qm9Bygger2Hoved.sample_train_reduced(i)
-        seed = self.config['Downstream'][temperatur]['seed']
-        torch.manual_seed(seed)
-        for udgave in self.config['udgaver']:
-            self.eftertræn(udgave, temperatur, seed)
+        for temperatur in self.config['temperaturer']:
+            seed = self.config['Downstream'][temperatur]['seed']
+            torch.manual_seed(seed)
+            for udgave in self.config['udgaver']:
+                self.eftertræn(udgave, temperatur, seed)
         if self.config['run_baseline']:
             self.eftertræn_baseline()
 
     def main(self):
-        for temperatur in self.config['temperaturer']:
-            for i in range(self.qm9Bygger2Hoved.n_trin):
-                self.eksperiment_runde(i, temperatur)
+        for i in range(self.qm9Bygger2Hoved.n_trin):
+            self.eksperiment_runde(i)
 
 
 if __name__ == "__main__":

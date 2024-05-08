@@ -122,17 +122,9 @@ def get_selvvejledt_fra_artefakt_sti(config, artefakt_sti):
     qm9bygger = QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
     return selvvejledt, qm9bygger
 
-def get_selvvejledt_fra_wandb(config, selv_ckpt_path, modelklasse_str='Selvvejledt'):
-    if selv_ckpt_path:
-        artefakt_sti, run_id = indlæs_selv_ckpt_path(selv_ckpt_path)
-        selvvejledt, qm9bygger = get_selvvejledt_fra_artefakt_sti(config, artefakt_sti)
-    else:
-        modelklasse = MODELKLASSER[modelklasse_str]
-        opgave = MODELOPGAVER[modelklasse_str]
-        selvvejledt = modelklasse(args_dict=config[opgave]['model'])
-        qm9bygger = QM9ByggerEksp2(**config['datasæt'])
-        artefakt_sti = None
-        run_id = None
+def get_selvvejledt_fra_wandb(config, wandb_path):
+    artefakt_sti, run_id = indlæs_selv_ckpt_path(wandb_path)
+    selvvejledt, qm9bygger = get_selvvejledt_fra_artefakt_sti(config, artefakt_sti)
     return selvvejledt, qm9bygger, artefakt_sti, run_id
 
 def build_selvvejledt(args_dict, datasæt_dict, modelklasse_str):
