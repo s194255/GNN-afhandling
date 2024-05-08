@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 512
+  batch_size: 256
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
@@ -8,7 +8,7 @@ datasæt:
     - 10
     - 500
   val_reduced: true
-downstream:
+Downstream:
   optøet:
     check_val_every_n_epoch: 80
     epoker: 800
@@ -22,6 +22,7 @@ downstream:
       opvarmningsperiode: 1
       predicted_attribute: 1
     patience: 20
+    seed: 42
   frossen:
     check_val_every_n_epoch: 40
     epoker: 400
@@ -35,10 +36,11 @@ downstream:
       opvarmningsperiode: 1
       predicted_attribute: 1
     patience: 20
+    seed: 42
 rygradtype: visnet
 udgaver:
   - med
 temperaturer:
-  - frossen
+  - optøet
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: 144
+kørselsid: null

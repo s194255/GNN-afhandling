@@ -1,7 +1,6 @@
 import os.path
 
 import lightning as L
-import torchmetrics
 from lightning.pytorch.loggers import CSVLogger
 
 import src.models as m
@@ -10,15 +9,10 @@ import torch
 
 import src.models.downstream
 import src.models.selvvejledt
-import src.data as d
-import src.redskaber
 import src.redskaber as r
-from torch_geometric.data import Data
 import shutil
 from lightning.pytorch.loggers import WandbLogger
 import wandb
-import subprocess
-import sys
 
 LOG_ROOT = "eksp2_logs"
 
@@ -28,14 +22,12 @@ def debugify_config(config):
     config['datasæt']['debug'] = True
     config['datasæt']['batch_size'] = 4
     config['datasæt']['num_workers'] = 0
-    config['datasæt']['n_trin'] = 3
+    config['datasæt']['n_trin'] = 1
     for opgave in r.get_opgaver_in_config(config):
         for variant in config[opgave].keys():
             config[opgave][variant]['epoker'] = 5
             config[opgave][variant]['check_val_every_n_epoch'] = 1
             config[opgave][variant]['model']['rygrad']['hidden_channels'] = 8
-    # config['udgaver'] = ['med', 'uden']
-    # config['temperaturer'] = ['frossen']
 
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
@@ -60,8 +52,8 @@ class Eksp2:
         self.bedste_selvvejledt, self.qm9Bygger2Hoved, self.artefakt_sti, self.run_id = r.get_selvvejledt_fra_wandb(self.config,
                                                                                                                     self.selv_ckpt_path)
         self.fortræn_tags.append(self.run_id)
-        for variant in self.config['downstream'].keys():
-            self.config['downstream'][variant]['model']['rygrad'] = self.bedste_selvvejledt.args_dict['rygrad']
+        for variant in self.config['Downstream'].keys():
+            self.config['Downstream'][variant]['model']['rygrad'] = self.bedste_selvvejledt.args_dict['rygrad']
 
     def init_kørselsid(self):
         if self.config['kørselsid'] == None:
@@ -87,7 +79,7 @@ class Eksp2:
         ]
         logger = WandbLogger(project='afhandling', log_model=False, tags=['downstream']+tags,
                              group=f"eksp2_{self.kørselsid}")
-        config_curr = self.config['downstream'][temperatur]
+        config_curr = self.config['Downstream'][temperatur]
         trainer = L.Trainer(max_epochs=config_curr['epoker'],
                             log_every_n_steps=1,
                             callbacks=callbacks,
@@ -99,7 +91,7 @@ class Eksp2:
     def eftertræn(self, udgave, temperatur):
         assert temperatur in ['frossen', 'optøet']
         assert udgave in ['med', 'uden', 'baseline']
-        args_dict = self.config['downstream'][temperatur]['model']
+        args_dict = self.config['Downstream'][temperatur]['model']
         downstream = m.Downstream(args_dict=args_dict,
                                   metadata=self.qm9Bygger2Hoved.get_metadata2('train_reduced'))
         if udgave == 'med':
@@ -116,7 +108,7 @@ class Eksp2:
         downstream.cpu()
 
     def eftertræn_baseline(self):
-        args_dict = self.config['downstream']['optøet']['model']
+        args_dict = self.config['Downstream']['optøet']['model']
         downstream = m.DownstreamBaselineMean(
             args_dict=args_dict,
             metadata=self.qm9Bygger2Hoved.get_metadata2('train_reduced')
@@ -126,18 +118,17 @@ class Eksp2:
         trainer.test(model=downstream, datamodule=self.qm9Bygger2Hoved)
         wandb.finish()
 
-    def eksperiment_runde(self, i):
+    def eksperiment_runde(self, i, temperatur):
         self.qm9Bygger2Hoved.sample_train_reduced(i)
-        torch.manual_seed(42)
-        for temperatur in self.config['temperaturer']:
-            for udgave in self.config['udgaver']:
-                self.eftertræn(udgave, temperatur)
+        torch.manual_seed(self.config['Downstream'][temperatur]['seed'])
+        for udgave in self.config['udgaver']:
+            self.eftertræn(udgave, temperatur)
         self.eftertræn_baseline()
 
-
     def main(self):
-        for i in range(self.qm9Bygger2Hoved.n_trin):
-            self.eksperiment_runde(i)
+        for temperatur in self.config['temperaturer']:
+            for i in range(self.qm9Bygger2Hoved.n_trin):
+                self.eksperiment_runde(i, temperatur)
 
 
 if __name__ == "__main__":
