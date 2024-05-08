@@ -44,4 +44,4 @@ temperaturer:
   - optøet
 run_baseline: true
 selv_ckpt_path: s194255/afhandling/model-4ci6vjyd:v0
-kørselsid: 145
+kørselsid: null
