@@ -29,6 +29,7 @@ def main():
         r.debugify_config(config)
 
     modelklasse_str = 'SelvvejledtQM9' if args.selvQM9 else 'Selvvejledt'
+    print(modelklasse_str)
     if args.selv_ckpt_path:
         selvvejledt, qm9bygger, artefakt_sti, run_id = r.get_selvvejledt_fra_wandb(config, args.selv_ckpt_path,
                                                                                    modelklasse_str)
