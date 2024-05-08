@@ -4,6 +4,7 @@ import os
 import matplotlib.pyplot as plt
 from farver import farvekort, farver
 import pandas as pd
+import matplotlib.ticker as ticker
 
 METRICS = {'test_loss_mean', "test_loss_std", "test_loss_lower", "test_loss_upper", "eftertræningsmængde"}
 
@@ -71,7 +72,6 @@ for group in groups:
             plt.figure(figsize=(10, 6))
             for i, mode in enumerate(['med', 'uden', 'baseline']):
                 runs_filtered = list(filter(lambda w: main_filter(w, temperatur, mode, group), runs))
-                # run_group_temperatur_opgave = list(filter(lambda w: has_mode(w, mode), runs_filtered))
                 df = get_df(runs_filtered)
                 prefix = f'{mode}'
                 plt.scatter(df["eftertræningsmængde"], df[f"test_loss_mean"], label=prefix, color=farver[i])
@@ -79,10 +79,15 @@ for group in groups:
                                  color=farver[i],
                                  alpha=0.3)
             plt.title(f'{group} {temperatur}')
-
             plt.xlabel("Datamængde")
             plt.ylabel("MAE")
             plt.yscale("log")
+            plt.xticks(df["eftertræningsmængde"])
+            plt.gca().yaxis.set_major_locator(ticker.LogLocator(base=10.0, numticks=100))  # Juster 'numticks' for flere ticks
+            plt.gca().yaxis.set_minor_locator(ticker.LogLocator(base=10.0, subs='auto'))
+            # Brug LogFormatter for at vise tal ud for minor ticks også
+            plt.gca().yaxis.set_minor_formatter(ticker.LogFormatter(base=10, labelOnlyBase=False))
+            # plt.yticks([0.1, 1, 10, 100, 1000])
             plt.legend()
             plt.grid(True)
             plt.savefig(os.path.join(kørsel_path, f"{temperatur}.jpg"))
