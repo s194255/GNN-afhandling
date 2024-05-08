@@ -39,9 +39,9 @@ Downstream:
     seed: 42
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-4ci6vjyd:v0
+  - s194255/afhandling/model-ki7kmf6r:v0
 temperaturer:
   - optøet
-run_baseline: false
+run_baseline: true
 qm9_path: s194255/afhandling/model-4ci6vjyd:v0
 kørselsid: 147
