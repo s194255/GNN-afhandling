@@ -65,7 +65,7 @@ def get_trainer(epoker, logger=None):
 
 
 def get_opgaver_in_config(config):
-    return list(set(config.keys())-(set(config.keys()) - {'downstream', 'selvvejledt'}))
+    return list(set(config.keys())-(set(config.keys()) - {'Downstream', 'Selvvejledt', 'SelvvejledtQM9'}))
 
 def load_config(path):
     with open(path, encoding='utf-8') as f:
@@ -91,8 +91,10 @@ def debugify_config(config):
     config['datasæt']['num_workers'] = 0
     config['datasæt']['n_trin'] = 1
     for opgave in get_opgaver_in_config(config):
-        config[opgave]['epoker'] = 1
-        config[opgave]['model']['rygrad']['hidden_channels'] = 8
+        for variant in config[opgave].keys():
+            config[opgave][variant]['epoker'] = 1
+            config[opgave][variant]['check_val_every_n_epoch'] = 1
+            config[opgave][variant]['model']['rygrad']['hidden_channels'] = 8
 
 
 def get_n_epoker(artefakt_sti):
@@ -133,3 +135,12 @@ def get_selvvejledt_fra_wandb(config, selv_ckpt_path, modelklasse_str='Selvvejle
         run_id = None
     return selvvejledt, qm9bygger, artefakt_sti, run_id
 
+def build_selvvejledt(args_dict, datasæt_dict, modelklasse_str):
+    qm9bygger = QM9ByggerEksp2(**datasæt_dict)
+    if modelklasse_str == 'Selvvejledt':
+        model = Selvvejledt(args_dict=args_dict)
+    elif modelklasse_str == 'SelvvejledtQM9':
+        model = SelvvejledtQM9(args_dict=args_dict, metadata=qm9bygger.get_metadata2('pretrain'))
+    else:
+        raise NotImplementedError
+    return model, qm9bygger

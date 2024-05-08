@@ -14,13 +14,13 @@ def parserargs():
     args = parser.parse_args()
     return args
 
-def manip_config(config):
-    config['datasæt']['debug'] = True
-    config['datasæt']['batch_size'] = 1
-    config['datasæt']['num_workers'] = 0
-    config['datasæt']['n_trin'] = 1
-    config['selvvejledt']['epoker'] = 1
-    config['rygrad']['hidden_channels'] = 8
+# def manip_config(config):
+#     config['datasæt']['debug'] = True
+#     config['datasæt']['batch_size'] = 1
+#     config['datasæt']['num_workers'] = 0
+#     config['datasæt']['n_trin'] = 1
+#     config['selvvejledt']['epoker'] = 1
+#     config['rygrad']['hidden_channels'] = 8
 
 def main():
     args = parserargs()
@@ -29,11 +29,17 @@ def main():
         r.debugify_config(config)
 
     modelklasse_str = 'SelvvejledtQM9' if args.selvQM9 else 'Selvvejledt'
-    selvvejledt, qm9bygger, artefakt_sti, run_id = r.get_selvvejledt_fra_wandb(config, args.selv_ckpt_path,
-                                                                               modelklasse_str)
+    if args.selv_ckpt_path:
+        selvvejledt, qm9bygger, artefakt_sti, run_id = r.get_selvvejledt_fra_wandb(config, args.selv_ckpt_path,
+                                                                                   modelklasse_str)
+    else:
+        args_dict = config[modelklasse_str]['variant1']['model']
+        datasæt_dict = config['datasæt']
+        selvvejledt, qm9bygger = r.build_selvvejledt(args_dict=args_dict, datasæt_dict=datasæt_dict, modelklasse_str=modelklasse_str)
+        artefakt_sti = None
     logger = r.wandbLogger(log_model=True, tags=['selvvejledt'])
     trænede_epoker = r.get_n_epoker(artefakt_sti)
-    trainer = r.get_trainer(config['selvvejledt']['epoker']+trænede_epoker, logger=logger)
+    trainer = r.get_trainer(config[modelklasse_str]['variant1']['epoker']+trænede_epoker, logger=logger)
     trainer.fit(model=selvvejledt, datamodule=qm9bygger, ckpt_path=artefakt_sti)
     wandb_run_id = wandb.run.id
     wandb.finish()

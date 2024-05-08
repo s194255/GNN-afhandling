@@ -9,34 +9,36 @@ datasæt:
     - 2000
   val_reduced: false
 rygradtype: visnet
-selvvejledt:
-  check_val_every_n_epoch: 1
-  epoker: 50
-  min_delta: 0.001
-  model:
-    hovedtype: klogt
-    gamma: 0.1
-    lambdaer:
-      lokalt: 100
-      globalt: 1
-    lr: 1.0e-08
-    step_size: 15
-    ønsket_lr: 1.0e-06
-    opvarmningsperiode: 3
-    noise_fra: -2
-    noise_til: 1
-    n_noise_trin: 50
-    log_gradient: false
-  patience: 20
-downstream:
-  epoker: 30
-  min_delta: 0.001
-  model:
-    hovedtype: klogt
-    gamma: 0.1
-    lr: 1.0e-06
-    step_size: 10
-    ønsket_lr: 1.0e-04
-    opvarmningsperiode: 3
-    predicted_attribute: 1
-  patience: 20
+Selvvejledt:
+  variant1:
+    check_val_every_n_epoch: 1
+    epoker: 50
+    min_delta: 0.001
+    model:
+      hovedtype: klogt
+      gamma: 0.1
+      lambdaer:
+        lokalt: 100
+        globalt: 1
+      lr: 1.0e-08
+      step_size: 15
+      ønsket_lr: 1.0e-06
+      opvarmningsperiode: 3
+      noise_fra: -2
+      noise_til: 1
+      n_noise_trin: 50
+      log_gradient: false
+    patience: 20
+SelvvejledtQM9:
+  variant1:
+    epoker: 30
+    min_delta: 0.001
+    model:
+      hovedtype: klogt
+      gamma: 0.1
+      lr: 1.0e-06
+      step_size: 10
+      ønsket_lr: 1.0e-04
+      opvarmningsperiode: 3
+      predicted_attribute: 1
+    patience: 20
