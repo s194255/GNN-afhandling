@@ -81,14 +81,14 @@ class Eksp2:
             self.kørselsid = self.config['kørselsid']
 
 
-    def get_trainer(self, temperatur, tags=[]):
+    def get_trainer(self, temperatur: str, logger_config: dict={}, tags=[]):
         callbacks = [
             r.checkpoint_callback(),
             r.TQDMProgressBar(),
             L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
         ]
         logger = WandbLogger(project='afhandling', log_model=False, tags=['downstream']+tags,
-                             group=f"eksp2_{self.kørselsid}")
+                             group=f"eksp2_{self.kørselsid}", config=logger_config)
         config_curr = self.config['Downstream'][temperatur]
         trainer = L.Trainer(max_epochs=config_curr['epoker'],
                             log_every_n_steps=1,
@@ -123,7 +123,8 @@ class Eksp2:
         downstream, tags = self.create_downstream(udgave, temperatur, seed)
         if temperatur == "frossen":
             downstream.frys_rygrad()
-        trainer = self.get_trainer(temperatur, tags=tags)
+        logger_config = {'fortræningsudgave': downstream.fortræningsudgave}
+        trainer = self.get_trainer(temperatur, logger_config=logger_config, tags=tags)
         trainer.fit(model=downstream, datamodule=self.qm9Bygger2Hoved)
         trainer.test(ckpt_path="best", datamodule=self.qm9Bygger2Hoved)
         wandb_run_id = wandb.run.id

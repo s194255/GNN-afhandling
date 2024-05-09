@@ -69,7 +69,8 @@ class Grundmodel(L.LightningModule):
         ønsket_lr = self.hparams.args_dict['ønsket_lr']
         opvarmningsperiode = self.hparams.args_dict['opvarmningsperiode']
         gamma = self.hparams.args_dict['gamma']
-        optimizer = torch.optim.AdamW(self.parameters(), lr=lr)
+        weight_decay = self.hparams.args_dict['weight_decay']
+        optimizer = torch.optim.AdamW(self.parameters(), lr=lr, weight_decay=weight_decay)
         step_size = self.hparams.args_dict['step_size']
         opvarmningsgamma = (ønsket_lr/lr)**(1/opvarmningsperiode)
         scheduler = WarmUpStepLR(optimizer,

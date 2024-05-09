@@ -5,17 +5,15 @@ datasæt:
   num_workers: 4
 Downstream:
   variant1:
-    check_val_every_n_epoch: 80
-    epoker: 100
-    min_delta: 0.1
+    epoker: 200
     model:
       hovedtype: klogt
       gamma: 0.95
-      lr: 1.0e-04
+      lr: 1.0e-03
       step_size: 1
-      ønsket_lr: 1.0e-04
+      ønsket_lr: 1.0e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
-    patience: 20
+      weight_decay: 1.0e-03
     seed: 42
 rygradtype: visnet
