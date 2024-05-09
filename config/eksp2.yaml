@@ -44,6 +44,6 @@ udgaver:
   - uden
 temperaturer:
   - frossen
-run_baseline: true
+run_baseline: false
 qm9_path: s194255/afhandling/model-38styzwu:v0
 kørselsid: 5
