@@ -41,9 +41,9 @@ Downstream:
     seed: 3
 rygradtype: visnet
 udgaver:
-  - artifacts/model-4ci6vjyd-v0/model.ckpt
+  - uden
 temperaturer:
   - frossen
-run_baseline: false
+run_baseline: true
 qm9_path: artifacts/model-4ci6vjyd-v0/model.ckpt
-kørselsid: null
+kørselsid: 8
