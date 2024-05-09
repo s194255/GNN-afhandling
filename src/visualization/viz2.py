@@ -23,6 +23,10 @@ def get_temperatur(run):
     config = json.loads(run.json_config)
     return config['temperatur']['value']
 
+def get_rygrad_runid(run):
+    config = json.loads(run.json_config)
+    return config['rygrad runid']['value']
+
 def is_suitable(run):
     group = run.group
     if group == None:
@@ -50,9 +54,11 @@ def main_filter(run, temperatur, fortræningsudgave):
     run_fortræningsudgave = get_fortræningsudgave(run)
     if run_fortræningsudgave != fortræningsudgave:
         return False
-    # if 'baseline' in run.tags:
-    #     return False
     return True
+
+def main_filter2(run, rygrad_runid):
+    run_rygrad_runid = get_rygrad_runid(run)
+    return run_rygrad_runid == rygrad_runid
 
 def get_df(runs):
     resultater = {nøgle: [] for nøgle in METRICS}
@@ -80,14 +86,21 @@ for group in groups:
     for temperatur in ['frossen']:
         try:
             plt.figure(figsize=(10, 6))
-            for i, fortræningsudgave in enumerate(fortræningsudgaver):
+            i = 0
+            for fortræningsudgave in fortræningsudgaver:
+                # rygrad_runids = set(list(map(get_fortræningsudgave, runs_group)))
+
                 runs_filtered = list(filter(lambda w: main_filter(w, temperatur, fortræningsudgave), runs_group))
-                df = get_df(runs_filtered)
-                prefix = f'{fortræningsudgave}'
-                plt.scatter(df["eftertræningsmængde"], df[f"test_loss_mean"], label=prefix, color=farver[i])
-                plt.fill_between(df["eftertræningsmængde"], df[f"test_loss_lower"], df[f"test_loss_upper"],
-                                 color=farver[i],
-                                 alpha=0.3)
+                rygrad_runids = set(list(map(get_rygrad_runid, runs_filtered)))
+                for rygrad_runid in rygrad_runids:
+                    runs_filtered2 = list(filter(lambda w: main_filter2(w, rygrad_runid), runs_filtered))
+                    df = get_df(runs_filtered2)
+                    prefix = f'{fortræningsudgave} - {rygrad_runid}'
+                    plt.scatter(df["eftertræningsmængde"], df[f"test_loss_mean"], label=prefix, color=farver[i])
+                    plt.fill_between(df["eftertræningsmængde"], df[f"test_loss_lower"], df[f"test_loss_upper"],
+                                     color=farver[i],
+                                     alpha=0.3)
+                    i += 1
             plt.title(f'{group} {temperatur}')
             plt.xlabel("Datamængde")
             plt.ylabel("MAE")
