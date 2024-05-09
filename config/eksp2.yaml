@@ -41,9 +41,10 @@ Downstream:
     seed: 42
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-4ci6vjyd:v0
+  - uden
+  - s194255/afhandling/model-gix7o6km:v0
 temperaturer:
-  - optøet
+  - frossen
 run_baseline: true
-qm9_path: s194255/afhandling/model-yd5a02jy:v0
-kørselsid: 147
+qm9_path: s194255/afhandling/model-38styzwu:v0
+kørselsid: null
