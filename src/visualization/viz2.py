@@ -50,6 +50,8 @@ def main_filter(run, temperatur, fortræningsudgave):
     run_fortræningsudgave = get_fortræningsudgave(run)
     if run_fortræningsudgave != fortræningsudgave:
         return False
+    if 'baseline' in run.tags:
+        return False
     return True
 
 def get_df(runs):
@@ -71,14 +73,15 @@ groups = set(list(map(get_group, runs)))
 print(groups)
 for group in groups:
     runs_group = list(filter(lambda w: is_in_group(w, group), runs))
-    fortræningsudgaver = set(list(map(get_fortræningsudgave, runs)))
+    fortræningsudgaver = set(list(map(get_fortræningsudgave, runs_group)))
+    print(fortræningsudgaver)
     kørsel_path = os.path.join("eksp2_logs", group)
     os.makedirs(kørsel_path)
-    for temperatur in ['frossen', 'optøet']:
+    for temperatur in ['frossen']:
         try:
             plt.figure(figsize=(10, 6))
             for i, fortræningsudgave in enumerate(fortræningsudgaver):
-                runs_filtered = list(filter(lambda w: main_filter(w, temperatur, fortræningsudgave), runs))
+                runs_filtered = list(filter(lambda w: main_filter(w, temperatur, fortræningsudgave), runs_group))
                 df = get_df(runs_filtered)
                 prefix = f'{fortræningsudgave}'
                 plt.scatter(df["eftertræningsmængde"], df[f"test_loss_mean"], label=prefix, color=farver[i])

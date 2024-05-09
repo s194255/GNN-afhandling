@@ -3,7 +3,7 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 3
+  n_trin: 5
   spænd:
     - 10
     - 500
@@ -38,7 +38,7 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-02
     patience: 20
-    seed: 0
+    seed: 3
 rygradtype: visnet
 udgaver:
   - uden
