@@ -12,17 +12,17 @@ rygradtype: visnet
 Selvvejledt:
   variant1:
     check_val_every_n_epoch: 1
-    epoker: 50
+    epoker: 100
     min_delta: 0.001
     model:
       hovedtype: klogt
-      gamma: 0.1
+      gamma: 0.95
       lambdaer:
         lokalt: 100
         globalt: 1
       lr: 1.0e-08
-      step_size: 15
-      ønsket_lr: 1.0e-06
+      step_size: 1
+      ønsket_lr: 1.0e-04
       opvarmningsperiode: 3
       noise_fra: -2
       noise_til: 1
@@ -44,4 +44,4 @@ SelvvejledtQM9:
       weight_decay: 1.0e-03
     seed: 42
 qm9_path: s194255/afhandling/model-38styzwu:v0
-modelklasse: SelvvejledtQM9
+modelklasse: Selvvejledt
