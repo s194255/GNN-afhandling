@@ -32,7 +32,7 @@ Selvvejledt:
     patience: 20
 SelvvejledtQM9:
   variant1:
-    epoker: 200
+    epoker: 100
     model:
       hovedtype: klogt
       gamma: 0.95
