@@ -6,6 +6,7 @@ from torch_geometric.data import Data
 
 from src.models.grund import Grundmodel
 from src.models.hoveder.hoveddownstream import HovedDownstreamKlogt, HovedDownstreamDumt
+from src.data.QM9 import QM9ByggerEksp2
 import torchmetrics
 import lightning as L
 import copy
@@ -104,7 +105,8 @@ class Downstream(Grundmodel):
 
     def get_eftertræningsmængde(self):
         debug = self.trainer.datamodule.debug
-        data_split = self.trainer.datamodule.data_splits[debug]['train']
+        task = 'train_reduced' if self.trainer.datamodule.__class__ == QM9ByggerEksp2 else 'train'
+        data_split = self.trainer.datamodule.data_splits[debug][task]
         return len(data_split)
 
     def indæs_selvvejledt_rygrad(self, selvvejledt):

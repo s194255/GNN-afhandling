@@ -21,12 +21,6 @@ LOG_ROOT = "eksp2_logs"
 
 torch.set_float32_matmul_precision('medium')
 
-class DownstreamEksp2(m.Downstream):
-    def get_eftertræningsmængde(self):
-        debug = self.trainer.datamodule.debug
-        data_split = self.trainer.datamodule.data_splits[debug]['train_reduced']
-        return len(data_split)
-
 def debugify_config(config):
     config['datasæt']['debug'] = True
     config['datasæt']['batch_size'] = 4
@@ -90,21 +84,21 @@ class Eksp2:
                             )
         return trainer
 
-    def create_downstream(self, udgave, temperatur) -> Tuple[DownstreamEksp2, str]:
+    def create_downstream(self, udgave, temperatur) -> Tuple[m.Downstream, str]:
         args_dict = copy.deepcopy(self.config['Downstream'][temperatur]['model'])
         metadata = self.qm9Bygger2Hoved.get_metadata('train_reduced')
         if udgave != 'uden':
             selvvejledt, qm9bygger, _, run_id = r.get_selvvejledt_fra_wandb(self.config, udgave)
             assert self.qm9Bygger2Hoved.eq_data_split(qm9bygger)
             args_dict['rygrad'] = selvvejledt.args_dict['rygrad']
-            downstream = DownstreamEksp2(
+            downstream = m.Downstream(
                 args_dict=args_dict,
                 metadata=metadata
             )
             downstream.indæs_selvvejledt_rygrad(selvvejledt)
         else:
-            downstream = DownstreamEksp2(args_dict=args_dict,
-                                         metadata=self.qm9Bygger2Hoved.get_metadata('train_reduced'))
+            downstream = m.Downstream(args_dict=args_dict,
+                                      metadata=self.qm9Bygger2Hoved.get_metadata('train_reduced'))
             run_id = None
 
         return downstream, run_id
