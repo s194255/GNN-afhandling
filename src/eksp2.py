@@ -134,7 +134,9 @@ class Eksp2:
             metadata=self.qm9Bygger2Hoved.get_metadata('train_reduced')
         )
         tags = ['baseline']
-        logger_config = {'opgave': 'eftertræn'}
+        logger_config = {'opgave': 'eftertræn',
+                         'fortræningsudgave': 'baseline'
+                         }
         trainer = self.get_trainer('optøet', tags=tags, logger_config=logger_config)
         trainer.test(model=downstream, datamodule=self.qm9Bygger2Hoved)
         wandb.finish()
