@@ -44,4 +44,4 @@ SelvvejledtQM9:
       weight_decay: 1.0e-03
     seed: 42
 qm9_path: s194255/afhandling/model-38styzwu:v0
-modelklasse: Selvvejledt
+modelklasse: SelvvejledtQM9
