@@ -41,10 +41,9 @@ Downstream:
     seed: 0
 rygradtype: visnet
 udgaver:
-  - uden
-  - s194255/afhandling/model-gix7o6km:v0
+  - s194255/afhandling/run-4ci6vjyd-history:v0
 temperaturer:
   - frossen
 run_baseline: true
-qm9_path: s194255/afhandling/model-38styzwu:v0
+qm9_path: s194255/afhandling/run-4ci6vjyd-history:v0
 kørselsid: null
