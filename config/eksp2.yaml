@@ -41,7 +41,7 @@ Downstream:
     seed: 3
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-c1mryc71:v0
+  - s194255/afhandling/model-mjymx31w:v0
 temperaturer:
   - frossen
 run_baseline: false
