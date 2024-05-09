@@ -50,8 +50,8 @@ def main_filter(run, temperatur, fortræningsudgave):
     run_fortræningsudgave = get_fortræningsudgave(run)
     if run_fortræningsudgave != fortræningsudgave:
         return False
-    if 'baseline' in run.tags:
-        return False
+    # if 'baseline' in run.tags:
+    #     return False
     return True
 
 def get_df(runs):

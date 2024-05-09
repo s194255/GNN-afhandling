@@ -107,7 +107,7 @@ def get_n_epoker(artefakt_sti):
         state_dict = torch.load(artefakt_sti, map_location='cpu')
         return state_dict['epoch']
 
-def indlæs_selv_ckpt_path(selv_ckpt_path):
+def indlæs_wandb_path(selv_ckpt_path):
     api = wandb.Api()
     artefakt = api.artifact(selv_ckpt_path)
     artefakt_sti = os.path.join(artefakt.download(), 'model.ckpt')
@@ -129,7 +129,10 @@ def get_selvvejledt_fra_artefakt_sti(config, artefakt_sti):
     return selvvejledt, qm9bygger
 
 def get_selvvejledt_fra_wandb(config, wandb_path) -> Tuple[Any, QM9ByggerEksp2, Any, Any]:
-    artefakt_sti, run_id = indlæs_selv_ckpt_path(wandb_path)
+    if 's194255/afhandling' in wandb_path:
+        artefakt_sti, run_id = indlæs_wandb_path(wandb_path)
+    else:
+        artefakt_sti, run_id = wandb_path, ''
     selvvejledt, qm9bygger = get_selvvejledt_fra_artefakt_sti(config, artefakt_sti)
     return selvvejledt, qm9bygger, artefakt_sti, run_id
 
