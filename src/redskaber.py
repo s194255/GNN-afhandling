@@ -111,7 +111,10 @@ def indlæs_selv_ckpt_path(selv_ckpt_path):
     api = wandb.Api()
     artefakt = api.artifact(selv_ckpt_path)
     artefakt_sti = os.path.join(artefakt.download(), 'model.ckpt')
-    run_id = artefakt.logged_by().id
+    try:
+        run_id = artefakt.logged_by().id
+    except AttributeError:
+        run_id = 'ukendt'
     return artefakt_sti, run_id
 
 def _get_modelklasse(ckpt_path):
