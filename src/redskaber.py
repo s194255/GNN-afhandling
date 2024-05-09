@@ -8,6 +8,7 @@ import wandb
 from src.models.selvvejledt import Selvvejledt, SelvvejledtQM9
 from src.models.downstream import Downstream
 from src.data.QM9 import QM9ByggerEksp2
+from typing import Tuple, Any
 
 # from src import data as d
 
@@ -42,12 +43,14 @@ def tensorBoardLogger(save_dir=None, name=None, version=None):
         name = "lightning_logs"
     return TensorBoardLogger(save_dir=save_dir, name=name, version=version)
 
-def wandbLogger(log_model=False, tags=None, group=None):
+def wandbLogger(log_model=False, tags=None, group=None, logger_config=None):
     return lightning.pytorch.loggers.WandbLogger(
         project='afhandling',
         log_model=log_model,
         tags=tags,
-        group=group)
+        group=group,
+        config=logger_config
+    )
 
 def get_trainer(epoker, logger=None):
     callbacks = [
@@ -122,7 +125,7 @@ def get_selvvejledt_fra_artefakt_sti(config, artefakt_sti):
     qm9bygger = QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
     return selvvejledt, qm9bygger
 
-def get_selvvejledt_fra_wandb(config, wandb_path):
+def get_selvvejledt_fra_wandb(config, wandb_path) -> Tuple[Any, QM9ByggerEksp2, Any, Any]:
     artefakt_sti, run_id = indlæs_selv_ckpt_path(wandb_path)
     selvvejledt, qm9bygger = get_selvvejledt_fra_artefakt_sti(config, artefakt_sti)
     return selvvejledt, qm9bygger, artefakt_sti, run_id
@@ -132,7 +135,7 @@ def build_selvvejledt(args_dict, datasæt_dict, modelklasse_str):
     if modelklasse_str == 'Selvvejledt':
         model = Selvvejledt(args_dict=args_dict)
     elif modelklasse_str == 'SelvvejledtQM9':
-        model = SelvvejledtQM9(args_dict=args_dict, metadata=qm9bygger.get_metadata2('pretrain'))
+        model = SelvvejledtQM9(args_dict=args_dict, metadata=qm9bygger.get_metadata('pretrain'))
     else:
         raise NotImplementedError
     return model, qm9bygger

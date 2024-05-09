@@ -21,6 +21,7 @@ Downstream:
       ønsket_lr: 2.5e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
+      weight_decay: 1.0e-02
     patience: 20
     seed: 42
   frossen:
@@ -35,13 +36,14 @@ Downstream:
       ønsket_lr: 1.0e-02
       opvarmningsperiode: 1
       predicted_attribute: 1
+      weight_decay: 1.0e-02
     patience: 20
     seed: 42
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-ki7kmf6r:v0
+  - s194255/afhandling/model-4ci6vjyd:v0
 temperaturer:
   - optøet
 run_baseline: true
-qm9_path: s194255/afhandling/model-4ci6vjyd:v0
+qm9_path: s194255/afhandling/model-yd5a02jy:v0
 kørselsid: 147

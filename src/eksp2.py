@@ -15,20 +15,13 @@ import shutil
 from lightning.pytorch.loggers import WandbLogger
 import wandb
 import copy
+from typing import Tuple
 
 LOG_ROOT = "eksp2_logs"
 
 torch.set_float32_matmul_precision('medium')
 
 class DownstreamEksp2(m.Downstream):
-
-    def __init__(self, *args, seed, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.seed = seed
-    def on_train_start(self) -> None:
-        super().on_train_start()
-        self.log('seed', self.seed)
-
     def get_eftertræningsmængde(self):
         debug = self.trainer.datamodule.debug
         data_split = self.trainer.datamodule.data_splits[debug]['train_reduced']
@@ -62,7 +55,6 @@ class Eksp2:
         if args.debug:
             debugify_config(self.config)
         self.init_kørselsid()
-        self.fortræn_tags = []
         _, self.qm9Bygger2Hoved, _, _ = r.get_selvvejledt_fra_wandb(self.config, self.config['qm9_path'])
 
     def init_kørselsid(self):
@@ -81,13 +73,13 @@ class Eksp2:
             self.kørselsid = self.config['kørselsid']
 
 
-    def get_trainer(self, temperatur: str, logger_config: dict={}, tags=[]):
+    def get_trainer(self, temperatur: str, logger_config: dict=None, tags=None):
         callbacks = [
             r.checkpoint_callback(),
             r.TQDMProgressBar(),
             L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
         ]
-        logger = WandbLogger(project='afhandling', log_model=False, tags=['downstream']+tags,
+        logger = WandbLogger(project='afhandling', log_model=False, tags=tags,
                              group=f"eksp2_{self.kørselsid}", config=logger_config)
         config_curr = self.config['Downstream'][temperatur]
         trainer = L.Trainer(max_epochs=config_curr['epoker'],
@@ -98,33 +90,36 @@ class Eksp2:
                             )
         return trainer
 
-    def create_downstream(self, udgave, temperatur, seed):
+    def create_downstream(self, udgave, temperatur) -> Tuple[DownstreamEksp2, str]:
         args_dict = copy.deepcopy(self.config['Downstream'][temperatur]['model'])
-        metadata = self.qm9Bygger2Hoved.get_metadata2('train_reduced')
-        tags = [temperatur]
+        metadata = self.qm9Bygger2Hoved.get_metadata('train_reduced')
         if udgave != 'uden':
-            selvvejledt, _, _, run_id = r.get_selvvejledt_fra_wandb(self.config, udgave)
+            selvvejledt, qm9bygger, _, run_id = r.get_selvvejledt_fra_wandb(self.config, udgave)
+            assert self.qm9Bygger2Hoved.eq_data_split(qm9bygger)
             args_dict['rygrad'] = selvvejledt.args_dict['rygrad']
             downstream = DownstreamEksp2(
                 args_dict=args_dict,
-                metadata=metadata,
-                seed=seed
+                metadata=metadata
             )
             downstream.indæs_selvvejledt_rygrad(selvvejledt)
-            tags = tags + [run_id, selvvejledt.__class__.__name__]
         else:
             downstream = DownstreamEksp2(args_dict=args_dict,
-                                         metadata=self.qm9Bygger2Hoved.get_metadata2('train_reduced'),
-                                         seed=seed)
-            tags.append('uden')
-        return downstream, tags
+                                         metadata=self.qm9Bygger2Hoved.get_metadata('train_reduced'))
+            run_id = None
+
+        return downstream, run_id
     def eftertræn(self, udgave, temperatur, seed):
         assert temperatur in ['frossen', 'optøet']
-        downstream, tags = self.create_downstream(udgave, temperatur, seed)
+        downstream, run_id = self.create_downstream(udgave, temperatur)
         if temperatur == "frossen":
             downstream.frys_rygrad()
-        logger_config = {'fortræningsudgave': downstream.fortræningsudgave}
-        trainer = self.get_trainer(temperatur, logger_config=logger_config, tags=tags)
+        logger_config = {'fortræningsudgave': downstream.fortræningsudgave,
+                         'temperatur': temperatur,
+                         'seed': seed,
+                         'rygrad runid': run_id,
+                         'opgave': 'eftertræn'
+                         }
+        trainer = self.get_trainer(temperatur, logger_config=logger_config)
         trainer.fit(model=downstream, datamodule=self.qm9Bygger2Hoved)
         trainer.test(ckpt_path="best", datamodule=self.qm9Bygger2Hoved)
         wandb_run_id = wandb.run.id
@@ -136,10 +131,11 @@ class Eksp2:
         args_dict = self.config['Downstream']['optøet']['model']
         downstream = m.DownstreamBaselineMean(
             args_dict=args_dict,
-            metadata=self.qm9Bygger2Hoved.get_metadata2('train_reduced')
+            metadata=self.qm9Bygger2Hoved.get_metadata('train_reduced')
         )
-        tags = ['baseline'] + self.fortræn_tags
-        trainer = self.get_trainer('optøet', tags=tags)
+        tags = ['baseline']
+        logger_config = {'opgave': 'eftertræn'}
+        trainer = self.get_trainer('optøet', tags=tags, logger_config=logger_config)
         trainer.test(model=downstream, datamodule=self.qm9Bygger2Hoved)
         wandb.finish()
 

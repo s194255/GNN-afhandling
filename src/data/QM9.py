@@ -112,12 +112,21 @@ class QM9Bygger(L.LightningDataModule):
     def test_dataloader(self):
         return self.get_dataloader('test', False)
 
-    def get_metadata2(self, task):
+    def get_metadata(self, task):
         dataset = self.get_mother_dataset()
         idxs = self.data_splits[False][task]
         means = dataset.y[idxs].mean(dim=0)
         stds = dataset.y[idxs].std(dim=0)
         return {'means': means, 'stds': stds}
+
+    def eq_data_split(self, other):
+        for debug_mode in [True, False]:
+            for task in self.tasks:
+                split1 = self.data_splits[debug_mode][task]
+                split2 = other.data_splits[debug_mode][task]
+                if set(split1) != set(split2):
+                    return False
+        return True
 
 class QM9ByggerEksp1(QM9Bygger):
 

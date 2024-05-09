@@ -28,17 +28,20 @@ Selvvejledt:
       noise_til: 1
       n_noise_trin: 50
       log_gradient: false
+      weight_decay: 1.0e-2
     patience: 20
 SelvvejledtQM9:
   variant1:
-    epoker: 30
-    min_delta: 0.001
+    epoker: 200
     model:
       hovedtype: klogt
-      gamma: 0.1
-      lr: 1.0e-06
-      step_size: 10
-      ønsket_lr: 1.0e-04
-      opvarmningsperiode: 3
+      gamma: 0.95
+      lr: 1.0e-03
+      step_size: 1
+      ønsket_lr: 1.0e-03
+      opvarmningsperiode: 1
       predicted_attribute: 1
-    patience: 20
+      weight_decay: 1.0e-03
+    seed: 42
+qm9_path: s194255/afhandling/model-38styzwu:v0
+modelklasse: Selvvejledt

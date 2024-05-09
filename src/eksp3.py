@@ -35,7 +35,7 @@ class Eksp3:
 
     def main(self):
         qm9 = d.QM9ByggerEksp3(**self.config['datasæt'])
-        metadata = qm9.get_metadata2('train')
+        metadata = qm9.get_metadata('train')
         downstream = m.Downstream(
             args_dict=self.config['Downstream']['variant1']['model'],
             metadata=metadata
