@@ -3,9 +3,9 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 3
+  n_trin: 5
   spænd:
-    - 10
+    - 30
     - 500
   val_reduced: false
 Downstream:
@@ -44,6 +44,6 @@ udgaver:
   - s194255/afhandling/model-b32ikgvk:v0
 temperaturer:
   - optøet
-run_baseline: true
+run_baseline: false
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 13
+kørselsid: null
