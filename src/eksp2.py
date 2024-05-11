@@ -139,7 +139,7 @@ class Eksp2:
         self.qm9Bygger2Hoved.sample_train_reduced(i)
         for temperatur in self.config['temperaturer']:
             seed = self.config['Downstream'][temperatur]['seed']
-            torch.manual_seed(seed)
+            # torch.manual_seed(seed)
             for udgave in self.config['udgaver']:
                 self.eftertræn(udgave, temperatur, seed)
         if self.config['run_baseline']:

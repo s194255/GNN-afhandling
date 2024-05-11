@@ -83,7 +83,7 @@ for group in groups:
     print(fortræningsudgaver)
     kørsel_path = os.path.join("eksp2_logs", group)
     os.makedirs(kørsel_path)
-    for temperatur in ['frossen']:
+    for temperatur in ['frossen', 'optøet']:
         try:
             plt.figure(figsize=(10, 6))
             i = 0

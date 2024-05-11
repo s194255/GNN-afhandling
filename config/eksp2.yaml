@@ -3,7 +3,7 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 5
+  n_trin: 3
   spænd:
     - 10
     - 500
