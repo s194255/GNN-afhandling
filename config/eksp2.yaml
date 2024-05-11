@@ -21,7 +21,7 @@ Downstream:
       ønsket_lr: 2.0e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
-      weight_decay: 1.0e+01
+      weight_decay: 1.0e-01
     patience: 20
     seed: 42
   frossen:
@@ -46,4 +46,4 @@ temperaturer:
   - optøet
 run_baseline: false
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 16
+kørselsid: null
