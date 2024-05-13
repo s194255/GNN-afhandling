@@ -41,8 +41,8 @@ Downstream:
     seed: 1
 rygradtype: visnet
 udgaver:
+  - afhandling/ve0tnpmg/checkpoints/best.ckpt
   - uden
-  - afhandling/ve0tnpmg/checkpoints.best.ckpt
 temperaturer:
   - frossen
 run_baseline: false
