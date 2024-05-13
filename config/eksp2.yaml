@@ -41,7 +41,7 @@ Downstream:
     seed: false
 rygradtype: visnet
 udgaver:
-  - 40
+  - uden
 temperaturer:
   - frossen
 run_baseline: false
