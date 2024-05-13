@@ -41,7 +41,7 @@ Downstream:
     seed: 5
 rygradtype: visnet
 udgaver:
-  - uden
+  - artifacts/model-4ci6vjyd-v0/model.ckpt
 temperaturer:
   - frossen
 run_baseline: false
