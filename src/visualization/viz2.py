@@ -6,6 +6,7 @@ from farver import farvekort, farver
 import pandas as pd
 import matplotlib.ticker as ticker
 import json
+from tqdm import tqdm
 
 
 METRICS = {'test_loss_mean', "test_loss_std", "test_loss_lower", "test_loss_upper", "eftertræningsmængde"}
@@ -77,12 +78,10 @@ runs = list(filter(is_suitable, runs))
 
 groups = set(list(map(get_group, runs)))
 print(groups)
-for group in groups:
+for group in tqdm(groups):
     runs_group = list(filter(lambda w: is_in_group(w, group), runs))
     fortræningsudgaver = set(list(map(get_fortræningsudgave, runs_group)))
     temperaturer = set(list(map(get_temperatur, runs_group)))
-    print(fortræningsudgaver)
-    print(temperaturer)
     kørsel_path = os.path.join("eksp2_logs", group)
     os.makedirs(kørsel_path)
     for temperatur in temperaturer:
