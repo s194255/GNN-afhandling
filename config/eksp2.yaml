@@ -26,14 +26,14 @@ Downstream:
     seed: 42
   frossen:
     check_val_every_n_epoch: 40
-    epoker: 400
+    epoker: 800
     min_delta: 0.1
     model:
       hovedtype: klogt
       gamma: 0.99
-      lr: 1.0e-01
+      lr: 1.0e-02
       step_size: 1
-      ønsket_lr: 1.0e-01
+      ønsket_lr: 1.0e-02
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-02
