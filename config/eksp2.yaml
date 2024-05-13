@@ -30,7 +30,7 @@ Downstream:
     min_delta: 0.1
     model:
       hovedtype: klogt
-      gamma: 0.90
+      gamma: 0.95
       lr: 1.0e-00
       step_size: 1
       ønsket_lr: 1.0e-00
