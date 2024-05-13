@@ -25,7 +25,7 @@ Selvvejledt:
       ønsket_lr: 1.0e-05
       opvarmningsperiode: 1
       noise_fra: -2
-      noise_til: 2
+      noise_til: 1
       n_noise_trin: 50
       log_gradient: false
       weight_decay: 1.0e-2
