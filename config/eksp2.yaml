@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 3
+  n_trin: 1
   spænd:
-    - 30
-    - 500
+    - 150
+    - 150
   val_reduced: false
 Downstream:
   optøet:
@@ -38,11 +38,11 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-02
     patience: 20
-    seed: 45
+    seed: 1
 rygradtype: visnet
 udgaver:
   - uden
-  - s194255/afhandling/model-gix7o6km:v0
+  - afhandling/ve0tnpmg/checkpoints.best.ckpt
 temperaturer:
   - frossen
 run_baseline: false
