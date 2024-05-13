@@ -38,7 +38,7 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-02
     patience: 20
-    seed: 1
+    seed: false
 rygradtype: visnet
 udgaver:
   - afhandling/ve0tnpmg/checkpoints/best.ckpt
