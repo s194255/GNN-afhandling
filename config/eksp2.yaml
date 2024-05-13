@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 3
+  n_trin: 1
   spænd:
-    - 30
-    - 500
+    - 150
+    - 150
   val_reduced: false
 Downstream:
   optøet:
@@ -31,9 +31,9 @@ Downstream:
     model:
       hovedtype: klogt
       gamma: 0.99
-      lr: 1.0e-00
+      lr: 1.0e-01
       step_size: 1
-      ønsket_lr: 1.0e-00
+      ønsket_lr: 1.0e-01
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-02
@@ -42,7 +42,7 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - uden
-  - s194255/afhandling/model-qkvtfu6y:v0
+  - s194255/afhandling/model-gix7o6km:v0
 temperaturer:
   - frossen
 run_baseline: false
