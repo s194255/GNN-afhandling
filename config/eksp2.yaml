@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 2
+  n_trin: 5
   spænd:
-    - 100
-    - 200
+    - 30
+    - 500
   val_reduced: false
 Downstream:
   optøet:
@@ -42,7 +42,6 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - afhandling/ve0tnpmg/checkpoints/best.ckpt
-  - uden
 temperaturer:
   - frossen
 run_baseline: false
