@@ -3,7 +3,7 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 5
+  n_trin: 2
   spænd:
     - 30
     - 500
@@ -42,8 +42,9 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - uden
+  - s194255/afhandling/model-vumgy4l1:v0
 temperaturer:
   - frossen
 run_baseline: false
-qm9_path: artifacts/model-4ci6vjyd-v0/model.ckpt
+qm9_path: s194255/afhandling/model-38styzwu:v0
 kørselsid: 24
