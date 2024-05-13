@@ -25,7 +25,7 @@ Downstream:
     patience: 20
     seed: 42
   frossen:
-    check_val_every_n_epoch: 40
+    check_val_every_n_epoch: 60
     epoker: 600
     min_delta: 0.1
     model:
@@ -38,12 +38,12 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-02
     patience: 20
-    seed: false
+    seed: 0
 rygradtype: visnet
 udgaver:
-  - uden
+  - s194255/afhandling/model-ve0tnpmg:v0
 temperaturer:
   - frossen
 run_baseline: false
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 41
+kørselsid: null
