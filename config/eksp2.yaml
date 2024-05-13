@@ -46,4 +46,4 @@ temperaturer:
   - frossen
 run_baseline: false
 qm9_path: artifacts/model-4ci6vjyd-v0/model.ckpt
-kørselsid: 23
+kørselsid: null
