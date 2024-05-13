@@ -19,14 +19,14 @@ Selvvejledt:
       gamma: 0.95
       lambdaer:
         lokalt: 100
-        globalt: 1
+        globalt: 0
       lr: 1.0e-05
       step_size: 1
       ønsket_lr: 1.0e-05
       opvarmningsperiode: 1
       noise_fra: -2
       noise_til: 1
-      n_noise_trin: 50
+      n_noise_trin: 5
       log_gradient: false
       weight_decay: 1.0e-2
     patience: 20
