@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
-  n_trin: 1
+  n_trin: 3
   spænd:
-    - 150
-    - 150
+    - 30
+    - 500
   val_reduced: false
 Downstream:
   optøet:
@@ -26,7 +26,7 @@ Downstream:
     seed: 42
   frossen:
     check_val_every_n_epoch: 40
-    epoker: 800
+    epoker: 600
     min_delta: 0.1
     model:
       hovedtype: klogt
