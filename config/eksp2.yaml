@@ -45,5 +45,5 @@ udgaver:
 temperaturer:
   - frossen
 run_baseline: false
-qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 21
+qm9_path: artifacts/model-4ci6vjyd-v0/model.ckpt
+kørselsid: null
