@@ -2,7 +2,7 @@
 #BSUB -J backbone
 #BSUB -o backbone%J.out
 #BSUB -e backbone%J.err
-#BSUB -q gpua100
+#BSUB -q gpuv100
 #BSUB -gpu "num=1:mode=exclusive_process"
 #BSUB -n 4
 #BSUB -R "rusage[mem=1G]"
