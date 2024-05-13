@@ -38,7 +38,7 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-02
     patience: 20
-    seed: 3
+    seed: null
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-c1mryc71:v0
@@ -46,4 +46,4 @@ temperaturer:
   - frossen
 run_baseline: false
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 18
+kørselsid: null
