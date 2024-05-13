@@ -41,9 +41,9 @@ Downstream:
     seed: false
 rygradtype: visnet
 udgaver:
-  - afhandling/4i94v9kg/checkpoints/best.ckpt
+  - uden
 temperaturer:
   - frossen
 run_baseline: false
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: null
+kørselsid: 41
