@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 5
+  n_trin: 1
   spænd:
-    - 30
-    - 500
+    - 250
+    - 250
   val_reduced: true
 Downstream:
   optøet:
@@ -38,12 +38,13 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-02
     patience: 20
-    seed: 4
+    seed: null
 rygradtype: visnet
 udgaver:
   - uden
 temperaturer:
   - frossen
 run_baseline: false
+gruppenavn: eksp4
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 47
+kørselsid: null

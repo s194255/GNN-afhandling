@@ -59,7 +59,7 @@ class Eksp2:
             for run in runs:
                 gruppe = run.group
                 if gruppe:
-                    if gruppe.split("_")[0] == "eksp2":
+                    if gruppe.split("_")[0] == self.config['gruppenavn']:
                         kørselsid = int(gruppe.split("_")[1])
                         kørselsider.append(kørselsid)
             self.kørselsid = max(kørselsider, default=-1)+1
@@ -74,7 +74,7 @@ class Eksp2:
             L.pytorch.callbacks.LearningRateMonitor(logging_interval='step')
         ]
         logger = WandbLogger(project='afhandling', log_model=False, tags=tags,
-                             group=f"eksp2_{self.kørselsid}", config=logger_config)
+                             group=f"{self.config['gruppenavn']}_{self.kørselsid}", config=logger_config)
         config_curr = self.config['Downstream'][temperatur]
         trainer = L.Trainer(max_epochs=config_curr['epoker'],
                             log_every_n_steps=1,
