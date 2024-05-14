@@ -92,7 +92,7 @@ runs = list(filter(is_suitable, runs))
 groups = set(list(map(get_group, runs)))
 print(groups)
 for group in tqdm(groups):
-    if group != 'eksp2_47':
+    if group not in ['eksp2_47', 'eksp2_48']:
         continue
     runs_group = list(filter(lambda w: is_in_group(w, group), runs))
     fortræningsudgaver = set(list(map(get_fortræningsudgave, runs_group)))
@@ -122,7 +122,7 @@ for group in tqdm(groups):
                         i += 1
             plt.title(f'{TITLER[temperatur]}', fontsize=22)
             plt.xlabel("Datamængde", fontsize=18)
-            plt.ylabel("MAE ($ma_0^3$)", fontsize=18)
+            plt.ylabel("MAE ($m\\mathrm{a}_0^3$)", fontsize=18)
             plt.tick_params(axis='both', which='major', labelsize=16)
             plt.tick_params(axis='both', which='minor', labelsize=14)
             plt.yscale("log")
