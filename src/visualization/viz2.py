@@ -28,6 +28,10 @@ def get_rygrad_runid(run):
     config = json.loads(run.json_config)
     return config['rygrad runid']['value']
 
+def get_seed(run):
+    config = json.loads(run.json_config)
+    return config['seed']['value']
+
 def is_suitable(run):
     group = run.group
     if group == None:
@@ -82,35 +86,37 @@ for group in tqdm(groups):
     runs_group = list(filter(lambda w: is_in_group(w, group), runs))
     fortræningsudgaver = set(list(map(get_fortræningsudgave, runs_group)))
     temperaturer = set(list(map(get_temperatur, runs_group)))
+    seeds = set(list(map(get_seed, runs_group)))
     kørsel_path = os.path.join("eksp2_logs", group)
     os.makedirs(kørsel_path)
     for temperatur in temperaturer:
-        try:
-            plt.figure(figsize=(10, 6))
-            i = 0
-            for fortræningsudgave in fortræningsudgaver:
-                # rygrad_runids = set(list(map(get_fortræningsudgave, runs_group)))
+        for seed in seeds:
+            try:
+                plt.figure(figsize=(10, 6))
+                i = 0
+                for fortræningsudgave in fortræningsudgaver:
+                    # rygrad_runids = set(list(map(get_fortræningsudgave, runs_group)))
 
-                runs_filtered = list(filter(lambda w: main_filter(w, temperatur, fortræningsudgave), runs_group))
-                rygrad_runids = set(list(map(get_rygrad_runid, runs_filtered)))
-                for rygrad_runid in rygrad_runids:
-                    runs_filtered2 = list(filter(lambda w: main_filter2(w, rygrad_runid), runs_filtered))
-                    df = get_df(runs_filtered2)
-                    df = df.apply(pd.to_numeric, errors='coerce')
-                    df = df.dropna(how='any')
-                    prefix = f'{fortræningsudgave} - {rygrad_runid}'
-                    plt.scatter(df["eftertræningsmængde"], df[f"test_loss_mean"], label=prefix, color=farver[i])
-                    plt.fill_between(df["eftertræningsmængde"], df[f"test_loss_lower"], df[f"test_loss_upper"],
-                                     color=farver[i],
-                                     alpha=0.3)
-                    i += 1
-            plt.title(f'{group} {temperatur}')
-            plt.xlabel("Datamængde")
-            plt.ylabel("MAE")
-            plt.yscale("log")
-            plt.legend()
-            plt.grid(True)
-            plt.savefig(os.path.join(kørsel_path, f"{temperatur}.jpg"))
-            plt.close()
-        except ValueError:
-            pass
+                    runs_filtered = list(filter(lambda w: main_filter(w, temperatur, fortræningsudgave), runs_group))
+                    rygrad_runids = set(list(map(get_rygrad_runid, runs_filtered)))
+                    for rygrad_runid in rygrad_runids:
+                        runs_filtered2 = list(filter(lambda w: main_filter2(w, rygrad_runid), runs_filtered))
+                        df = get_df(runs_filtered2)
+                        df = df.apply(pd.to_numeric, errors='coerce')
+                        df = df.dropna(how='any')
+                        prefix = f'{fortræningsudgave} - {rygrad_runid}'
+                        plt.scatter(df["eftertræningsmængde"], df[f"test_loss_mean"], label=prefix, color=farver[i])
+                        plt.fill_between(df["eftertræningsmængde"], df[f"test_loss_lower"], df[f"test_loss_upper"],
+                                         color=farver[i],
+                                         alpha=0.3)
+                        i += 1
+                plt.title(f'{group} {temperatur} {seed}')
+                plt.xlabel("Datamængde")
+                plt.ylabel("MAE")
+                plt.yscale("log")
+                plt.legend()
+                plt.grid(True)
+                plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{seed}.jpg"))
+                plt.close()
+            except ValueError:
+                pass

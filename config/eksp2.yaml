@@ -2,7 +2,7 @@ datasæt:
   batch_size: 256
   debug: false
   delmængdestørrelse: 1.0
-  num_workers: 4
+  num_workers: 2
   n_trin: 5
   spænd:
     - 30
@@ -31,14 +31,14 @@ Downstream:
     model:
       hovedtype: klogt
       gamma: 0.99
-      lr: 1.0e-02
+      lr: 4.0e-03
       step_size: 1
-      ønsket_lr: 1.0e-02
+      ønsket_lr: 4.0e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-02
     patience: 20
-    seed: 0
+    seed: 1
 rygradtype: visnet
 udgaver:
   - uden
@@ -46,4 +46,4 @@ temperaturer:
   - frossen
 run_baseline: false
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 45
+kørselsid: null
