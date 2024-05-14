@@ -41,7 +41,7 @@ Downstream:
     seed: 3
 rygradtype: visnet
 udgaver:
-  - uden
+  - s194255/afhandling/model-zu71emmm:v0
 temperaturer:
   - frossen
 run_baseline: false
