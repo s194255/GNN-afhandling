@@ -38,7 +38,7 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-02
     patience: 20
-    seed: 3
+    seed: 4
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-zu71emmm:v0

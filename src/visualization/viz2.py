@@ -52,12 +52,14 @@ def is_in_group(run, group):
     else:
         return run.group == group
 
-def main_filter(run, temperatur, fortræningsudgave):
+def main_filter(run, temperatur, fortræningsudgave, seed):
     run_temperatur = get_temperatur(run)
     if run_temperatur != temperatur:
         return False
     run_fortræningsudgave = get_fortræningsudgave(run)
     if run_fortræningsudgave != fortræningsudgave:
+        return False
+    if seed != get_seed(run):
         return False
     return True
 
@@ -95,9 +97,8 @@ for group in tqdm(groups):
                 plt.figure(figsize=(10, 6))
                 i = 0
                 for fortræningsudgave in fortræningsudgaver:
-                    # rygrad_runids = set(list(map(get_fortræningsudgave, runs_group)))
 
-                    runs_filtered = list(filter(lambda w: main_filter(w, temperatur, fortræningsudgave), runs_group))
+                    runs_filtered = list(filter(lambda w: main_filter(w, temperatur, fortræningsudgave, seed), runs_group))
                     rygrad_runids = set(list(map(get_rygrad_runid, runs_filtered)))
                     for rygrad_runid in rygrad_runids:
                         runs_filtered2 = list(filter(lambda w: main_filter2(w, rygrad_runid), runs_filtered))
