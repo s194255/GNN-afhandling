@@ -41,7 +41,7 @@ Downstream:
     seed: 187
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-8dxl194x:v0
+  - uden
 temperaturer:
   - frossen
 run_baseline: false
