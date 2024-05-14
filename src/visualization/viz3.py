@@ -7,11 +7,18 @@ import pandas as pd
 import matplotlib.ticker as ticker
 import json
 from tqdm import tqdm
+from matplotlib.ticker import ScalarFormatter
 
 
 METRICS = {'test_loss_mean', "test_loss_std", "test_loss_lower", "test_loss_upper", "eftertræningsmængde"}
 
 JSON_KEYS = {'fortræningsudgave', 'temperatur'}
+
+TITLER = {'frossen': "Frossen rygrad",
+          'optøet': "Optøet"}
+
+LABELLER = {'uden': 'Ingen fortræning',
+            'Selvvejledt': '3D-EMGP'}
 
 def get_group(run):
     return run.group
@@ -85,6 +92,8 @@ runs = list(filter(is_suitable, runs))
 groups = set(list(map(get_group, runs)))
 print(groups)
 for group in tqdm(groups):
+    if group != 'eksp2_47':
+        continue
     runs_group = list(filter(lambda w: is_in_group(w, group), runs))
     fortræningsudgaver = set(list(map(get_fortræningsudgave, runs_group)))
     temperaturer = set(list(map(get_temperatur, runs_group)))
@@ -94,7 +103,7 @@ for group in tqdm(groups):
     for temperatur in temperaturer:
         try:
             plt.figure(figsize=(10, 6))
-            for seed in seeds:
+            for j, seed in enumerate(seeds):
                 i = 0
                 for fortræningsudgave in fortræningsudgaver:
                     runs_filtered = list(filter(lambda w: main_filter(w, temperatur, fortræningsudgave, seed), runs_group))
@@ -104,16 +113,23 @@ for group in tqdm(groups):
                         df = get_df(runs_filtered2)
                         df = df.apply(pd.to_numeric, errors='coerce')
                         df = df.dropna(how='any')
-                        prefix = f'{fortræningsudgave} - {rygrad_runid}'
-                        plt.plot(df["eftertræningsmængde"], df[f"test_loss_mean"], label=prefix, color=farver[i])
+                        if j == 0:
+                            label = LABELLER[fortræningsudgave]
+                        else:
+                            label = None
+                        plt.plot(df["eftertræningsmængde"], df[f"test_loss_mean"], label=label, color=farver[i])
+                        plt.scatter(df["eftertræningsmængde"], df[f"test_loss_mean"], color=farver[i])
                         i += 1
-            plt.title(f'{group} {temperatur} {seed}')
-            plt.xlabel("Datamængde")
-            plt.ylabel("MAE")
+            plt.title(f'{TITLER[temperatur]}', fontsize=20)
+            plt.xlabel("Datamængde", fontsize=16)
+            plt.ylabel("MAE", fontsize=16)
+            plt.tick_params(axis='both', which='major', labelsize=14)
+            plt.tick_params(axis='both', which='minor', labelsize=12)
             plt.yscale("log")
-            plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
-            plt.grid(True)
-            plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{seed}.jpg"))
+            plt.legend(fontsize=16)
+            plt.gca().yaxis.set_minor_formatter(ScalarFormatter())
+            plt.savefig(os.path.join(kørsel_path, f"{temperatur}.jpg"))
+            plt.savefig(os.path.join(kørsel_path, f"{temperatur}.pdf"))
             plt.close()
         except ValueError:
             pass
