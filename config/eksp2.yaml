@@ -7,7 +7,7 @@ datasæt:
   spænd:
     - 30
     - 500
-  val_reduced: false
+  val_reduced: true
 Downstream:
   optøet:
     check_val_every_n_epoch: 80
@@ -38,7 +38,7 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-02
     patience: 20
-    seed: 1
+    seed: 2
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-zu71emmm:v0
@@ -46,4 +46,4 @@ temperaturer:
   - frossen
 run_baseline: false
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 46
+kørselsid: null
