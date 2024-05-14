@@ -5,7 +5,7 @@ datasæt:
   num_workers: 2
   n_trin: 5
   spænd:
-    - 3
+    - 30
     - 500
   val_reduced: true
 Downstream:
@@ -47,4 +47,4 @@ temperaturer:
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 48
+kørselsid: null
