@@ -16,6 +16,7 @@ from lightning.pytorch.loggers import WandbLogger
 import wandb
 import copy
 from typing import Tuple
+from itertools import product
 
 LOG_ROOT = "eksp2_logs"
 
@@ -29,7 +30,7 @@ def debugify_config(config):
     config['kørselsid'] = None
     for opgave in r.get_opgaver_in_config(config):
         for variant in config[opgave].keys():
-            config[opgave][variant]['epoker'] = 5
+            config[opgave][variant]['epoker'] = 1
             config[opgave][variant]['check_val_every_n_epoch'] = 1
             config[opgave][variant]['model']['rygrad']['hidden_channels'] = 8
 
@@ -104,6 +105,11 @@ class Eksp2:
         return downstream, run_id
     def eftertræn(self, udgave, temperatur, seed):
         assert temperatur in ['frossen', 'optøet']
+        if seed != None:
+            print(f"jeg planter frøet {seed}")
+            torch.manual_seed(seed)
+        else:
+            print("jeg planter ikke noget frø")
         downstream, run_id = self.create_downstream(udgave, temperatur)
         if temperatur == "frossen":
             downstream.frys_rygrad()
@@ -137,12 +143,8 @@ class Eksp2:
 
     def eksperiment_runde(self, i):
         self.qm9Bygger2Hoved.sample_train_reduced(i)
-        for temperatur in self.config['temperaturer']:
-            seed = self.config['Downstream'][temperatur]['seed']
-            if seed:
-                torch.manual_seed(seed)
-            for udgave in self.config['udgaver']:
-                self.eftertræn(udgave, temperatur, seed)
+        for temperatur, seed, udgave in product(self.config['temperaturer'], self.config['seeds'], self.config['udgaver']):
+            self.eftertræn(udgave, temperatur, seed)
         if self.config['run_baseline']:
             self.eftertræn_baseline()
 

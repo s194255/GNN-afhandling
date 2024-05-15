@@ -23,7 +23,6 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-01
     patience: 20
-    seed: 42
   frossen:
     check_val_every_n_epoch: 60
     epoker: 600
@@ -38,12 +37,14 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-02
     patience: 20
-    seed: 187
 rygradtype: visnet
 udgaver:
   - uden
 temperaturer:
   - frossen
+seeds:
+  - 0
+  - 0
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
