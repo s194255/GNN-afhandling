@@ -45,6 +45,6 @@ temperaturer:
 seeds:
   - null
 run_baseline: false
-gruppenavn: eksp4
+gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 0
+kørselsid: null
