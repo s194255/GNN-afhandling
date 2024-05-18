@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 256
+  batch_size: 64
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
@@ -47,4 +47,4 @@ seeds:
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 49
+kørselsid: null
