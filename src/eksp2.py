@@ -91,7 +91,7 @@ class Eksp2:
         if udgave != 'uden':
             selvvejledt, qm9bygger, _, run_id = r.get_selvvejledt_fra_wandb(self.config, udgave)
             assert self.qm9Bygger2Hoved.eq_data_split(qm9bygger)
-            args_dict['rygrad'] = selvvejledt.args_dict['rygrad']
+            # args_dict['rygrad'] = selvvejledt.args_dict['rygrad']
             downstream = m.Downstream(
                 args_dict=args_dict,
                 metadata=metadata

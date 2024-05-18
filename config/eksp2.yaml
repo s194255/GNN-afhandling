@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 64
+  batch_size: 128
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
@@ -7,11 +7,11 @@ datasæt:
   spænd:
     - 30
     - 500
-  val_reduced: true
+  val_reduced: false
 Downstream:
   optøet:
-    check_val_every_n_epoch: 80
-    epoker: 800
+    check_val_every_n_epoch: 40
+    epoker: 400
     min_delta: 0.1
     model:
       hovedtype: klogt
