@@ -3,7 +3,7 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 5
+  n_trin: 7
   spænd:
     - 30
     - 500
@@ -11,14 +11,14 @@ datasæt:
 Downstream:
   optøet:
     check_val_every_n_epoch: 40
-    epoker: 100
+    epoker: 400
     min_delta: 0.1
     model:
       hovedtype: klogt
       gamma: 0.99
-      lr: 4.0e-03
+      lr: 1.0e-03
       step_size: 1
-      ønsket_lr: 4.0e-03
+      ønsket_lr: 1.0e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-02
@@ -43,8 +43,8 @@ udgaver:
 temperaturer:
   - optøet
 seeds:
-  - 2
+  - 3
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 57
+kørselsid: 56
