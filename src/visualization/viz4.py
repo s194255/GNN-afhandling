@@ -1,15 +1,17 @@
 import shutil
 import os
 import matplotlib.pyplot as plt
-from farver import farver
+import farver
 import viz0
 import pandas as pd
 from tqdm import tqdm
 import numpy as np
 from scipy.stats import norm
 
-if os.path.exists("lightning_logs"):
-    shutil.rmtree("lightning_logs")
+rod = 'reports/figures/Eksperimenter/2/fordeling_af_MAE'
+
+if os.path.exists(rod):
+    shutil.rmtree(rod)
 
 
 
@@ -18,7 +20,7 @@ for group in tqdm(groups):
     runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
     assert len(fortræningsudgaver) == 1
     fortræningsudgave = list(fortræningsudgaver)[0]
-    kørsel_path = os.path.join("lightning_logs", group)
+    kørsel_path = os.path.join(rod, group)
     os.makedirs(kørsel_path)
     for temperatur in temperaturer:
         for seed in seeds:
@@ -36,16 +38,21 @@ for group in tqdm(groups):
 
             plt.figure(figsize=(10, 6))
 
-            # plt.hist(df['test_loss_mean'], bins=20, density=True, alpha=0.6, color='g', edgecolor='black')  # Histogram
-            plt.scatter(x=df['test_loss_mean'], y=[0.0005]*len(df))
+            bins = 5
+            plt.hist(df['test_loss_mean'], bins=bins, density=True, alpha=0.4, color=farver.rød, edgecolor='black')  # Histogram
+            plt.scatter(x=df['test_loss_mean'], y=[0.0005]*len(df), color=farver.blå, marker='x', s=200)
 
-            plt.plot(x, fit, '-r', label='Normalfordeling')  # Fittet normalfordeling
-            plt.xlabel('Test Loss Mean')
-            plt.ylabel('Frekvens')
-            plt.title('Fordeling af Test Loss Mean med Fittet Normalfordeling')
-            plt.legend()
+            plt.plot(x, fit, farver.rød, label='Normalfordeling', linewidth=5)  # Fittet normalfordeling
+            plt.xlabel("MAE", fontsize=18)
+            plt.ylabel('Frekvens', fontsize=18)
+            plt.tick_params(axis='both', which='major', labelsize=16)
+            plt.tick_params(axis='both', which='minor', labelsize=14)
+            plt.title('Fordeling af MAE', fontsize=22)
+            # plt.legend(fontsize=18)
             plt.grid(True)
-            plt.show()
+            plt.savefig(os.path.join(kørsel_path, "fordeling_af_MAE.jpg"))
+            plt.savefig(os.path.join(kørsel_path, "fordeling_af_MAE.pdf"))
+            plt.close()
 
 
             # plt.figure(figsize=(10, 6))

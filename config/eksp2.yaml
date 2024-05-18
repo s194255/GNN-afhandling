@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 1
+  n_trin: 3
   spænd:
-    - 250
-    - 250
+    - 30
+    - 500
   val_reduced: true
 Downstream:
   optøet:
@@ -41,13 +41,8 @@ rygradtype: visnet
 udgaver:
   - uden
 temperaturer:
-  - frossen
+  - optøet
 seeds:
-  - null
-  - null
-  - null
-  - null
-  - null
   - null
 run_baseline: false
 gruppenavn: eksp4
