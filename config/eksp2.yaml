@@ -21,7 +21,7 @@ Downstream:
       ønsket_lr: 1.0e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
-      weight_decay: 1.0e-00
+      weight_decay: 1.0e-02
     patience: 20
   frossen:
     check_val_every_n_epoch: 60
@@ -43,8 +43,8 @@ udgaver:
 temperaturer:
   - optøet
 seeds:
-  - 1
+  - 2
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 55
+kørselsid: null
