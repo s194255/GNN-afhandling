@@ -10,18 +10,18 @@ datasæt:
   val_reduced: true
 Downstream:
   optøet:
-    check_val_every_n_epoch: 30
-    epoker: 300
+    check_val_every_n_epoch: 15
+    epoker: 600
     min_delta: 0.1
     model:
       hovedtype: klogt
-      gamma: 0.995
-      lr: 1.0e-03
+      gamma: 0.999
+      lr: 2.5e-04
       step_size: 1
-      ønsket_lr: 1.0e-03
+      ønsket_lr: 2.5e-04
       opvarmningsperiode: 1
       predicted_attribute: 1
-      weight_decay: 1.0e-00
+      weight_decay: 1.0e-01
     patience: 20
   frossen:
     check_val_every_n_epoch: 60
@@ -43,8 +43,8 @@ udgaver:
 temperaturer:
   - optøet
 seeds:
-  - 5
+  - 6
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 64
+kørselsid: 65

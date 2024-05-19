@@ -18,7 +18,11 @@ class Downstream(Grundmodel):
                  **kwargs):
         self.metadata = metadata
         super().__init__(*args, **kwargs)
-        self.criterion = torch.nn.L1Loss()
+        self.criterion = {
+            'train': torch.nn.MSELoss(),
+            'val': torch.nn.L1Loss(),
+            'test': torch.nn.L1Loss()
+        }
         self.fortræningsudgave = 'uden'
 
     def forward(
@@ -67,7 +71,7 @@ class Downstream(Grundmodel):
     def step(self, task, data, batch_idx):
         on_epoch = {'train': None, 'val': None, 'test': True}
         pred = self(data.z, data.pos, data.batch)
-        loss = 1000*self.criterion(pred, data.y[:, self.target_idx])
+        loss = self.criterion[task](1000*pred, 1000*data.y[:, self.target_idx])
         self.log(
             f"{task}_loss", loss.item(),
             batch_size=data.batch_size,
