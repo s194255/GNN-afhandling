@@ -3,7 +3,7 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 5
+  n_trin: 10
   spænd:
     - 30
     - 500
@@ -43,7 +43,7 @@ udgaver:
 temperaturer:
   - optøet
 seeds:
-  - 4
+  - 5
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
