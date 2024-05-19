@@ -15,13 +15,13 @@ Downstream:
     min_delta: 0.1
     model:
       hovedtype: klogt
-      gamma: 0.9999
+      gamma: 0.995
       lr: 1.0e-03
       step_size: 1
       ønsket_lr: 1.0e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
-      weight_decay: 1.0e-02
+      weight_decay: 1.0e-00
     patience: 20
   frossen:
     check_val_every_n_epoch: 60
