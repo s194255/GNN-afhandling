@@ -10,15 +10,15 @@ datasæt:
   val_reduced: false
 Downstream:
   optøet:
-    check_val_every_n_epoch: 60
-    epoker: 600
+    check_val_every_n_epoch: 80
+    epoker: 800
     min_delta: 0.1
     model:
       hovedtype: klogt
       gamma: 0.995
-      lr: 2.5e-04
+      lr: 1.0e-04
       step_size: 1
-      ønsket_lr: 2.5e-04
+      ønsket_lr: 1.0e-04
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-02
@@ -40,11 +40,10 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-zu71emmm:v0
-  - uden
 temperaturer:
   - optøet
 seeds:
-  - 2
+  - 3
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
