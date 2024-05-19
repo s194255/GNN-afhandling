@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 5
+  n_trin: 2
   spænd:
     - 30
-    - 500
+    - 150
   val_reduced: true
 Downstream:
   optøet:
