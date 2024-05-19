@@ -15,10 +15,10 @@ Downstream:
     min_delta: 0.1
     model:
       hovedtype: klogt
-      gamma: 0.99
-      lr: 5.0e-04
+      gamma: 0.995
+      lr: 2.5e-04
       step_size: 1
-      ønsket_lr: 5.0e-04
+      ønsket_lr: 2.5e-04
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-02
@@ -40,11 +40,12 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-zu71emmm:v0
+  - uden
 temperaturer:
   - optøet
 seeds:
-  - 1
+  - 2
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 60
+kørselsid: null
