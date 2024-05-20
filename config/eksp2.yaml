@@ -11,15 +11,15 @@ datasæt:
 Downstream:
   optøet:
     check_val_every_n_epoch: 10
-    epoker: 200
+    epoker: 400
     steps: -1
     gradient_clipping: 1.0e-03
     model:
       hovedtype: klogt
       gamma: 0.98
-      lr: 0.5e-03
+      lr: 0.25e-03
       step_size: 1
-      ønsket_lr: 0.5e-03
+      ønsket_lr: 0.25e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-01
