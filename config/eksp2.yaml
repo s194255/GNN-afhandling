@@ -11,7 +11,7 @@ datasæt:
 Downstream:
   optøet:
     check_val_every_n_epoch: 8
-    epoker: 800
+    epoker: 400
     steps: -1
     model:
       hovedtype: klogt
