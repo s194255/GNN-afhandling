@@ -40,7 +40,7 @@ Downstream:
     patience: 20
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-zu71emmm:v0
+  - uden
 temperaturer:
   - optøet
 seeds:
