@@ -9,5 +9,5 @@ num_layers: 12
 num_rbf: 32
 trainable_rbf: false
 trainable_vecnorm: false
-vecnorm_type: nulll
+vecnorm_type: null
 vertex: false
