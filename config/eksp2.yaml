@@ -16,7 +16,7 @@ Downstream:
     gradient_clipping: 1.0e-03
     model:
       hovedtype: klogt
-      gamma: 0.99
+      gamma: 0.98
       lr: 0.5e-03
       step_size: 1
       ønsket_lr: 0.5e-03
@@ -48,4 +48,4 @@ seeds:
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 66
+kørselsid: 67
