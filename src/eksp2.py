@@ -78,6 +78,7 @@ class Eksp2:
                              group=f"{self.config['gruppenavn']}_{self.kørselsid}", config=logger_config)
         config_curr = self.config['Downstream'][temperatur]
         trainer = L.Trainer(max_epochs=config_curr['epoker'],
+                            max_steps=config_curr['steps'],
                             log_every_n_steps=1,
                             callbacks=callbacks,
                             logger=logger,

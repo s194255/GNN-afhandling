@@ -3,7 +3,7 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 10
+  n_trin: 5
   spænd:
     - 30
     - 500
@@ -11,7 +11,8 @@ datasæt:
 Downstream:
   optøet:
     check_val_every_n_epoch: 10
-    epoker: 200
+    epoker: null
+    steps: 300
     model:
       hovedtype: klogt
       gamma: 0.999
@@ -46,4 +47,4 @@ seeds:
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 65
+kørselsid: 66
