@@ -16,9 +16,9 @@ Downstream:
     model:
       hovedtype: klogt
       gamma: 0.999
-      lr: 5.0e-03
+      lr: 1.0e-04
       step_size: 1
-      ønsket_lr: 5.0e-03
+      ønsket_lr: 1.0e-04
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-02
@@ -47,4 +47,4 @@ seeds:
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 68
+kørselsid: 65
