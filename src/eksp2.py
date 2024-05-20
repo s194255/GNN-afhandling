@@ -20,7 +20,7 @@ from itertools import product
 
 LOG_ROOT = "eksp2_logs"
 
-torch.set_float32_matmul_precision('medium')
+# torch.set_float32_matmul_precision('medium')
 
 def debugify_config(config):
     config['datasæt']['debug'] = True
