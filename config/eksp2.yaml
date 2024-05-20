@@ -11,7 +11,7 @@ datasæt:
 Downstream:
   optøet:
     check_val_every_n_epoch: 10
-    epoker: 600
+    epoker: 200
     model:
       hovedtype: klogt
       gamma: 0.999
@@ -42,7 +42,7 @@ udgaver:
 temperaturer:
   - optøet
 seeds:
-  - 8
+  - 9
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
