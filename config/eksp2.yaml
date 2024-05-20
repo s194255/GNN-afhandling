@@ -15,14 +15,14 @@ Downstream:
     steps: 500
     model:
       hovedtype: klogt
-      gamma: 0.99
+      gamma: 0.99999
       lr: 1.0e-04
       step_size: 1
       ønsket_lr: 1.0e-04
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-06
-      loss: L1
+      loss: L2
   frossen:
     check_val_every_n_epoch: 60
     epoker: 600
