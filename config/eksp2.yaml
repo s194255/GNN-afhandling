@@ -10,7 +10,7 @@ datasæt:
   val_reduced: true
 Downstream:
   optøet:
-    check_val_every_n_epoch: 8
+    check_val_every_n_epoch: 10
     epoker: 400
     steps: -1
     model:
