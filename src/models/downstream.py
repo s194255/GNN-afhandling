@@ -18,11 +18,7 @@ class Downstream(Grundmodel):
                  **kwargs):
         self.metadata = metadata
         super().__init__(*args, **kwargs)
-        self.criterion = {
-            'train': torch.nn.MSELoss(),
-            'val': torch.nn.L1Loss(),
-            'test': torch.nn.L1Loss()
-        }
+        self.criterion = self.create_criterion()
         self.fortræningsudgave = 'uden'
 
     def forward(
@@ -38,6 +34,19 @@ class Downstream(Grundmodel):
     @property
     def target_idx(self):
         return self.args_dict['predicted_attribute']
+
+    def create_criterion(self) -> dict:
+        criterion = {
+            'val': torch.nn.L1Loss(),
+            'test': torch.nn.L1Loss()
+        }
+        if self.args_dict['loss'] == 'L1':
+            criterion['train'] = torch.nn.L1Loss()
+        elif self.args_dict['loss'] == 'L2':
+            criterion['train'] = torch.nn.MSELoss()
+        else:
+            raise NotImplementedError
+        return criterion
 
     def create_hoved(self):
         # metadata = get_metadata()
@@ -71,7 +80,7 @@ class Downstream(Grundmodel):
     def step(self, task, data, batch_idx):
         on_epoch = {'train': None, 'val': None, 'test': True}
         pred = self(data.z, data.pos, data.batch)
-        loss = self.criterion[task](1000*pred, 1000*data.y[:, self.target_idx])
+        loss = 1000*self.criterion[task](pred, data.y[:, self.target_idx])
         self.log(
             f"{task}_loss", loss.item(),
             batch_size=data.batch_size,
