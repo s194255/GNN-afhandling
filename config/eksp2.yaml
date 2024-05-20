@@ -10,19 +10,19 @@ datasæt:
   val_reduced: true
 Downstream:
   optøet:
-    check_val_every_n_epoch: 10
-    epoker: null
-    steps: 500
+    check_val_every_n_epoch: 8
+    epoker: 800
+    steps: null
     model:
       hovedtype: klogt
-      gamma: 0.99999
-      lr: 1.0e-04
+      gamma: 0.99
+      lr: 1.0e-03
       step_size: 1
-      ønsket_lr: 1.0e-04
+      ønsket_lr: 1.0e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
-      weight_decay: 1.0e-06
-      loss: L2
+      weight_decay: 1.0e-01
+      loss: L1
   frossen:
     check_val_every_n_epoch: 60
     epoker: 600
