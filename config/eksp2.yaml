@@ -12,7 +12,7 @@ Downstream:
   optøet:
     check_val_every_n_epoch: 8
     epoker: 800
-    steps: null
+    steps: -1
     model:
       hovedtype: klogt
       gamma: 0.99
