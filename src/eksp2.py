@@ -83,7 +83,7 @@ class Eksp2:
                             callbacks=callbacks,
                             logger=logger,
                             check_val_every_n_epoch=config_curr['check_val_every_n_epoch'],
-                            gradient_clip_val=10**(-5),
+                            gradient_clip_val=config_curr['gradient_clipping'],
                             )
         return trainer
 

@@ -11,8 +11,9 @@ datasæt:
 Downstream:
   optøet:
     check_val_every_n_epoch: 10
-    epoker: 400
+    epoker: 200
     steps: -1
+    gradient_clipping: 1.0e-08
     model:
       hovedtype: klogt
       gamma: 0.99
