@@ -24,7 +24,12 @@ def main():
     args_dict = config[modelklasse_str]['variant1']['model']
     datasæt_dict = config['datasæt']
     tags = ['selvvejledt', 'qm9bygger']
-    selvvejledt, qm9bygger = r.build_selvvejledt(args_dict=args_dict, datasæt_dict=datasæt_dict, modelklasse_str=modelklasse_str)
+    epoker = config[modelklasse_str]['variant1']['epoker']
+    if config['ckpt']:
+        selvvejledt, qm9bygger, artefakt_sti, _ = r.get_selvvejledt_fra_wandb(config, config['ckpt'])
+        epoker += r.get_n_epoker(artefakt_sti)
+    else:
+        selvvejledt, qm9bygger = r.build_selvvejledt(args_dict=args_dict, datasæt_dict=datasæt_dict, modelklasse_str=modelklasse_str)
 
     if config['qm9_path']:
         _, qm9bygger, _, _ = r.get_selvvejledt_fra_wandb(config, config['qm9_path'])
@@ -32,8 +37,8 @@ def main():
 
     logger_config = {'opgave': 'fortræn'}
     logger = r.wandbLogger(log_model=True, tags=tags, logger_config=logger_config)
-    trainer = r.get_trainer(config[modelklasse_str]['variant1']['epoker'], logger=logger)
-    trainer.fit(model=selvvejledt, datamodule=qm9bygger)
+    trainer = r.get_trainer(epoker, logger=logger)
+    trainer.fit(model=selvvejledt, datamodule=qm9bygger, ckpt_path=config['ckpt'])
     wandb_run_id = wandb.run.id
     wandb.finish()
     shutil.rmtree(os.path.join("afhandling", wandb_run_id))
