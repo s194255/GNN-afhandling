@@ -15,7 +15,7 @@ Selvvejledt:
     epoker: 50
     min_delta: 0.001
     model:
-      hovedtype: klogt
+      hovedtype: klogt_reg
       gamma: 0.99
       lambdaer:
         lokalt: 100
