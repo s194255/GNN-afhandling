@@ -40,9 +40,9 @@ Downstream:
     patience: 20
 rygradtype: visnet
 udgaver:
-  - uden
-temperaturer:
   - s194255/afhandling/model-8dxl194x:v0
+temperaturer:
+  - optøet
 seeds:
   - 652
   - 517
