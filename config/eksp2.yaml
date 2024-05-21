@@ -27,7 +27,9 @@ Downstream:
   frossen:
     check_val_every_n_epoch: 60
     epoker: 600
+    steps: -1
     min_delta: 0.1
+    gradient_clipping: null
     model:
       hovedtype: klogt
       gamma: 0.99
@@ -37,6 +39,7 @@ Downstream:
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-02
+      loss: L1
     patience: 20
 rygradtype: visnet
 udgaver:
