@@ -26,13 +26,13 @@ def debugify_config(config):
     config['datasæt']['debug'] = True
     config['datasæt']['batch_size'] = 4
     config['datasæt']['num_workers'] = 0
-    config['datasæt']['n_trin'] = 1
+    config['datasæt']['n_trin'] = 2
     config['kørselsid'] = None
     for opgave in r.get_opgaver_in_config(config):
         for variant in config[opgave].keys():
             config[opgave][variant]['epoker'] = 1
             config[opgave][variant]['check_val_every_n_epoch'] = 1
-            config[opgave][variant]['model']['rygrad']['hidden_channels'] = 8
+            # config[opgave][variant]['model']['rygrad']['hidden_channels'] = 8
 
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
@@ -105,13 +105,14 @@ class Eksp2:
             run_id = None
 
         return downstream, run_id
-    def eftertræn(self, udgave, temperatur, seed):
+    def eftertræn(self, udgave, temperatur, seed, i):
         assert temperatur in ['frossen', 'optøet']
         if seed != None:
             print(f"jeg planter frøet {seed}")
             torch.manual_seed(seed)
         else:
             print("jeg planter ikke noget frø")
+        self.qm9Bygger2Hoved.sample_train_reduced(i)
         downstream, run_id = self.create_downstream(udgave, temperatur)
         if temperatur == "frossen":
             downstream.frys_rygrad()
@@ -143,16 +144,10 @@ class Eksp2:
         trainer.test(model=downstream, datamodule=self.qm9Bygger2Hoved)
         wandb.finish()
 
-    def eksperiment_runde(self, i):
-        self.qm9Bygger2Hoved.sample_train_reduced(i)
-        for temperatur, seed, udgave in product(self.config['temperaturer'], self.config['seeds'], self.config['udgaver']):
-            self.eftertræn(udgave, temperatur, seed)
-        if self.config['run_baseline']:
-            self.eftertræn_baseline()
-
     def main(self):
-        for i in range(self.qm9Bygger2Hoved.n_trin):
-            self.eksperiment_runde(i)
+        løkke = product(self.config['temperaturer'], self.config['seeds'], range(self.qm9Bygger2Hoved.n_trin), self.config['udgaver'])
+        for temperatur, seed, i, udgave in løkke:
+            self.eftertræn(udgave, temperatur, seed, i)
 
 
 if __name__ == "__main__":
