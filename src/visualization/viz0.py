@@ -52,7 +52,7 @@ def get_seed(run):
 
 def get_loops_params(group, runs):
     runs_in_group = list(filter(lambda w: is_in_group(w, group), runs))
-    fortræningsudgaver = set(list(map(get_fortræningsudgave, runs_in_group)))
+    fortræningsudgaver = sorted(set(list(map(get_fortræningsudgave, runs_in_group))))
     temperaturer = set(list(map(get_temperatur, runs_in_group)))
     seeds = set(list(map(get_seed, runs_in_group)))
     rygrad_runids = set(list(map(get_rygrad_runid, runs_in_group)))
