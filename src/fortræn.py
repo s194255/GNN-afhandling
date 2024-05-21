@@ -30,7 +30,7 @@ def main():
         epoker += r.get_n_epoker(artefakt_sti)
     else:
         selvvejledt, qm9bygger = r.build_selvvejledt(args_dict=args_dict, datasæt_dict=datasæt_dict, modelklasse_str=modelklasse_str)
-
+        artefakt_sti = None
     if config['qm9_path']:
         _, qm9bygger, _, _ = r.get_selvvejledt_fra_wandb(config, config['qm9_path'])
         tags.remove('qm9bygger')
@@ -38,7 +38,7 @@ def main():
     logger_config = {'opgave': 'fortræn'}
     logger = r.wandbLogger(log_model=True, tags=tags, logger_config=logger_config)
     trainer = r.get_trainer(epoker, logger=logger)
-    trainer.fit(model=selvvejledt, datamodule=qm9bygger, ckpt_path=config['ckpt'])
+    trainer.fit(model=selvvejledt, datamodule=qm9bygger, ckpt_path=artefakt_sti)
     wandb_run_id = wandb.run.id
     wandb.finish()
     shutil.rmtree(os.path.join("afhandling", wandb_run_id))
