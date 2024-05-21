@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 128
+  batch_size: 1024
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
@@ -43,12 +43,11 @@ Downstream:
     patience: 20
 rygradtype: visnet
 udgaver:
-  - uden
+  - s194255/afhandling/model-kcejlw7q:v0
 temperaturer:
   - frossen
 seeds:
-  - 805
-  - 264
+  - null
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
