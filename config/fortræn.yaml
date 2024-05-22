@@ -8,6 +8,7 @@ datasæt:
     - 500
     - 2000
   val_reduced: false
+  name: QM9
 rygradtype: visnet
 Selvvejledt:
   variant1:

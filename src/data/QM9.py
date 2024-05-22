@@ -12,7 +12,7 @@ import itertools
 from torch_geometric.data.data import BaseData
 from src.models.redskaber import RiemannGaussian
 
-ROOT = "data/QM9"
+ROOT = "data"
 
 class QM9Bygger(L.LightningDataModule):
 
@@ -21,13 +21,15 @@ class QM9Bygger(L.LightningDataModule):
                  batch_size: int,
                  num_workers: int,
                  debug: bool,
+                 name: str = 'QM9',
                  ):
         super().__init__()
         self.save_hyperparameters()
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.debug = debug
-        self.root = ROOT
+        self.name = name
+        self.root = os.path.join(ROOT, name)
         self.mother_indices = self.create_mother_indices(delmængdestørrelse)
         self.data_splits = self.create_data_splits()
 
@@ -37,7 +39,13 @@ class QM9Bygger(L.LightningDataModule):
         return random.sample(list(range(n)), k=int(delmængdestørrelse * n))
 
     def get_mother_dataset(self) -> torch_geometric.data.Dataset:
-        return torch_geometric.datasets.QM9(self.root)
+        if self.name == 'QM9':
+            return torch_geometric.datasets.QM9(self.root)
+        elif self.name == 'MD17':
+            print("nu afleverer et MD17-datasæt")
+            return torch_geometric.datasets.MD17(self.root, name='benzene')
+        else:
+            raise NotImplementedError
 
     def create_data_splits(self):
         assert self.fordeling.shape == torch.Size([len(self.tasks)])
@@ -89,6 +97,7 @@ class QM9Bygger(L.LightningDataModule):
             set2 = set(self.data_splits[debug_mode][task2])
             intersection = set1.intersection(set2)
             assert len(intersection) == 0, f"Overlap mellem {task1} og {task2} i debug_mode {debug_mode}"
+        assert sum([len(self.data_splits[False][task]) for task in self.tasks]) == len(self.mother_indices)
 
     def state_dict(self):
         state = {'data_splits': self.data_splits}
