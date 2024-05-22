@@ -1,12 +1,12 @@
 datasæt:
-  batch_size: 128
+  batch_size: 1024
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 2
+  n_trin: 5
   spænd:
-    - 100
-    - 200
+    - 30
+    - 500
   val_reduced: true
 Downstream:
   optøet:
@@ -45,7 +45,7 @@ rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-cg9wh2c6:v0
 temperaturer:
-  - optøet
+  - frossen
 seeds:
   - 33
 run_baseline: false
