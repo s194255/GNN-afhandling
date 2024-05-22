@@ -1,12 +1,12 @@
 datasæt:
-  batch_size: 1024
+  batch_size: 128
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 5
+  n_trin: 2
   spænd:
-    - 30
-    - 500
+    - 100
+    - 200
   val_reduced: true
 Downstream:
   optøet:
@@ -44,6 +44,7 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - uden
+  - s194255/afhandling/model-zu71emmm:v0
 temperaturer:
   - optøet
 seeds:
@@ -51,4 +52,4 @@ seeds:
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 70
+kørselsid: null
