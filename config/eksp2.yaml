@@ -43,7 +43,7 @@ Downstream:
     patience: 20
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-cg9wh2c6:v0
+  - uden
 temperaturer:
   - frossen
 seeds:
@@ -51,4 +51,4 @@ seeds:
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: null
+kørselsid: 75
