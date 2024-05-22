@@ -21,7 +21,7 @@ if os.path.exists("eksp2_logs"):
 
 groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):
-    if group not in ['eksp2_47', 'eksp2_48', 'eksp2_67', 'eksp2_68']:
+    if group not in ['eksp2_47', 'eksp2_48', 'eksp2_67', 'eksp2_68', 'eksp2_75']:
         continue
     runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
     kørsel_path = os.path.join("eksp2_logs", group)

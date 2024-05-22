@@ -45,10 +45,10 @@ rygradtype: visnet
 udgaver:
   - uden
 temperaturer:
-  - frossen
+  - optøet
 seeds:
-  - 33
+  - 34
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 75
+kørselsid: 76
