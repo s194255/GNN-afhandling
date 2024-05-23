@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 2
+  n_trin: 5
   spænd:
-    - 100
-    - 200
+    - 30
+    - 500
   val_reduced: true
 Downstream:
   optøet:
@@ -48,8 +48,8 @@ udgaver:
 temperaturer:
   - optøet
 seeds:
-  - 35
+  - 36
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 77
+kørselsid: 78
