@@ -124,8 +124,14 @@ class QM9Bygger(L.LightningDataModule):
     def get_metadata(self, task):
         dataset = self.get_mother_dataset()
         idxs = self.data_splits[False][task]
-        means = dataset.y[idxs].mean(dim=0)
-        stds = dataset.y[idxs].std(dim=0)
+        if self.name == 'QM9':
+            means = dataset.y[idxs].mean(dim=0)
+            stds = dataset.y[idxs].std(dim=0)
+        elif self.name == 'MD17':
+            means = torch.tensor([0.0])
+            stds = torch.tensor([1.0])
+        else:
+            raise NotImplementedError
         return {'means': means, 'stds': stds}
 
     def eq_data_split(self, other):

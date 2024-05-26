@@ -1,16 +1,16 @@
 from typing import Tuple, Optional, List
 
 import torch
+import torch_geometric.data
 from torch import Tensor
 from torch_geometric.data import Data
 
 from src.models.grund import Grundmodel
-from src.models.hoveder.hoveddownstream import HovedDownstreamKlogt, HovedDownstreamDumt
+from src.models.hoveder.hoveddownstream import HovedDownstreamKlogt, HovedDownstreamDumt, HovedDownstreamKlogtMD17
 from src.data.QM9 import QM9ByggerEksp2
 import torchmetrics
 import lightning as L
 import copy
-
 
 class Downstream(Grundmodel):
     def __init__(self, *args,
@@ -20,20 +20,6 @@ class Downstream(Grundmodel):
         super().__init__(*args, **kwargs)
         self.criterion = self.create_criterion()
         self.fortræningsudgave = 'uden'
-
-    def forward(
-            self,
-            z: Tensor,
-            pos: Tensor,
-            batch: Tensor,
-    ) -> Tuple[Tensor, Optional[Tensor]]:
-        x, v, edge_attr, _ = self.rygrad(z, pos, batch)
-        y = self.hoved(z, pos, batch, x, v)
-        return y
-
-    @property
-    def target_idx(self):
-        return self.args_dict['predicted_attribute']
 
     def create_criterion(self) -> dict:
         criterion = {
@@ -48,49 +34,11 @@ class Downstream(Grundmodel):
             raise NotImplementedError
         return criterion
 
-    def create_hoved(self):
-        # metadata = get_metadata()
-        if self.args_dict['hovedtype'] == "klogt":
-            return HovedDownstreamKlogt(
-                **self.args_dict['hoved'],
-                means=self.metadata['means'][self.target_idx],
-                stds=self.metadata['stds'][self.target_idx],
-                hidden_channels=self.hidden_channels,
-                target_idx=self.target_idx,
-                max_z=self.args_dict['rygrad']['max_z'],
-            )
-        elif self.args_dict['hovedtype'] == "dumt":
-            return HovedDownstreamDumt(
-                **self.args_dict['hoved'],
-                means=self.metadata['means'][self.target_idx],
-                stds=self.metadata['stds'][self.target_idx],
-                hidden_channels=self.hidden_channels,
-            )
-
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         return self.step("train", data, batch_idx)
 
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         return self.step("val", data, batch_idx)
-
-    def test_step(self, data: Data, batch_idx: int) -> None:
-        pred = self(data.z, data.pos, data.batch)
-        self.metric.update(1000 * pred, 1000 * data.y[:, self.target_idx])
-
-    def step(self, task, data, batch_idx):
-        on_epoch = {'train': None, 'val': None, 'test': True}
-        pred = self(data.z, data.pos, data.batch)
-        loss = 1000*self.criterion[task](pred, data.y[:, self.target_idx])
-        self.log(
-            f"{task}_loss", loss.item(),
-            batch_size=data.batch_size,
-            on_epoch=on_epoch[task],
-        )
-        return loss
-
-    @property
-    def udgangsargsdict(self):
-        return {**super().udgangsargsdict, "predicted_attribute": 1}
 
     @property
     def selvvejledt(self):
@@ -131,7 +79,102 @@ class Downstream(Grundmodel):
         print(f"domstream rygrad = {self.rygrad_param_sum()}")
         print(f"selvvejledt rygrad = {selvvejledt.rygrad_param_sum()}")
 
-class DownstreamBaselineMean(Downstream):
+    def test_step(self, data: Data, batch_idx: int) -> None:
+        pred = self(data.z, data.pos, data.batch)
+        target = self.get_target(data)
+        self.metric.update(1000 * pred, 1000 * target)
+
+    def step(self, task, data, batch_idx):
+        on_epoch = {'train': None, 'val': None, 'test': True}
+        pred = self(data.z, data.pos, data.batch)
+        target = self.get_target(data)
+        loss = 1000*self.criterion[task](pred, target)
+        self.log(
+            f"{task}_loss", loss.item(),
+            batch_size=data.batch_size,
+            on_epoch=on_epoch[task],
+        )
+        return loss
+
+    def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
+        raise NotImplementedError
+
+
+class DownstreamQM9(Downstream):
+
+    def forward(
+            self,
+            z: Tensor,
+            pos: Tensor,
+            batch: Tensor,
+    ) -> Tuple[Tensor, Optional[Tensor]]:
+        x, v, edge_attr, _ = self.rygrad(z, pos, batch)
+        y = self.hoved(z, pos, batch, x, v)
+        return y
+
+    @property
+    def target_idx(self):
+        return self.args_dict['predicted_attribute']
+
+    def create_hoved(self):
+        # metadata = get_metadata()
+        if self.args_dict['hovedtype'] == "klogt":
+            return HovedDownstreamKlogt(
+                **self.args_dict['hoved'],
+                means=self.metadata['means'][self.target_idx],
+                stds=self.metadata['stds'][self.target_idx],
+                hidden_channels=self.hidden_channels,
+                target_idx=self.target_idx,
+                max_z=self.args_dict['rygrad']['max_z'],
+            )
+        elif self.args_dict['hovedtype'] == "dumt":
+            return HovedDownstreamDumt(
+                **self.args_dict['hoved'],
+                means=self.metadata['means'][self.target_idx],
+                stds=self.metadata['stds'][self.target_idx],
+                hidden_channels=self.hidden_channels,
+            )
+
+    @property
+    def udgangsargsdict(self):
+        return {**super().udgangsargsdict, "predicted_attribute": 1}
+
+    def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
+        return data.y[:, self.target_idx]
+
+class DownstreamMD17(Downstream):
+    def forward(
+            self,
+            z: Tensor,
+            pos: Tensor,
+            batch: Tensor,
+    ) -> Tuple[Tensor, Optional[Tensor]]:
+        pos.requires_grad_(True)
+        x, v, edge_attr, _ = self.rygrad(z, pos, batch)
+        y = self.hoved(z, pos, batch, x, v)
+        return y
+
+    def create_hoved(self):
+        assert self.args_dict['hovedtype'] == "klogt"
+        return HovedDownstreamKlogtMD17(
+            **self.args_dict['hoved'],
+            means=torch.tensor(0.0),
+            stds=torch.tensor(1.0),
+            hidden_channels=self.hidden_channels,
+        )
+
+    def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
+        return data['force']
+    
+    def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
+        with torch.enable_grad():
+            return super().validation_step(data, batch_idx)
+            
+    def test_step(self, data: Data, batch_idx: int) -> None:
+        with torch.enable_grad():
+            super().test_step(data, batch_idx)
+
+class DownstreamQM9BaselineMean(DownstreamQM9):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

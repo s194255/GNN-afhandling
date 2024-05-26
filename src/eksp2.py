@@ -20,6 +20,12 @@ from itertools import product
 
 LOG_ROOT = "eksp2_logs"
 
+DOWNSTREAMKLASSER = {
+    'QM9': m.DownstreamQM9,
+    'MD17': m.DownstreamMD17
+}
+
+
 # torch.set_float32_matmul_precision('medium')
 
 def debugify_config(config):
@@ -50,7 +56,7 @@ class Eksp2:
         if args.debug:
             debugify_config(self.config)
         self.init_kørselsid()
-        _, self.qm9Bygger2Hoved, _, _ = r.get_selvvejledt_fra_wandb(self.config, self.config['qm9_path'])
+        _, self.qm9Bygger2Hoved, _, _ = r.get_selvvejledt_fra_wandb(self.config, self.config['data_path'])
 
     def init_kørselsid(self):
         if self.config['kørselsid'] == None:
@@ -84,24 +90,26 @@ class Eksp2:
                             logger=logger,
                             check_val_every_n_epoch=config_curr['check_val_every_n_epoch'],
                             gradient_clip_val=config_curr['gradient_clipping'],
+                            inference_mode=False,
                             )
         return trainer
 
-    def create_downstream(self, udgave, temperatur) -> Tuple[m.Downstream, str]:
+    def create_downstream(self, udgave, temperatur) -> Tuple[m.DownstreamQM9, str]:
         args_dict = copy.deepcopy(self.config['Downstream'][temperatur]['model'])
         metadata = self.qm9Bygger2Hoved.get_metadata('train_reduced')
+        name = self.config['datasæt']['name']
         if udgave != 'uden':
             selvvejledt, qm9bygger, _, run_id = r.get_selvvejledt_fra_wandb(self.config, udgave)
             assert self.qm9Bygger2Hoved.eq_data_split(qm9bygger)
             # args_dict['rygrad'] = selvvejledt.args_dict['rygrad']
-            downstream = m.Downstream(
+            downstream = DOWNSTREAMKLASSER[name](
                 args_dict=args_dict,
                 metadata=metadata
             )
             downstream.indæs_selvvejledt_rygrad(selvvejledt)
         else:
-            downstream = m.Downstream(args_dict=args_dict,
-                                      metadata=self.qm9Bygger2Hoved.get_metadata('train_reduced'))
+            downstream = DOWNSTREAMKLASSER[name](args_dict=args_dict,
+                                         metadata=self.qm9Bygger2Hoved.get_metadata('train_reduced'))
             run_id = None
 
         return downstream, run_id
@@ -132,7 +140,7 @@ class Eksp2:
 
     def eftertræn_baseline(self):
         args_dict = self.config['Downstream']['optøet']['model']
-        downstream = m.DownstreamBaselineMean(
+        downstream = m.DownstreamQM9BaselineMean(
             args_dict=args_dict,
             metadata=self.qm9Bygger2Hoved.get_metadata('train_reduced')
         )

@@ -8,6 +8,7 @@ datasæt:
     - 30
     - 500
   val_reduced: true
+  name: QM9
 Downstream:
   optøet:
     check_val_every_n_epoch: 10
@@ -47,13 +48,8 @@ udgaver:
 temperaturer:
   - optøet
 seeds:
-  - 436
-  - 544
-  - 494
-  - 663
-  - 633
-  - 704
+  - 2
 run_baseline: false
 gruppenavn: eksp2
-qm9_path: s194255/afhandling/model-38styzwu:v0
+data_path: s194255/afhandling/model-38styzwu:v0
 kørselsid: 78

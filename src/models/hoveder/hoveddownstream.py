@@ -3,6 +3,7 @@ import torch.nn
 from torch_geometric.utils import scatter
 from rdkit import Chem
 from src.models.hoveder.fælles import GatedEquivariantMotor, LinearMotor
+from torch.autograd import grad
 
 
 class PredictRegular(L.LightningModule):
@@ -111,6 +112,39 @@ class HovedDownstreamKlogt(L.LightningModule):
 
     def forward(self, z, pos, batch, x, v):
         return self.motor(z, pos, batch, x, v)
+
+class HovedDownstreamKlogtMD17(L.LightningModule):
+    def __init__(self,
+                 hidden_channels: int,
+                 means: torch.Tensor,
+                 stds: torch.Tensor,
+                 num_layers: int = 2,
+                 reduce_op: str = "sum",
+                 ):
+        super().__init__()
+        self.motor = PredictRegular(
+            hidden_channels=hidden_channels,
+            means=means,
+            stds=stds,
+            num_layers=num_layers,
+            reduce_op=reduce_op
+        )
+
+    def forward(self, z, pos, batch, x, v):
+        x = self.motor(z, pos, batch, x, v)
+        grad_outputs = [torch.ones_like(x)]
+        dy = grad(
+            [x],
+            [pos],
+            grad_outputs=grad_outputs,
+            create_graph=True,
+            retain_graph=True,
+        )[0]
+        if dy is None:
+            raise RuntimeError(
+                "Autograd returned None for the force prediction.")
+        return dy
+
 
 class HovedDownstreamDumt(L.LightningModule):
     def __init__(self,

@@ -41,9 +41,9 @@ def med_selvtræn():
                                    TQDMProgressBar()])
     trainer.fit(model=selvvejledt)
 
-    downstream = src.models.downstream.Downstream(rygrad_args=src.redskaber.load_config(args.rygrad_args_path),
-                                                  hoved_args=src.redskaber.load_config(args.downstream_hoved_args_path),
-                                                  træn_args=src.redskaber.load_config(args.eksp1_path, src.models.downstream.Downstream.udgngs_træn_args))
+    downstream = src.models.downstream.DownstreamQM9(rygrad_args=src.redskaber.load_config(args.rygrad_args_path),
+                                                     hoved_args=src.redskaber.load_config(args.downstream_hoved_args_path),
+                                                     træn_args=src.redskaber.load_config(args.eksp1_path, src.models.downstream.DownstreamQM9.udgngs_træn_args))
     downstream.indæs_selvvejledt_rygrad(
         src.models.selvvejledt.Selvvejledt.load_from_checkpoint(trainer.checkpoint_callback.best_model_path))
     if eksp1['frys_rygrad']:
@@ -55,10 +55,10 @@ def med_selvtræn():
     trainer.test(ckpt_path="best")
 
 def uden_selvtræn():
-    downstream = src.models.downstream.Downstream(rygrad_args=src.redskaber.load_config(args.rygrad_args_path),
-                                                  hoved_args=src.redskaber.load_config(args.downstream_hoved_args_path),
-                                                  træn_args=src.redskaber.load_config(args.eksp1_path, src.models.downstream.Downstream.udgngs_træn_args)
-                                                  )
+    downstream = src.models.downstream.DownstreamQM9(rygrad_args=src.redskaber.load_config(args.rygrad_args_path),
+                                                     hoved_args=src.redskaber.load_config(args.downstream_hoved_args_path),
+                                                     træn_args=src.redskaber.load_config(args.eksp1_path, src.models.downstream.DownstreamQM9.udgngs_træn_args)
+                                                     )
     if eksp1['frys_rygrad']:
         downstream.frys_rygrad()
     trainer = L.Trainer(max_epochs=eksp1['epoker_efterfølgende'],

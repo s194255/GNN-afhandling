@@ -6,7 +6,7 @@ from lightning.pytorch.loggers.tensorboard import TensorBoardLogger
 import os
 import wandb
 from src.models.selvvejledt import Selvvejledt, SelvvejledtQM9
-from src.models.downstream import Downstream
+from src.models.downstream import DownstreamQM9
 from src.data.QM9 import QM9ByggerEksp2
 from typing import Tuple, Any
 

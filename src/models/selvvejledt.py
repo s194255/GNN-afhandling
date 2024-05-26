@@ -182,7 +182,7 @@ class SelvvejledtContrastive(Grundmodel):
         return self.step('test', data, batch_idx)
 
 
-class SelvvejledtQM9(m.Downstream):
+class SelvvejledtQM9(m.DownstreamQM9):
     @property
     def selvvejledt(self):
         return True
