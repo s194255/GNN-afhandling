@@ -36,7 +36,7 @@ SelvvejledtQM9:
     epoker: 100
     model:
       hovedtype: klogt
-      gamma: 0.95
+      gamma: 0.97
       lr: 1.0e-03
       step_size: 1
       ønsket_lr: 1.0e-03
@@ -44,6 +44,6 @@ SelvvejledtQM9:
       predicted_attribute: 1
       weight_decay: 1.0e-03
     seed: 42
-qm9_path: null
-modelklasse: Selvvejledt
+qm9_path: s194255/afhandling/model-38styzwu:v0
+modelklasse: SelvvejledtQM9
 ckpt: null
