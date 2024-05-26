@@ -44,11 +44,15 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-eair1kzv:v0
-  - uden
 temperaturer:
   - optøet
 seeds:
-  - 36
+  - 436
+  - 544
+  - 494
+  - 663
+  - 633
+  - 704
 run_baseline: false
 gruppenavn: eksp2
 qm9_path: s194255/afhandling/model-38styzwu:v0
