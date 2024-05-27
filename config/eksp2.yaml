@@ -5,8 +5,8 @@ datasæt:
   num_workers: 2
   n_trin: 1
   spænd:
-    - 250
-    - 250
+    - 30
+    - 500
   val_reduced: true
   name: QM9
 Downstream:
@@ -45,7 +45,7 @@ Downstream:
     patience: 20
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-av6l2023:v0
+  - s194255/afhandling/model-8dxl194x:v0
 temperaturer:
   - optøet
 seeds:
@@ -53,4 +53,4 @@ seeds:
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 79
+kørselsid: 80
