@@ -91,6 +91,7 @@ class Eksp2:
                             check_val_every_n_epoch=config_curr['check_val_every_n_epoch'],
                             gradient_clip_val=config_curr['gradient_clipping'],
                             inference_mode=False,
+                            detect_anomaly=True
                             )
         return trainer
 
