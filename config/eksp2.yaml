@@ -18,9 +18,9 @@ Downstream:
     model:
       hovedtype: klogt
       gamma: 0.98
-      lr: 2.5e-04
+      lr: 1.0e-05
       step_size: 1
-      ønsket_lr: 2.5e-04
+      ønsket_lr: 1.0e-05
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-01
@@ -44,7 +44,7 @@ Downstream:
     patience: 20
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-8dxl194x:v0
+  - s194255/afhandling/model-av6l2023:v0
 temperaturer:
   - optøet
 seeds:
