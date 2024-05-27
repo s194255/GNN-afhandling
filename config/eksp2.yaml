@@ -24,7 +24,7 @@ Downstream:
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e+00
-      loss: L2
+      loss: L1
       log_gradient: false
   frossen:
     check_val_every_n_epoch: 60
