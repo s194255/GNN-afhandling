@@ -22,9 +22,10 @@ if os.path.exists(ROOT):
 
 groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):
-    # if group not in ['eksp2_47', 'eksp2_48', 'eksp2_67', 'eksp2_68', 'eksp2_75']:
-    #     continue
+    if group not in ['eksp2_68']:
+        continue
     runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
+    print(fortræningsudgaver)
     kørsel_path = os.path.join(ROOT, group)
     os.makedirs(kørsel_path)
     for temperatur in temperaturer:
@@ -39,6 +40,8 @@ for group in tqdm(groups):
                     df = viz0.get_df(runs_filtered2)
                     df = df.apply(pd.to_numeric, errors='coerce')
                     df = df.dropna(how='any')
+                    if fortræningsudgave == 'SelvvejledtQM9':
+                        print(df)
                     if j == 0:
                         label = LABELLER[fortræningsudgave]
                     else:

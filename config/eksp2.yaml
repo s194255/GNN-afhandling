@@ -18,9 +18,9 @@ Downstream:
     model:
       hovedtype: klogt
       gamma: 0.98
-      lr: 0.25e-03
+      lr: 1.0e-04
       step_size: 1
-      ønsket_lr: 0.25e-03
+      ønsket_lr: 1.0e-04
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-01
@@ -49,11 +49,6 @@ temperaturer:
   - optøet
 seeds:
   - 399
-  - 264
-  - 693
-  - 517
-  - 805
-  - 652
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
