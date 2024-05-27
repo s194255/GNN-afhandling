@@ -46,7 +46,7 @@ rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-av6l2023:v0
 temperaturer:
-  - optøet
+  - frossen
 seeds:
   - 399
 run_baseline: false
