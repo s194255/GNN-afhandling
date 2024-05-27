@@ -2,6 +2,7 @@ import lightning as L
 import src.models.rygrader as rygrader
 import torch
 from typing import Tuple, List
+from lightning.pytorch.utilities import grad_norm
 
 
 class WarmUpStepLR(torch.optim.lr_scheduler.StepLR):
@@ -28,7 +29,7 @@ class Grundmodel(L.LightningModule):
         self.args_dict = args_dict
         self.rygrad = self.create_rygrad()
         self.hoved = self.create_hoved()
-        self.log_gradient = self.args_dict['log_gradient']
+        self.log_gradient = self.args_dict.get('log_gradient', False)
         self.save_hyperparameters()
 
     def create_rygrad(self):
