@@ -55,18 +55,3 @@ for group in tqdm(groups):
             plt.savefig(os.path.join(kørsel_path, "fordeling_af_MAE.jpg"))
             plt.savefig(os.path.join(kørsel_path, "fordeling_af_MAE.pdf"))
             plt.close()
-
-
-            # plt.figure(figsize=(10, 6))
-            # plt.scatter(df["eftertræningsmængde"], df["test_loss_mean"], label=prefix, color=farver[i])
-            # plt.fill_between(df["eftertræningsmængde"], df[f"test_loss_lower"], df[f"test_loss_upper"],
-            #                  color=farver[0],
-            #                  alpha=0.3)
-            # plt.title(f'{group} {temperatur} {seed}')
-            # plt.xlabel("Datamængde")
-            # plt.ylabel("MAE")
-            # plt.yscale("log")
-            # plt.legend()
-            # plt.grid(True)
-            # plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{seed}.jpg"))
-            # plt.close()

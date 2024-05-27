@@ -44,12 +44,17 @@ Downstream:
     patience: 20
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-8dxl194x:v0
+  - s194255/afhandling/model-av6l2023:v0
 temperaturer:
   - optøet
 seeds:
-  - 2
+  - 399
+  - 264
+  - 693
+  - 517
+  - 805
+  - 652
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 78
+kørselsid: 68
