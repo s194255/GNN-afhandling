@@ -25,6 +25,7 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e+10
       loss: L1
+      log_gradient: true
   frossen:
     check_val_every_n_epoch: 60
     epoker: 600

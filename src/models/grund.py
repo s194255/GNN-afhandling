@@ -28,6 +28,7 @@ class Grundmodel(L.LightningModule):
         self.args_dict = args_dict
         self.rygrad = self.create_rygrad()
         self.hoved = self.create_hoved()
+        self.log_gradient = self.args_dict['log_gradient']
         self.save_hyperparameters()
 
     def create_rygrad(self):
@@ -61,6 +62,11 @@ class Grundmodel(L.LightningModule):
     @property
     def selvvejledt(self):
         raise NotImplementedError
+
+    def on_before_optimizer_step(self, optimizer: torch.optim.Optimizer) -> None:
+        if self.log_gradient:
+            norms = grad_norm(self, norm_type=2)
+            self.log_dict(norms)
 
 
 
