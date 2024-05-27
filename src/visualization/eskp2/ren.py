@@ -1,7 +1,7 @@
 import shutil
 import os
 import matplotlib.pyplot as plt
-from farver import  farver
+from src.visualization.farver import farver
 import pandas as pd
 from tqdm import tqdm
 from matplotlib.ticker import ScalarFormatter
@@ -14,17 +14,18 @@ LABELLER = {'uden': 'Ingen fortræning',
             'Selvvejledt': '3D-EMGP',
             'SelvvejledtQM9': 'snydefortræning'}
 
+ROOT = 'reports/figures/Eksperimenter/2/ren'
 
 
-if os.path.exists("eksp2_logs"):
-    shutil.rmtree("eksp2_logs")
+if os.path.exists(ROOT):
+    shutil.rmtree(ROOT)
 
 groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):
     # if group not in ['eksp2_47', 'eksp2_48', 'eksp2_67', 'eksp2_68', 'eksp2_75']:
     #     continue
     runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
-    kørsel_path = os.path.join("eksp2_logs", group)
+    kørsel_path = os.path.join(ROOT, group)
     os.makedirs(kørsel_path)
     for temperatur in temperaturer:
         plt.figure(figsize=(10, 6))

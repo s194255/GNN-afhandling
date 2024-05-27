@@ -1,7 +1,7 @@
 import shutil
 import os
 import matplotlib.pyplot as plt
-import farver
+import src.visualization.farver as farver
 import viz0
 import pandas as pd
 from tqdm import tqdm
@@ -25,22 +25,24 @@ for group in tqdm(groups):
     for temperatur in temperaturer:
         for seed in seeds:
             runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur, fortræningsudgave, seed), runs_in_group))
+            col = 'test_loss_mean'
             df = viz0.get_df(runs_filtered)
             df = df.apply(pd.to_numeric, errors='coerce')
             df = df.dropna(how='any')
+            # df[col] = np.log(df[col])
             prefix = f'{fortræningsudgave}'
 
-            mean = df['test_loss_mean'].mean()
-            std_dev = df['test_loss_mean'].std()
+            mean = df[col].mean()
+            std_dev = df[col].std()
 
-            x = np.linspace(df['test_loss_mean'].min(), df['test_loss_mean'].max(), 100)
+            x = np.linspace(df[col].min(), df[col].max(), 100)
             fit = norm.pdf(x, mean, std_dev)
 
             plt.figure(figsize=(10, 6))
 
-            bins = 5
-            plt.hist(df['test_loss_mean'], bins=bins, density=True, alpha=0.4, color=farver.rød, edgecolor='black')  # Histogram
-            plt.scatter(x=df['test_loss_mean'], y=[0.0005]*len(df), color=farver.blå, marker='x', s=200)
+            bins = 10
+            plt.hist(df[col], bins=bins, density=True, alpha=0.4, color=farver.rød, edgecolor='black')  # Histogram
+            plt.scatter(x=df[col], y=[0.0005]*len(df), color=farver.blå, marker='x', s=200)
 
             plt.plot(x, fit, farver.rød, label='Normalfordeling', linewidth=5)  # Fittet normalfordeling
             plt.xlabel("MAE", fontsize=18)

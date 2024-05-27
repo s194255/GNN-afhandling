@@ -2,13 +2,15 @@ import shutil
 import os
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
-from farver import farver
+from src.visualization.farver import farver
 import viz0
 import pandas as pd
 from tqdm import tqdm
 
-if os.path.exists("eksp2_logs"):
-    shutil.rmtree("eksp2_logs")
+ROOT = 'reports/figures/Eksperimenter/2/testusik'
+
+if os.path.exists(ROOT):
+    shutil.rmtree(ROOT)
 
 LABELLER = {'uden': 'Ingen fortræning',
             'Selvvejledt': '3D-EMGP',
@@ -18,7 +20,7 @@ LABELLER = {'uden': 'Ingen fortræning',
 groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):
     runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
-    kørsel_path = os.path.join("eksp2_logs", group)
+    kørsel_path = os.path.join(ROOT, group)
     os.makedirs(kørsel_path)
     for temperatur in temperaturer:
         ncols = 3
@@ -60,7 +62,7 @@ for group in tqdm(groups):
 
         plt.tight_layout()
         for ext in ['jpg', 'pdf']:
-            plt.savefig(os.path.join(kørsel_path, f"{temperatur}_puljet.{ext}"))
+            plt.savefig(os.path.join(kørsel_path, f"{temperatur}_testusik.{ext}"))
         plt.close()
 
 
