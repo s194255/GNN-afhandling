@@ -12,7 +12,7 @@ datasæt:
 Downstream:
   optøet:
     check_val_every_n_epoch: 10
-    epoker: 400
+    epoker: 300
     steps: -1
     gradient_clipping: 1.0e-03
     model:
@@ -23,7 +23,7 @@ Downstream:
       ønsket_lr: 2.5e-04
       opvarmningsperiode: 1
       predicted_attribute: 1
-      weight_decay: 1.0e+00
+      weight_decay: 1.0e+01
       loss: L1
       log_gradient: false
   frossen:
@@ -53,4 +53,4 @@ seeds:
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 80
+kørselsid: 81
