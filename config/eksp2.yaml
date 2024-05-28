@@ -17,11 +17,11 @@ Downstream:
     gradient_clipping: 1.0e-05
     model:
       hovedtype: klogt
-      gamma: 0.999
-      lr: 1.0e-01
+      gamma: 0.99
+      lr: 5.0e-03
       step_size: 1
-      ønsket_lr: 1.0e-03
-      opvarmningsperiode: 5
+      ønsket_lr: 5.0e-03
+      opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e+01
       loss: L1
