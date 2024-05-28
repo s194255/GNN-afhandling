@@ -1,11 +1,11 @@
 datasæt:
-  batch_size: 128
+  batch_size: 256
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 2
+  n_trin: 5
   spænd:
-    - 300
+    - 30
     - 500
   val_reduced: true
   name: QM9
@@ -47,10 +47,14 @@ rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-av6l2023:v0
 temperaturer:
-  - optøet
+  - frossen
 seeds:
-  - 667
+  - 775
+  - 187
+  - 884
+  - 436
+  - 603
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 79
+kørselsid: 48
