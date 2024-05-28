@@ -26,7 +26,7 @@ def get_group(run):
 def get_groups_runs(gruppenavn):
     runs = wandb.Api().runs("afhandling")
     runs = list(filter(lambda w: is_suitable(w, gruppenavn), runs))
-    grupper = set(list(map(get_group, runs)))
+    grupper = sorted(set(list(map(get_group, runs))))
     return grupper, runs
 
 def is_in_group(run, group):
@@ -50,6 +50,9 @@ def get_seed(run):
     config = json.loads(run.json_config)
     return config['seed']['value']
 
+def get_eftertræningsmængde(run):
+    return run.summary['eftertræningsmængde']
+
 def get_loops_params(group, runs):
     runs_in_group = list(filter(lambda w: is_in_group(w, group), runs))
     fortræningsudgaver = sorted(set(list(map(get_fortræningsudgave, runs_in_group))))
@@ -58,6 +61,10 @@ def get_loops_params(group, runs):
     rygrad_runids = set(list(map(get_rygrad_runid, runs_in_group)))
     return runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids
 
+def get_eftertræningsmængder(group, runs):
+    runs_in_group = list(filter(lambda w: is_in_group(w, group), runs))
+    eftertræningsmængder = sorted(set(list(map(get_eftertræningsmængde, runs_in_group))))
+    return eftertræningsmængder
 
 def get_rygrad_runid(run):
     config = json.loads(run.json_config)
@@ -80,6 +87,9 @@ def get_df(runs):
     resultater = pd.DataFrame(resultater)
     for run in runs:
         resultat = {nøgle: [værdi] for nøgle, værdi in run.summary.items() if nøgle in METRICS}
+        resultat['seed'] = get_seed(run)
+        resultat['fortræningsudgave'] = get_fortræningsudgave(run)
+
         resultater = pd.concat([resultater, pd.DataFrame(data=resultat)], ignore_index=True)
     return resultater
 
