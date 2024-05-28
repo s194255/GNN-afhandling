@@ -43,9 +43,9 @@ Downstream:
       weight_decay: 1.0e-02
       loss: L1
     patience: 20
-rygradtype: visnet
+rygradtype: painn
 udgaver:
-  - s194255/afhandling/model-av6l2023:v0
+  - uden
 temperaturer:
   - optøet
 seeds:

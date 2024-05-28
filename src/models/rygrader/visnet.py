@@ -1058,7 +1058,7 @@ class ViSNet(L.LightningModule):
                                      edge_index, edge_weight, edge_vec)
         return x, v, edge_attr
 
-class VisNetRyggrad(L.LightningModule):
+class VisNetRygrad(L.LightningModule):
     args = {'lmax': 1,
             'vecnorm_type': None,
             'trainable_vecnorm': False,

@@ -35,9 +35,13 @@ class Grundmodel(L.LightningModule):
     def create_rygrad(self):
         rygrad_args = self.args_dict['rygrad']
         if self.args_dict['rygradtype'] == 'visnet':
-            return rygrader.VisNetRyggrad(**rygrad_args)
+            return rygrader.VisNetRygrad(**rygrad_args)
         elif self.args_dict['rygradtype'] == 'baseline':
             return rygrader.BaselineRygrad(**rygrad_args)
+        elif self.args_dict['rygradtype'] == 'painn':
+            return rygrader.PaiNNRygrad(**rygrad_args)
+        else:
+            raise NotImplementedError
 
     @property
     def hidden_channels(self):

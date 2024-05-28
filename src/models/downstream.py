@@ -80,13 +80,13 @@ class Downstream(Grundmodel):
         print(f"selvvejledt rygrad = {selvvejledt.rygrad_param_sum()}")
 
     def test_step(self, data: Data, batch_idx: int) -> None:
-        pred = self(data.z, data.pos, data.batch)
+        pred = self(data)
         target = self.get_target(data)
         self.metric.update(1000 * pred, 1000 * target)
 
     def step(self, task, data, batch_idx):
         on_epoch = {'train': None, 'val': None, 'test': True}
-        pred = self(data.z, data.pos, data.batch)
+        pred = self(data)
         target = self.get_target(data)
         loss = 1000*self.criterion[task](pred, target)
         self.log(
@@ -104,12 +104,10 @@ class DownstreamQM9(Downstream):
 
     def forward(
             self,
-            z: Tensor,
-            pos: Tensor,
-            batch: Tensor,
+            data: torch_geometric.data.Data
     ) -> Tuple[Tensor, Optional[Tensor]]:
-        x, v, edge_attr, _ = self.rygrad(z, pos, batch)
-        y = self.hoved(z, pos, batch, x, v)
+        x, v, edge_attr, _ = self.rygrad(data)
+        y = self.hoved(data.z, data.pos, data.batch, x, v)
         return y
 
     @property
