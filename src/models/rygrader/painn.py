@@ -11,6 +11,8 @@ from torch.nn import functional as F
 from torch_geometric.data import Data
 from src.models.rygrader.visnet import Distance
 
+# link = https://gist.github.com/mjhong0708/9187130f67896de38273875c2cacbb43
+
 Tensor = torch.Tensor
 AtomsGraphDict = Dict[str, Tensor]
 _default_dtype = torch.get_default_dtype()

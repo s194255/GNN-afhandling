@@ -52,10 +52,9 @@ class Selvvejledt(Grundmodel):
 
     def forward(
             self,
-            z: Tensor,
-            pos: Tensor,
-            batch: Tensor,
+            data: Data
     ) -> Tuple[Tensor, Tensor]:
+        z, pos, batch, edge_index = data.z, data.pos, data.batch, data.edge_index
         noise_idxs = torch.randint(low=0, high=len(self.noise_scales_options),
                                    size=torch.unique(batch).shape, device=self.device)
         noise_scales = torch.gather(self.noise_scales_options, 0, noise_idxs)
@@ -63,12 +62,12 @@ class Selvvejledt(Grundmodel):
         pos_til, target = self.riemannGaussian(pos, batch, sigma)
         if self.hoved.derivative:
             pos_til.requires_grad_(True)
-        x, v, edge_attr, _ = self.rygrad(z, pos_til, batch)
+        x, v, edge_attr, _ = self.rygrad(z, pos_til, batch, edge_index)
         tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
         return tabsopslag
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
-        tabsopslag = self(data.z, data.pos, data.batch)
+        tabsopslag = self(data)
         tabsopslag = {nøgle: self.lambdaer[nøgle]*værdi for nøgle, værdi in tabsopslag.items()}
         loss = sum([værdi for værdi in tabsopslag.values()])
         self.log("train_loss", loss.item(), batch_size=data.batch_size)
@@ -78,14 +77,14 @@ class Selvvejledt(Grundmodel):
 
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
-            tabsopslag = self(data.z, data.pos, data.batch)
+            tabsopslag = self(data)
         loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
         self.log("val_loss", loss.item(), batch_size=data.batch_size)
         return loss
 
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
-            tabsopslag = self(data.z, data.pos, data.batch)
+            tabsopslag = self(data)
         loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
         self.log("test_loss", loss.item(), batch_size=data.batch_size, on_epoch=True)
         return loss

@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 64
+  batch_size: 256
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
@@ -21,9 +21,9 @@ Selvvejledt:
       lambdaer:
         lokalt: 100
         globalt: 0
-      lr: 3.0e-05
+      lr: 3.0e-04
       step_size: 1
-      ønsket_lr: 3.0e-05
+      ønsket_lr: 3.0e-04
       opvarmningsperiode: 1
       noise_fra: -2
       noise_til: 1
