@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 256
+  batch_size: 2048
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
@@ -21,15 +21,15 @@ Selvvejledt:
       lambdaer:
         lokalt: 100
         globalt: 0
-      lr: 3.0e-04
+      lr: 3.0e-02
       step_size: 1
-      ønsket_lr: 3.0e-04
+      ønsket_lr: 3.0e-02
       opvarmningsperiode: 1
       noise_fra: -2
       noise_til: 1
       n_noise_trin: 50
       log_gradient: false
-      weight_decay: 1.0e-2
+      weight_decay: 1.0e-4
     patience: 20
 SelvvejledtQM9:
   variant1:

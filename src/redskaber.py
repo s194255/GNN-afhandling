@@ -59,7 +59,7 @@ def get_trainer(epoker, logger=None):
         learning_rate_monitor()
     ]
     trainer = L.Trainer(max_epochs=epoker,
-                        log_every_n_steps=50,
+                        log_every_n_steps=10,
                         callbacks=callbacks,
                         precision='16-mixed',
                         logger=logger,
