@@ -11,8 +11,12 @@ from typing import List, Tuple
 import itertools
 from torch_geometric.data.data import BaseData
 from src.models.redskaber import RiemannGaussian
+import yaml
 
-ROOT = "data"
+with open("config/data_roots.yaml", encoding='utf-8') as f:
+    data_roots_dict = yaml.safe_load(f)
+    ROOT = data_roots_dict['data_root']
+# ROOT = "data"
 
 class QM9Bygger(L.LightningDataModule):
 

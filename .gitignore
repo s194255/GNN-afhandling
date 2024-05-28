@@ -96,3 +96,4 @@ target/
 /afhandling/
 /artifacts/
 /reports/
+/config/data_roots.yaml
