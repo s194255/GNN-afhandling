@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 256
+  batch_size: 128
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
@@ -18,9 +18,9 @@ Downstream:
     model:
       hovedtype: klogt
       gamma: 0.99
-      lr: 1.0e-03
+      lr: 1.0e-02
       step_size: 1
-      ønsket_lr: 1.0e-03
+      ønsket_lr: 1.0e-02
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e+01
