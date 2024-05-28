@@ -16,12 +16,18 @@ LABELLER = {'uden': 'Ingen fortræning',
 
 ROOT = 'reports/figures/Eksperimenter/2/ren'
 
+udvalgte = None
+
 
 if os.path.exists(ROOT):
     shutil.rmtree(ROOT)
 
 groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):
+    if udvalgte != None:
+        if group not in [f'eksp2_{udvalgt}' for udvalgt in udvalgte]:
+            continue
+
     runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
     kørsel_path = os.path.join(ROOT, group)
     os.makedirs(kørsel_path)
@@ -36,8 +42,9 @@ for group in tqdm(groups):
                     runs_filtered = list(
                         filter(lambda w: viz0.main_filter(w, temperatur, fortræningsudgave, seed), runs_in_group))
                     runs_filtered2 = list(filter(lambda w: viz0.main_filter2(w, rygrad_runid), runs_filtered))
-                    df = viz0.get_df(runs_filtered2)
-                    df = df.apply(pd.to_numeric, errors='coerce')
+                    df, ignore_columns = viz0.get_df(runs_filtered2)
+                    sel_cols = [col for col in df.columns if col not in ignore_columns]
+                    df = df[sel_cols].apply(pd.to_numeric, errors='coerce')
                     df = df.dropna(how='any')
                     label = LABELLER[fortræningsudgave] if j == 0 else None
                     plt.plot(df["eftertræningsmængde"], df[f"test_loss_mean"], color=farver[i], alpha=0.2)

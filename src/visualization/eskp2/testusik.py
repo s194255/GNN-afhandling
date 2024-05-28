@@ -59,8 +59,10 @@ for group in tqdm(groups):
         # Fjern tomme subplots, hvis der er nogen
         for j in range(idx + 1, nrows * ncols):
             fig.delaxes(axs.flat[j])
-
-        plt.tight_layout()
+        try:
+            plt.tight_layout()
+        except ValueError:
+            a = 2
         for ext in ['jpg', 'pdf']:
             plt.savefig(os.path.join(kørsel_path, f"{temperatur}_testusik.{ext}"))
         plt.close()

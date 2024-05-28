@@ -91,7 +91,7 @@ def get_df(runs):
         resultat['fortræningsudgave'] = get_fortræningsudgave(run)
 
         resultater = pd.concat([resultater, pd.DataFrame(data=resultat)], ignore_index=True)
-    return resultater
+    return resultater, ['seed', 'fortræningsudgave']
 
 
 def main_filter2(run, rygrad_runid):

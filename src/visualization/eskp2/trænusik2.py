@@ -60,8 +60,8 @@ if os.path.exists(ROOT):
 
 groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):
-    if group not in ['eksp2_48']:
-        continue
+    # if group not in ['eksp2_48']:
+    #     continue
     runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
     eftertræningsmængder = viz0.get_eftertræningsmængder(group, runs)
     assert len(temperaturer) == 1
