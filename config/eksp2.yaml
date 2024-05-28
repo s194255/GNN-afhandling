@@ -3,9 +3,9 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 5
+  n_trin: 2
   spænd:
-    - 30
+    - 300
     - 500
   val_reduced: true
   name: QM9
@@ -23,7 +23,7 @@ Downstream:
       ønsket_lr: 1.0e-04
       opvarmningsperiode: 1
       predicted_attribute: 1
-      weight_decay: 1.0e+00
+      weight_decay: 1.0e+01
       loss: L1
       log_gradient: false
   frossen:
