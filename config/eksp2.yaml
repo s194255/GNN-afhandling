@@ -45,7 +45,7 @@ Downstream:
     patience: 20
 rygradtype: visnet
 udgaver:
-  - uden
+  - s194255/afhandling/model-av6l2023:v0
 temperaturer:
   - optøet
 seeds:
