@@ -582,14 +582,10 @@ class PaiNNRygrad(torch.nn.Module):
     def reset_parameters(self):
         torch.nn.init.xavier_uniform_(self.filter_net.weight.data)
 
-    def forward(self, data):
+    def forward(self, z, pos, batch, edge_index):
         """Compute atomic representations/embeddings."""
         # get tensors from input dictionary
         # edge_index, edge_weight, edge_vec = self.distance(pos, batch)
-        z = data.z
-        pos = data.pos
-        batch = data.batch
-        edge_index = data.edge_index  # neighbors
 
         # atoms_graph["pos"].requires_grad_(True)
         idx_j, idx_i = edge_index[0], edge_index[1]

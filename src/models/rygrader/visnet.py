@@ -1109,7 +1109,7 @@ class VisNetRygrad(L.LightningModule):
         self.maskeringsandel = maskeringsandel
         self.reset_parameters()
 
-    def forward(self, z, pos, batch):
+    def forward(self, z, pos, batch, edge_index):
         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
         masker = None
         if self.maskeringsandel:

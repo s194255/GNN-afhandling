@@ -106,7 +106,7 @@ class DownstreamQM9(Downstream):
             self,
             data: torch_geometric.data.Data
     ) -> Tuple[Tensor, Optional[Tensor]]:
-        x, v, edge_attr, _ = self.rygrad(data)
+        x, v, edge_attr, _ = self.rygrad(data.z, data.pos, data.batch, data.edge_index)
         y = self.hoved(data.z, data.pos, data.batch, x, v)
         return y
 
@@ -143,12 +143,11 @@ class DownstreamQM9(Downstream):
 class DownstreamMD17(Downstream):
     def forward(
             self,
-            z: Tensor,
-            pos: Tensor,
-            batch: Tensor,
+            data: torch_geometric.data.Data
     ) -> Tuple[Tensor, Optional[Tensor]]:
+        z, pos, batch, edge_index = data.z, data.pos, data.batch, data.edge_index
         pos.requires_grad_(True)
-        x, v, edge_attr, _ = self.rygrad(z, pos, batch)
+        x, v, edge_attr, _ = self.rygrad(z, pos, batch, edge_index)
         y = self.hoved(z, pos, batch, x, v)
         return y
 
