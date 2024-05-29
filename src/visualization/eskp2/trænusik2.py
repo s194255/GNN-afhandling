@@ -44,12 +44,12 @@ def plot(df):
         fortræningsudgave = fortræningsudgaver[i]
         målinger = df[df['fortræningsudgave'] == fortræningsudgave][['eftertræningsmængde', 'test_loss_mean']]
         søjlehøjde = målinger.groupby('eftertræningsmængde').mean().reset_index()['test_loss_mean']
-        bars = ax.bar(x + (i - num_models / 2) * bar_width, søjlehøjde, bar_width, color=farver[i], alpha=0.5)
+        bars = ax.bar(x + (i+0.5 - num_models / 2) * bar_width, søjlehøjde, bar_width, color=farver[i], alpha=0.5)
         for j in range(len(x_values)):
             prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]]['test_loss_mean']
             n2 = len(prikker)
             label = LABELLER[fortræningsudgave] if j==0 else None
-            ax.scatter([x[j] + (i - num_models / 2) * bar_width] * n2, prikker,
+            ax.scatter([x[j] + (i+0.5 - num_models / 2) * bar_width] * n2, prikker,
                        color=farver[i], label=label, marker='x')
 
     plot_kernel_baseline(ax, x_values, x, farver[i+1])
