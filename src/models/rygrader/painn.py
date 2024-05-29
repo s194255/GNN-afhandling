@@ -540,7 +540,7 @@ class PaiNNCalculator(Calculator):
         self.results["forces"] = output["force"].detach().cpu().numpy()
 
 
-class PaiNNRygrad(torch.nn.Module):
+class PaiNNRygrad(L.LightningModule):
     """PaiNN - polarizable interaction neural network"""
 
     def __init__(

@@ -90,12 +90,9 @@ class Selvvejledt(Grundmodel):
         return loss
 
     @property
-    def udgangsargsdict(self):
-        udgangsargs = {'lambdaer': None,
-                       'noise_fra': -3,
-                       'noise_til': 3,
-                       'n_noise_trin': 4}
-        return {**super().udgangsargsdict, **udgangsargs}
+    def krævne_args(self):
+        nye_args = {'lambdaer', 'noise_fra', 'noise_til', 'n_noise_trin', 'hovedtype', 'hoved'}
+        return nye_args.union(super().krævne_args)
 
     @property
     def selvvejledt(self):
@@ -133,9 +130,8 @@ class SelvvejledtBaseline(Selvvejledt):
         return {'lokalt': lokal, 'globalt': globall}
 
     @property
-    def udgangsargsdict(self):
-        super_dict = super().udgangsargsdict
-        return {key: value for key, value in super_dict.items() if key != 'lambdaer'}
+    def krævne_args(self) -> set:
+        return super().krævne_args - {'lambdaer'}
 
 class SelvvejledtContrastive(Grundmodel):
 

@@ -22,6 +22,7 @@ Downstream:
       step_size: 1
       ønsket_lr: 1.0e-01
       opvarmningsperiode: 1
+      frossen_opvarmningsperiode: 100
       predicted_attribute: 1
       weight_decay: 5.0e-02
       loss: L1
@@ -43,7 +44,7 @@ Downstream:
       weight_decay: 1.0e-02
       loss: L1
     patience: 20
-rygradtype: painn
+rygradtype: visnet
 udgaver:
   - uden
 temperaturer:

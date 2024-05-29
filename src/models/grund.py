@@ -26,7 +26,10 @@ class Grundmodel(L.LightningModule):
                  ):
         super().__init__()
         args_dict.update({"modelklasse": self.__class__.__name__})
+        if "log_gradient" not in args_dict:
+            args_dict.update({"log_gradient": False})
         self.args_dict = args_dict
+        self.tjek_args()
         self.rygrad = self.create_rygrad()
         self.hoved = self.create_hoved()
         self.log_gradient = self.args_dict.get('log_gradient', False)
@@ -53,16 +56,26 @@ class Grundmodel(L.LightningModule):
     def frys_rygrad(self):
         self.rygrad.freeze()
 
+    def tø_rygrad_op(self):
+        self.rygrad.unfreeze()
+
     def rygrad_param_sum(self):
         total_sum = 0
         for param in self.rygrad.parameters():
             total_sum += param.sum().item()  # Konverter tensor til en enkel værdi
         return total_sum
 
+    def tjek_args(self):
+        nøgler = list(self.args_dict.keys())
+        assert len(set(nøgler)) == len(nøgler), 'Den samme argumentnøgle går igen flere gange'
+        assert set(nøgler) == self.krævne_args, 'Forskel på argumentnøglerne'
+
     @property
-    def udgangsargsdict(self):
+    def krævne_args(self) -> set:
         # return {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
-        return {"lr": 0.00001, "step_size": 20, "gamma": 0.5, "ønsket_lr": 0.001, "opvarmningsperiode": 10}
+        return {"lr", "step_size", "gamma", "ønsket_lr",
+                "opvarmningsperiode", "weight_decay", "rygrad",
+                "rygradtype", "modelklasse", "log_gradient"}
 
     @property
     def selvvejledt(self):

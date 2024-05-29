@@ -45,6 +45,12 @@ class Downstream(Grundmodel):
         return False
 
     def setup(self, stage: str) -> None:
+        if stage == 'fit':
+            if self.args_dict['frossen_opvarmningsperiode'] != None:
+                self.frossen_opv = True
+                self.frys_rygrad()
+            else:
+                self.frossen_opv = False
         if stage == 'test':
             self.metric = torchmetrics.BootStrapper(
                 torchmetrics.regression.MeanAbsoluteError(),
@@ -99,6 +105,18 @@ class Downstream(Grundmodel):
     def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
         raise NotImplementedError
 
+    @property
+    def krævne_args(self) -> set:
+        krævne_args = super().krævne_args
+        nye_args = {'loss', 'frossen_opvarmningsperiode'}
+        return nye_args.union(krævne_args)
+
+    def on_train_epoch_end(self) -> None:
+        if self.frossen_opv:
+            if self.trainer.current_epoch == self.args_dict['frossen_opvarmningsperiode']:
+                self.tø_rygrad_op()
+
+
 
 class DownstreamQM9(Downstream):
 
@@ -134,8 +152,9 @@ class DownstreamQM9(Downstream):
             )
 
     @property
-    def udgangsargsdict(self):
-        return {**super().udgangsargsdict, "predicted_attribute": 1}
+    def krævne_args(self) -> set:
+        nye_args = {"predicted_attribute", "hovedtype", "hoved"}
+        return nye_args.union(super().krævne_args)
 
     def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
         return data.y[:, self.target_idx]
@@ -159,6 +178,11 @@ class DownstreamMD17(Downstream):
             stds=torch.tensor(1.0),
             hidden_channels=self.hidden_channels,
         )
+
+    @property
+    def krævne_args(self) -> set:
+        nye_args = {"hovedtype", "hoved"}
+        return nye_args.union(super().krævne_args)
 
     def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
         return data['force']
