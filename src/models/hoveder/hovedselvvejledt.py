@@ -58,7 +58,9 @@ class HovedSelvvejledtKlogt(L.LightningModule):
             raise RuntimeError(
                 "Autograd returned None for the force prediction.")
         noise_scale = torch.gather(noise_scale, 0, batch)
-        loss = noise_scale ** 2 * self.criterion_lokalt(1 / noise_scale.view(-1, 1) * dy, target).sum(dim=1)
+        pred = 1 / noise_scale.view(-1, 1) * dy
+        # print(pred.shape, target.shape)
+        loss = noise_scale ** 2 * self.criterion_lokalt(pred, target).sum(dim=1)
         loss = loss.mean()
         return loss
 
@@ -81,7 +83,8 @@ class HovedSelvvejledtKlogtReg(HovedSelvvejledtKlogt):
         pred_globalt, pred_lokalt = torch.split(x, 1, dim=1)
         tabsopslag = {}
         tabsopslag['lokalt'] = self.get_loss_lokalt(z, pos, batch, pred_lokalt, noise_scale, target)
-        tabsopslag['globalt'] = self.criterion_globalt(pred_globalt.squeeze(0), torch.log10(noise_scale))
+        # print(pred_globalt.shape, torch.log10(noise_scale).shape)
+        tabsopslag['globalt'] = self.criterion_globalt(pred_globalt.squeeze(1), torch.log10(noise_scale))
         return tabsopslag
 
     @property

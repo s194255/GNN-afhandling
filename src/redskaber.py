@@ -90,7 +90,7 @@ def load_config(path):
 
 def debugify_config(config):
     config['datasæt']['debug'] = True
-    config['datasæt']['batch_size'] = 1
+    config['datasæt']['batch_size'] = 4
     config['datasæt']['num_workers'] = 0
     config['datasæt']['n_trin'] = 1
     for opgave in get_opgaver_in_config(config):
