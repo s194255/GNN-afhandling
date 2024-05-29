@@ -1,8 +1,12 @@
 QM9: s194255/afhandling/model-38styzwu:v0
 MD17: s194255/afhandling/model-dlq6pyns:v0
-Selvvejledt:
+Selvvejledt-lokalt:
   1: s194255/afhandling/model-zu71emmm:v0
   2: s194255/afhandling/model-8dxl194x:v0
+Selvvejledt-globalt:
+  1: s194255/afhandling/model-u1eb0flg:v0
+Selvvejledt-begge:
+  1: s194255/afhandling/model-eair1kzv:v0
 SelvvejledtQM9:
   1: s194255/afhandling/model-av6l2023:v0
 eksp2:
@@ -11,4 +15,4 @@ eksp2:
     - 48
   optøet:
     - 68
-    -
+    - 81

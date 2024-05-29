@@ -1,6 +1,7 @@
 import wandb
 import pandas as pd
 import json
+import numpy as np
 
 METRICS = {'test_loss_mean', "test_loss_std", "test_loss_lower", "test_loss_upper", "eftertræningsmængde"}
 
@@ -81,6 +82,12 @@ def main_filter(run, temperatur, fortræningsudgave, seed):
         return False
     return True
 
+def kernel_baseline():
+    x1, y1 = 100, 1.0*10**3
+    x2, y2 = 20*10**3, 0.12*10**3
+    a = (np.log(y2)-np.log(y1)) / (np.log(x2) - np.log(x1))
+    b = y1/x1**a
+    return lambda x: b*x**a
 
 def get_df(runs):
     not_met_cols = ['seed', 'fortræningsudgave']

@@ -15,6 +15,14 @@ LABELLER = {'uden': 'Ingen fortræning',
 
 FIGNAVN = 'trænusik2'
 ROOT = os.path.join('reports/figures/Eksperimenter/2', FIGNAVN)
+udvalgte = [81]
+
+
+def plot_kernel_baseline(ax, x_values, x, farve):
+    kernel = viz0.kernel_baseline()
+    # x = np.linspace(30, 500, 1000)
+    y = kernel(x_values)
+    ax.scatter(x, y, color=farve, marker="^", label="kernel baseline")
 
 
 def plot(df):
@@ -44,6 +52,8 @@ def plot(df):
             ax.scatter([x[j] + (i - num_models / 2) * bar_width] * n2, prikker,
                        color=farver[i], label=label, marker='x')
 
+    plot_kernel_baseline(ax, x_values, x, farver[i+1])
+
     # Tilpasning af akserne og labels
     ax.set_xlabel('Datamængde', fontsize=16)
     ax.set_ylabel('MAE', fontsize=16)
@@ -60,8 +70,9 @@ if os.path.exists(ROOT):
 
 groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):
-    # if group not in ['eksp2_48']:
-    #     continue
+    if udvalgte != None:
+        if group not in [f'eksp2_{udvalgt}' for udvalgt in udvalgte]:
+            continue
     runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
     eftertræningsmængder = viz0.get_eftertræningsmængder(group, runs)
     assert len(temperaturer) == 1
