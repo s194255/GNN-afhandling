@@ -98,6 +98,18 @@ class Selvvejledt(Grundmodel):
     def selvvejledt(self):
         return True
 
+    def get_fortræningsudgave(self):
+        bruger_lokalt = self.lambdaer['lokalt'] != 0
+        bruger_globalt = self.lambdaer['globalt'] != 0
+        stamme = '3D-EMGP'
+        if bruger_lokalt and bruger_globalt:
+            return f'{stamme}-begge'
+        elif bruger_lokalt and (not bruger_globalt):
+            return f'{stamme}-lokalt'
+        elif (not bruger_lokalt) and bruger_globalt:
+            return f'{stamme}-globalt'
+        elif (not bruger_lokalt) and (not bruger_globalt):
+            return 'påskeæg'
 
 class SelvvejledtBaseline(Selvvejledt):
     def __init__(self, *args, **kwargs):
@@ -177,3 +189,6 @@ class SelvvejledtQM9(m.DownstreamQM9):
     @property
     def krævne_args(self) -> set:
         return super().krævne_args - {'frossen_opvarmningsperiode'}
+
+    def get_fortræningsudgave(self):
+        return self.__class__.__name__

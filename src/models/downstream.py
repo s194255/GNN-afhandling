@@ -81,7 +81,7 @@ class Downstream(Grundmodel):
         assert self.args_dict['rygrad'] == selvvejledt.args_dict['rygrad'], 'downstreams rygrad skal bruge samme argumenter som den selvvejledte'
         state_dict = selvvejledt.rygrad.state_dict()
         self.rygrad.load_state_dict(state_dict)
-        self.fortræningsudgave = selvvejledt.__class__.__name__
+        self.fortræningsudgave = selvvejledt.get_fortræningsudgave()
         print(f"domstream rygrad = {self.rygrad_param_sum()}")
         print(f"selvvejledt rygrad = {selvvejledt.rygrad_param_sum()}")
 
