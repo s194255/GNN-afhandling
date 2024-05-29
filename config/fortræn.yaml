@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 512
+  batch_size: 2048
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
@@ -9,7 +9,7 @@ datasæt:
     - 2000
   val_reduced: false
   name: QM9
-rygradtype: painn
+rygradtype: visnet
 Selvvejledt:
   variant1:
     check_val_every_n_epoch: 1
@@ -22,9 +22,9 @@ Selvvejledt:
       lambdaer:
         lokalt: 100
         globalt: 0
-      lr: 1.0e-05
+      lr: 1.0e-01
       step_size: 1
-      ønsket_lr: 1.0e-05
+      ønsket_lr: 1.0e-01
       opvarmningsperiode: 1
       noise_fra: -2
       noise_til: 1
