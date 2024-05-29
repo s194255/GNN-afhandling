@@ -173,3 +173,7 @@ class SelvvejledtQM9(m.DownstreamQM9):
     @property
     def selvvejledt(self):
         return True
+
+    @property
+    def krævne_args(self) -> set:
+        return super().krævne_args - {'frossen_opvarmningsperiode'}

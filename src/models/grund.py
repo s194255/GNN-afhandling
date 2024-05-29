@@ -68,7 +68,11 @@ class Grundmodel(L.LightningModule):
     def tjek_args(self):
         nøgler = list(self.args_dict.keys())
         assert len(set(nøgler)) == len(nøgler), 'Den samme argumentnøgle går igen flere gange'
-        assert set(nøgler) == self.krævne_args, 'Forskel på argumentnøglerne'
+        nøgler = set(nøgler)
+        if nøgler != self.krævne_args:
+            uventede = nøgler-self.krævne_args
+            manglende = self.krævne_args-nøgler
+            raise AssertionError(f'følgende argumenter var uventede = {uventede} \n følgende argumenter manglede = {manglende}')
 
     @property
     def krævne_args(self) -> set:
