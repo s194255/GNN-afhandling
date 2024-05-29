@@ -5,7 +5,7 @@ datasæt:
   num_workers: 2
   n_trin: 5
   spænd:
-    - 200
+    - 30
     - 500
   val_reduced: true
   name: QM9
