@@ -5,7 +5,7 @@ maskeringsandel: null
 max_num_neighbors: 32
 max_z: 100
 num_heads: 8
-num_layers: 3
+num_layers: 12
 num_rbf: 32
 trainable_rbf: false
 trainable_vecnorm: false
