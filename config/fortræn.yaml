@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 2048
+  batch_size: 1024
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
