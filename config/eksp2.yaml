@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 512
+  batch_size: 128
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
@@ -12,19 +12,19 @@ datasæt:
 Downstream:
   optøet:
     check_val_every_n_epoch: 10
-    epoker: 250
+    epoker: 400
     steps: -1
-    gradient_clipping: 1.0e-02
+    gradient_clipping: null
     model:
       hovedtype: klogt
       gamma: 0.98
-      lr: 1.0e-01
+      lr: 2.5e-04
       step_size: 1
-      ønsket_lr: 1.0e-01
+      ønsket_lr: 2.5e-04
       opvarmningsperiode: 1
       frossen_opvarmningsperiode: 100
       predicted_attribute: 1
-      weight_decay: 5.0e-02
+      weight_decay: 1.0e-01
       loss: L1
       log_gradient: false
   frossen:

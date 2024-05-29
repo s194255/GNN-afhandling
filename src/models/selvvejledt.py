@@ -116,12 +116,10 @@ class SelvvejledtBaseline(Selvvejledt):
 
     def forward(
             self,
-            z: Tensor,
-            pos: Tensor,
-            batch: Tensor,
+            data: Data
     ) -> dict:
-
-        x, v, edge_attr, masker = self.rygrad(z, pos, batch)
+        z, pos, batch, edge_index = data.z, data.pos, data.batch, data.edge_index
+        x, v, edge_attr, masker = self.rygrad(z, pos, batch, edge_index)
         x = x[masker['knuder']]
         z = z[masker['knuder']]
         x = self.hoved(x)
