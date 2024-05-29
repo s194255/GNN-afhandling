@@ -3,7 +3,7 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 2
+  n_trin: 5
   spænd:
     - 200
     - 500
@@ -12,7 +12,7 @@ datasæt:
 Downstream:
   optøet:
     check_val_every_n_epoch: 10
-    epoker: 400
+    epoker: 300
     steps: -1
     gradient_clipping: null
     model:
@@ -50,8 +50,8 @@ udgaver:
 temperaturer:
   - optøet
 seeds:
-  - 437
+  - 438
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 80
+kørselsid: 81

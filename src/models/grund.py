@@ -76,7 +76,6 @@ class Grundmodel(L.LightningModule):
 
     @property
     def krævne_args(self) -> set:
-        # return {"lr": 0.00001, "step_size": 20, "gamma": 0.5}
         return {"lr", "step_size", "gamma", "ønsket_lr",
                 "opvarmningsperiode", "weight_decay", "rygrad",
                 "rygradtype", "modelklasse", "log_gradient"}
