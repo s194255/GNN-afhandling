@@ -71,7 +71,5 @@ for group in tqdm(groups):
 
     runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur, fortræningsudgave=None, seed=None), runs_in_group))
     df = viz0.get_df(runs_filtered)
-    # df = df.apply(pd.to_numeric, errors='coerce')
-    df = df.dropna(how='any')
 
     plot(df)
