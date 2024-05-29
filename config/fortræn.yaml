@@ -2,7 +2,7 @@ datasæt:
   batch_size: 2048
   debug: false
   delmængdestørrelse: 1.0
-  num_workers: 4
+  num_workers: 2
   n_trin: 3
   spænd:
     - 500
@@ -13,6 +13,7 @@ rygradtype: painn
 Selvvejledt:
   variant1:
     check_val_every_n_epoch: 1
+    log_every_n_steps: 1
     epoker: 50
     min_delta: 0.001
     model:
@@ -21,9 +22,9 @@ Selvvejledt:
       lambdaer:
         lokalt: 100
         globalt: 0
-      lr: 3.0e-02
+      lr: 1.0e-00
       step_size: 1
-      ønsket_lr: 3.0e-02
+      ønsket_lr: 1.0e-00
       opvarmningsperiode: 1
       noise_fra: -2
       noise_til: 1

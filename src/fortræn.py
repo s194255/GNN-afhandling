@@ -37,7 +37,8 @@ def main():
 
     logger_config = {'opgave': 'fortræn'}
     logger = r.wandbLogger(log_model=True, tags=tags, logger_config=logger_config)
-    trainer = r.get_trainer(epoker, logger=logger)
+    log_every_n_steps = config[modelklasse_str]['variant1']['log_every_n_steps']
+    trainer = r.get_trainer(epoker, logger=logger, log_every_n_steps=log_every_n_steps)
     trainer.fit(model=selvvejledt, datamodule=qm9bygger, ckpt_path=artefakt_sti)
     wandb_run_id = wandb.run.id
     wandb.finish()

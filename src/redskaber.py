@@ -52,14 +52,14 @@ def wandbLogger(log_model=False, tags=None, group=None, logger_config=None):
         config=logger_config
     )
 
-def get_trainer(epoker, logger=None):
+def get_trainer(epoker, logger=None, log_every_n_steps=None):
     callbacks = [
         checkpoint_callback(),
         TQDMProgressBar(),
         learning_rate_monitor()
     ]
     trainer = L.Trainer(max_epochs=epoker,
-                        log_every_n_steps=10,
+                        log_every_n_steps=log_every_n_steps,
                         callbacks=callbacks,
                         precision='16-mixed',
                         logger=logger,
