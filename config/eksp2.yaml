@@ -42,7 +42,7 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-02
       loss: L1
-      frossen_opvarmningsperiode: 100
+      frossen_opvarmningsperiode: null
       log_gradient: false
 rygradtype: visnet
 udgaver:
