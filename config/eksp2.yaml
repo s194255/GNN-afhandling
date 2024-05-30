@@ -31,7 +31,6 @@ Downstream:
     check_val_every_n_epoch: 60
     epoker: 600
     steps: -1
-    min_delta: 0.1
     gradient_clipping: null
     model:
       hovedtype: klogt
@@ -43,7 +42,8 @@ Downstream:
       predicted_attribute: 1
       weight_decay: 1.0e-02
       loss: L1
-    patience: 20
+      frossen_opvarmningsperiode: 100
+      log_gradient: false
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-8dxl194x:v0
