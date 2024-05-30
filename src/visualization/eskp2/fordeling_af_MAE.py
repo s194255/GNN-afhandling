@@ -41,10 +41,10 @@ for group in tqdm(groups):
             plt.figure(figsize=(10, 6))
 
             bins = 10
-            plt.hist(df[col], bins=bins, density=True, alpha=0.4, color=farver.rød, edgecolor='black')  # Histogram
-            plt.scatter(x=df[col], y=[0.0005]*len(df), color=farver.blå, marker='x', s=200)
+            plt.hist(df[col], bins=bins, density=True, alpha=0.4, color=farver.corporate_red, edgecolor='black')  # Histogram
+            plt.scatter(x=df[col], y=[0.0005]*len(df), color=farver.blue, marker='x', s=200)
 
-            plt.plot(x, fit, farver.rød, label='Normalfordeling', linewidth=5)  # Fittet normalfordeling
+            plt.plot(x, fit, farver.corporate_red, label='Normalfordeling', linewidth=5)  # Fittet normalfordeling
             plt.xlabel("MAE", fontsize=18)
             plt.ylabel('Frekvens', fontsize=18)
             plt.tick_params(axis='both', which='major', labelsize=16)

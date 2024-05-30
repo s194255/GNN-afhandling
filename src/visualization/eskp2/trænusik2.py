@@ -1,7 +1,9 @@
 import shutil
 import os
 import matplotlib.pyplot as plt
-from src.visualization.farver import farver
+# from src.visualization.farver import farver
+from matplotlib.ticker import ScalarFormatter
+import src.visualization.farver as far
 from tqdm import tqdm
 import viz0
 import numpy as np
@@ -11,40 +13,48 @@ TITLER = {'frossen': "Frossen rygrad",
 
 LABELLER = {'uden': 'Ingen fortræning',
             'Selvvejledt': '3D-EMGP',
-            'SelvvejledtQM9': 'QM9 fortræning'}
+            'SelvvejledtQM9': 'QM9 fortræning',
+            '3D-EMGP-lokalt': '3D-EMGP kun lokalt',
+            '3D-EMGP-globalt': '3D-EMGP kun globalt',
+            '3D-EMGP-begge': '3D-EMGP'
+            }
 
 FIGNAVN = 'trænusik2'
 ROOT = os.path.join('reports/figures/Eksperimenter/2', FIGNAVN)
-udvalgte = [81]
+
+farver = [far.corporate_red, far.blue, far.navy_blue, far.bright_green, far.orange, far.yellow]
+udvalgte = [83]
 
 
 def plot_kernel_baseline(ax, x_values, x, farve):
     kernel = viz0.kernel_baseline()
     # x = np.linspace(30, 500, 1000)
     y = kernel(x_values)
-    ax.scatter(x, y, color=farve, marker="^", label="kernel baseline")
+    ax.scatter(x, y, color=farve, marker="o", label="kernel baseline", s=80)
 
 
-def plot(df):
+def plot(df, fortræningsudgaver):
     # Opsætning for søjlerne
     x_values = df['eftertræningsmængde'].unique()
     x_values.sort()
-    fortræningsudgaver = df['fortræningsudgave'].unique()
+    # fortræningsudgaver = df['fortræningsudgave'].unique()
     num_models = len(fortræningsudgaver)
 
 
-    bar_width = 0.2
+    bar_width = 0.15
     x = np.arange(len(x_values))
 
     # Opret figuren og akserne
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(9, 6))
+    # fig, ax = plt.subplots()
 
     # Plot søjlerne og prikkerne
     for i in range(num_models):
         fortræningsudgave = fortræningsudgaver[i]
+        print(fortræningsudgave)
         målinger = df[df['fortræningsudgave'] == fortræningsudgave][['eftertræningsmængde', 'test_loss_mean']]
         søjlehøjde = målinger.groupby('eftertræningsmængde').mean().reset_index()['test_loss_mean']
-        bars = ax.bar(x + (i+0.5 - num_models / 2) * bar_width, søjlehøjde, bar_width, color=farver[i], alpha=0.5)
+        bars = ax.bar(x + (i+0.5 - num_models / 2) * bar_width, søjlehøjde, bar_width, color=farver[i], alpha=0.75)
         for j in range(len(x_values)):
             prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]]['test_loss_mean']
             n2 = len(prikker)
@@ -60,7 +70,11 @@ def plot(df):
     ax.set_title(f'{temperatur} rygrad', fontsize=22)
     ax.set_xticks(x)
     ax.set_xticklabels(x_values)
-    ax.legend(fontsize=18)
+    ax.set_yscale("log")
+    ax.legend(fontsize=15)
+    ax.yaxis.set_minor_formatter(ScalarFormatter())
+    ax.yaxis.set_major_formatter(ScalarFormatter())
+    plt.tight_layout()
 
     plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{FIGNAVN}.jpg"))
     plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{FIGNAVN}.pdf"))
@@ -74,6 +88,7 @@ for group in tqdm(groups):
         if group not in [f'eksp2_{udvalgt}' for udvalgt in udvalgte]:
             continue
     runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
+    print(fortræningsudgaver)
     eftertræningsmængder = viz0.get_eftertræningsmængder(group, runs)
     assert len(temperaturer) == 1
     temperatur = list(temperaturer)[0]
@@ -83,4 +98,4 @@ for group in tqdm(groups):
     runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur, fortræningsudgave=None, seed=None), runs_in_group))
     df = viz0.get_df(runs_filtered)
 
-    plot(df)
+    plot(df, fortræningsudgaver)

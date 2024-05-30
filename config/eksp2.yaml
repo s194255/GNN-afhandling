@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 128
+  batch_size: 512
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
@@ -36,9 +36,9 @@ Downstream:
     model:
       hovedtype: klogt
       gamma: 0.99
-      lr: 4.0e-03
+      lr: 1.0e-02
       step_size: 1
-      ønsket_lr: 4.0e-03
+      ønsket_lr: 1.0e-02
       opvarmningsperiode: 1
       predicted_attribute: 1
       weight_decay: 1.0e-02
@@ -47,13 +47,11 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-8dxl194x:v0
-  - s194255/afhandling/model-u1eb0flg:v0
 temperaturer:
   - optøet
 seeds:
-  - 919
-  - 982
+  - 717
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 83
+kørselsid: 84

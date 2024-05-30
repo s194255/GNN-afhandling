@@ -56,7 +56,11 @@ def get_eftertræningsmængde(run):
 
 def get_loops_params(group, runs):
     runs_in_group = list(filter(lambda w: is_in_group(w, group), runs))
-    fortræningsudgaver = sorted(set(list(map(get_fortræningsudgave, runs_in_group))))
+
+    fortræningsudgaver_usorteret = set(list(map(get_fortræningsudgave, runs_in_group)))
+    fortræningsudgaver = ['uden', '3D-EMGP-globalt', '3D-EMGP-begge', '3D-EMGP-lokalt', 'SelvvejledtQM9']
+    fortræningsudgaver = [f for f in fortræningsudgaver if f in fortræningsudgaver_usorteret]
+
     temperaturer = set(list(map(get_temperatur, runs_in_group)))
     seeds = set(list(map(get_seed, runs_in_group)))
     rygrad_runids = set(list(map(get_rygrad_runid, runs_in_group)))
