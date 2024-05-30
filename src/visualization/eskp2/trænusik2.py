@@ -46,15 +46,18 @@ def plot(df, fortræningsudgaver):
     x = np.arange(len(x_values))
 
     # Opret figuren og akserne
-    fig, ax = plt.subplots(figsize=(9, 6))
+    fig, ax = plt.subplots(figsize=(9, 7))
     # fig, ax = plt.subplots()
 
     # Plot søjlerne og prikkerne
     for i in range(num_models):
+
         fortræningsudgave = fortræningsudgaver[i]
         print(fortræningsudgave)
         målinger = df[df['fortræningsudgave'] == fortræningsudgave][['eftertræningsmængde', 'test_loss_mean']]
         søjlehøjde = målinger.groupby('eftertræningsmængde').mean().reset_index()['test_loss_mean']
+        if len(søjlehøjde) != len(x_values):
+            continue
         # bars = ax.bar(x + (i+0.5 - num_models / 2) * bar_width, søjlehøjde,
         #               bar_width, edgecolor=farver[i], alpha=0.999, facecolor='white', linewidth=4)
         bars = ax.bar(x + (i + 0.5 - num_models / 2) * bar_width, søjlehøjde,
@@ -77,7 +80,7 @@ def plot(df, fortræningsudgaver):
     ax.set_xticks(x)
     ax.set_xticklabels(x_values)
     ax.set_yscale("log")
-    ax.legend(fontsize=15)
+    ax.legend(fontsize=12)
     ax.yaxis.set_minor_formatter(ScalarFormatter())
     ax.yaxis.set_major_formatter(ScalarFormatter())
     plt.tight_layout()
