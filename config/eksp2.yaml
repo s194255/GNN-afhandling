@@ -29,18 +29,18 @@ Downstream:
       log_gradient: false
   frossen:
     check_val_every_n_epoch: 10
-    epoker: 600
+    epoker: 300
     steps: -1
     gradient_clipping: null
     model:
       hovedtype: klogt
       gamma: 0.99
-      lr: 1.0e-02
+      lr: 2.0e-02
       step_size: 1
-      ønsket_lr: 1.0e-02
+      ønsket_lr: 2.0e-02
       opvarmningsperiode: 1
       predicted_attribute: 1
-      weight_decay: 1.0e-04
+      weight_decay: 1.0e-05
       loss: L1
       frossen_opvarmningsperiode: null
       log_gradient: false
@@ -50,8 +50,8 @@ udgaver:
 temperaturer:
   - frossen
 seeds:
-  - 718
+  - 719
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 85
+kørselsid: 86
