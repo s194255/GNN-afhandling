@@ -40,7 +40,7 @@ Downstream:
       ønsket_lr: 5.0e-03
       opvarmningsperiode: 1
       predicted_attribute: 1
-      weight_decay: 1.0e-05
+      weight_decay: 1.0e-06
       loss: L1
       frossen_opvarmningsperiode: null
       log_gradient: false
