@@ -48,7 +48,7 @@ rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-8dxl194x:v0
 temperaturer:
-  - optøet
+  - frossen
 seeds:
   - 717
 run_baseline: false
