@@ -145,3 +145,8 @@ def build_selvvejledt(args_dict, datasæt_dict, modelklasse_str):
     else:
         raise NotImplementedError
     return model, qm9bygger
+
+def indlæs_yaml(sti):
+    with open(sti, encoding='utf-8') as f:
+        config_dict = yaml.safe_load(f)
+    return config_dict

@@ -47,11 +47,13 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-8dxl194x:v0
+  - s194255/afhandling/model-u1eb0flg:v0
 temperaturer:
   - frossen
 seeds:
-  - 719
+  - 186
+  - 520
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 87
+kørselsid: 88

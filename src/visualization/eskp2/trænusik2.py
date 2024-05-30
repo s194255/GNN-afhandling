@@ -23,14 +23,15 @@ FIGNAVN = 'trænusik2'
 ROOT = os.path.join('reports/figures/Eksperimenter/2', FIGNAVN)
 
 farver = [far.corporate_red, far.blue, far.navy_blue, far.bright_green, far.orange, far.yellow]
-udvalgte = [83]
+stjerner = viz0.get_stjerner()
 
 
 def plot_kernel_baseline(ax, x_values, x, farve):
     kernel = viz0.kernel_baseline()
     # x = np.linspace(30, 500, 1000)
     y = kernel(x_values)
-    ax.scatter(x, y, color=farve, marker="o", label="kernel baseline", s=80)
+    ax.scatter(x, y, color=farve, marker="d", label="kernel baseline", s=80,
+               edgecolor=far.black)
 
 
 def plot(df, fortræningsudgaver):
@@ -54,13 +55,18 @@ def plot(df, fortræningsudgaver):
         print(fortræningsudgave)
         målinger = df[df['fortræningsudgave'] == fortræningsudgave][['eftertræningsmængde', 'test_loss_mean']]
         søjlehøjde = målinger.groupby('eftertræningsmængde').mean().reset_index()['test_loss_mean']
-        bars = ax.bar(x + (i+0.5 - num_models / 2) * bar_width, søjlehøjde, bar_width, color=farver[i], alpha=0.75)
+        # bars = ax.bar(x + (i+0.5 - num_models / 2) * bar_width, søjlehøjde,
+        #               bar_width, edgecolor=farver[i], alpha=0.999, facecolor='white', linewidth=4)
+        bars = ax.bar(x + (i + 0.5 - num_models / 2) * bar_width, søjlehøjde,
+                      bar_width, color=farver[i], alpha=0.80)
         for j in range(len(x_values)):
             prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]]['test_loss_mean']
             n2 = len(prikker)
             label = LABELLER[fortræningsudgave] if j==0 else None
-            ax.scatter([x[j] + (i+0.5 - num_models / 2) * bar_width] * n2, prikker,
-                       color=farver[i], label=label, marker='x')
+            # ax.scatter([x[j] + (i+0.5 - num_models / 2) * bar_width] * n2, prikker,
+            #            color=farver[i], label=label, marker='x', alpha=0.5, edgecolor=far.black)
+            ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
+                       color=farver[i], label=label, marker='o', edgecolor='black', alpha=1.0)
 
     plot_kernel_baseline(ax, x_values, x, farver[i+1])
 
@@ -84,8 +90,8 @@ if os.path.exists(ROOT):
 
 groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):
-    if udvalgte != None:
-        if group not in [f'eksp2_{udvalgt}' for udvalgt in udvalgte]:
+    if stjerner != None:
+        if group not in [f'eksp2_{udvalgt}' for udvalgt in stjerner]:
             continue
     runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
     print(fortræningsudgaver)

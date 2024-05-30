@@ -58,7 +58,7 @@ class Eksp2:
         self.init_kørselsid()
         _, self.qm9Bygger2Hoved, _, _ = r.get_selvvejledt_fra_wandb(self.config, self.config['data_path'])
 
-    def init_kørselsid(self):
+    def init_kørselsid(self) -> None:
         if self.config['kørselsid'] == None:
             wandb.login()
             runs = wandb.Api().runs("afhandling")
@@ -74,7 +74,7 @@ class Eksp2:
             self.kørselsid = self.config['kørselsid']
 
 
-    def get_trainer(self, temperatur: str, logger_config: dict=None, tags=None):
+    def get_trainer(self, temperatur: str, logger_config: dict=None, tags=None) -> L.Trainer:
         callbacks = [
             r.checkpoint_callback(),
             r.TQDMProgressBar(),
@@ -113,7 +113,7 @@ class Eksp2:
             run_id = None
 
         return downstream, run_id
-    def eftertræn(self, udgave, temperatur, seed, i):
+    def eftertræn(self, udgave, temperatur, seed, i) -> None:
         assert temperatur in ['frossen', 'optøet']
         if seed != None:
             print(f"jeg planter frøet {seed}")
@@ -138,7 +138,7 @@ class Eksp2:
         shutil.rmtree(os.path.join("afhandling", wandb_run_id))
         downstream.cpu()
 
-    def eftertræn_baseline(self):
+    def eftertræn_baseline(self) -> None:
         args_dict = self.config['Downstream']['optøet']['model']
         downstream = m.DownstreamQM9BaselineMean(
             args_dict=args_dict,

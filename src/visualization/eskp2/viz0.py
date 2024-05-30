@@ -2,6 +2,7 @@ import wandb
 import pandas as pd
 import json
 import numpy as np
+from src.redskaber import indlæs_yaml
 
 METRICS = {'test_loss_mean', "test_loss_std", "test_loss_lower", "test_loss_upper", "eftertræningsmængde"}
 
@@ -107,6 +108,10 @@ def get_df(runs):
     resultater[sel_cols] = resultater[sel_cols].apply(pd.to_numeric, errors='coerce')
     resultater = resultater.dropna(how='any')
     return resultater
+
+def get_stjerner():
+    ref = indlæs_yaml('reference_ckpts.yaml')
+    return ref['eksp2']['frossen'] + ref['eksp2']['optøet']
 
 
 def main_filter2(run, rygrad_runid):
