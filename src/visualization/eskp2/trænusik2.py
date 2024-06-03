@@ -53,21 +53,16 @@ def plot(df, fortræningsudgaver):
     for i in range(num_models):
 
         fortræningsudgave = fortræningsudgaver[i]
-        print(fortræningsudgave)
         målinger = df[df['fortræningsudgave'] == fortræningsudgave][['eftertræningsmængde', 'test_loss_mean']]
         søjlehøjde = målinger.groupby('eftertræningsmængde').mean().reset_index()['test_loss_mean']
         if len(søjlehøjde) != len(x_values):
             continue
-        # bars = ax.bar(x + (i+0.5 - num_models / 2) * bar_width, søjlehøjde,
-        #               bar_width, edgecolor=farver[i], alpha=0.999, facecolor='white', linewidth=4)
         bars = ax.bar(x + (i + 0.5 - num_models / 2) * bar_width, søjlehøjde,
-                      bar_width, color=farver[i], alpha=0.80)
+                      bar_width, color=farver[i], alpha=0.85)
         for j in range(len(x_values)):
             prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]]['test_loss_mean']
             n2 = len(prikker)
             label = LABELLER[fortræningsudgave] if j==0 else None
-            # ax.scatter([x[j] + (i+0.5 - num_models / 2) * bar_width] * n2, prikker,
-            #            color=farver[i], label=label, marker='x', alpha=0.5, edgecolor=far.black)
             ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
                        color=farver[i], label=label, marker='o', edgecolor='black', alpha=1.0)
 
@@ -76,17 +71,20 @@ def plot(df, fortræningsudgaver):
     # Tilpasning af akserne og labels
     ax.set_xlabel('Datamængde', fontsize=16)
     ax.set_ylabel('MAE', fontsize=16)
-    ax.set_title(f'{temperatur} rygrad', fontsize=22)
+    ax.set_title(TITLER[temperatur], fontsize=22)
     ax.set_xticks(x)
     ax.set_xticklabels(x_values)
     ax.set_yscale("log")
     ax.legend(fontsize=12)
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.tick_params(axis='both', which='minor', labelsize=13)
     ax.yaxis.set_minor_formatter(ScalarFormatter())
     ax.yaxis.set_major_formatter(ScalarFormatter())
     plt.tight_layout()
 
     plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{FIGNAVN}.jpg"))
     plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{FIGNAVN}.pdf"))
+    plt.close()
 
 if os.path.exists(ROOT):
     shutil.rmtree(ROOT)
@@ -97,7 +95,6 @@ for group in tqdm(groups):
         if group not in [f'eksp2_{udvalgt}' for udvalgt in stjerner]:
             continue
     runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
-    print(fortræningsudgaver)
     eftertræningsmængder = viz0.get_eftertræningsmængder(group, runs)
     assert len(temperaturer) == 1
     temperatur = list(temperaturer)[0]
