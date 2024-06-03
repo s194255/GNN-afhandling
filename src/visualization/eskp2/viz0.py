@@ -106,7 +106,7 @@ def get_df(runs):
         resultater = pd.concat([resultater, pd.DataFrame(data=resultat)], ignore_index=True)
     sel_cols = [col for col in resultater.columns if col not in not_met_cols]
     resultater[sel_cols] = resultater[sel_cols].apply(pd.to_numeric, errors='coerce')
-    resultater = resultater.dropna(how='any')
+    resultater = resultater.dropna(how='any', subset=sel_cols)
     return resultater
 
 def get_stjerner():
