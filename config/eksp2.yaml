@@ -46,17 +46,21 @@ Downstream:
       log_gradient: false
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-8dxl194x:v0
-  - s194255/afhandling/model-u1eb0flg:v0
-  - s194255/afhandling/model-eair1kzv:v0
-  - s194255/afhandling/model-av6l2023:v0
   - uden
 temperaturer:
   - frossen
 seeds:
-  - 129
-  - 881
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
+  - null
 run_baseline: false
-gruppenavn: eksp2
+gruppenavn: eksp4
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 88
+kørselsid: 1
