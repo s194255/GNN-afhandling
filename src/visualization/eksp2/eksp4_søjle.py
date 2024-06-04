@@ -1,12 +1,15 @@
 import shutil
 import os
 import matplotlib.pyplot as plt
+import pandas as pd
 # from src.visualization.farver import farver
 from matplotlib.ticker import ScalarFormatter
 import src.visualization.farver as far
 from tqdm import tqdm
 from src.visualization import viz0
 import numpy as np
+import pickle
+import wandb
 
 TITLER = {'frossen': "Frossen rygrad",
           'optøet': "Optøet rygrad"}
@@ -19,11 +22,16 @@ LABELLER = {'uden': 'Ingen fortræning',
             '3D-EMGP-begge': '3D-EMGP'
             }
 
-FIGNAVN = 'trænusik2'
-ROOT = os.path.join('reports/figures/Eksperimenter/2', FIGNAVN)
 
-farver = [far.corporate_red, far.blue, far.navy_blue, far.bright_green, far.orange, far.yellow]
-stjerner = viz0.get_stjerner()
+
+FIGNAVN = 'søjle'
+ROOT = os.path.join('reports/figures/Eksperimenter/4', FIGNAVN)
+
+farver = [far.corporate_red, far.blue, far.yellow, far.navy_blue, far.bright_green, far.orange]
+stjerner = {
+    'optøet': 'eksp2_83',
+    'frossen': 'eksp2_88'
+}
 
 
 def plot_kernel_baseline(ax, x_values, x, farve):
@@ -34,15 +42,17 @@ def plot_kernel_baseline(ax, x_values, x, farve):
                edgecolor=far.black)
 
 
-def plot(df, fortræningsudgaver):
+def plot(df):
     # Opsætning for søjlerne
     x_values = df['eftertræningsmængde'].unique()
     x_values.sort()
+
+    temperaturer = ['frossen', 'optøet']
     # fortræningsudgaver = df['fortræningsudgave'].unique()
-    num_models = len(fortræningsudgaver)
+    num_models = len(temperaturer)
 
 
-    bar_width = 0.15
+    bar_width = 0.3
     x = np.arange(len(x_values))
 
     # Opret figuren og akserne
@@ -52,8 +62,9 @@ def plot(df, fortræningsudgaver):
     # Plot søjlerne og prikkerne
     for i in range(num_models):
 
-        fortræningsudgave = fortræningsudgaver[i]
-        målinger = df[df['fortræningsudgave'] == fortræningsudgave][['eftertræningsmængde', 'test_loss_mean']]
+        # fortræningsudgave = fortræningsudgaver[i]
+        temperatur = temperaturer[i]
+        målinger = df[df['temperatur'] == temperatur][['eftertræningsmængde', 'test_loss_mean']]
         søjlehøjde = målinger.groupby('eftertræningsmængde').mean().reset_index()['test_loss_mean']
         if len(søjlehøjde) != len(x_values):
             continue
@@ -62,7 +73,7 @@ def plot(df, fortræningsudgaver):
         for j in range(len(x_values)):
             prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]]['test_loss_mean']
             n2 = len(prikker)
-            label = LABELLER[fortræningsudgave] if j==0 else None
+            label = temperatur if j==0 else None
             ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
                        color=farver[i], label=label, marker='o', edgecolor='black', alpha=1.0)
 
@@ -71,7 +82,7 @@ def plot(df, fortræningsudgaver):
     # Tilpasning af akserne og labels
     ax.set_xlabel('Datamængde', fontsize=16)
     ax.set_ylabel('MAE', fontsize=16)
-    ax.set_title(TITLER[temperatur], fontsize=22)
+    ax.set_title('Frossen versus optøet', fontsize=22)
     ax.set_xticks(x)
     ax.set_xticklabels(x_values)
     ax.set_yscale("log")
@@ -82,26 +93,36 @@ def plot(df, fortræningsudgaver):
     ax.yaxis.set_major_formatter(ScalarFormatter())
     plt.tight_layout()
 
-    plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{FIGNAVN}.jpg"))
-    plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{FIGNAVN}.pdf"))
+    plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.jpg"))
+    plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.pdf"))
     plt.close()
 
 if os.path.exists(ROOT):
     shutil.rmtree(ROOT)
 
-groups, runs = viz0.get_groups_runs('eksp2')
-for group in tqdm(groups):
-    if stjerner != None:
-        if group not in [f'eksp2_{udvalgt}' for udvalgt in stjerner]:
-            continue
-    runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
+runs = wandb.Api().runs("afhandling")
+runs = list(filter(lambda w: viz0.is_suitable(w, 'eksp2'), runs))
+df = None
+kørsel_path = os.path.join(ROOT)
+os.makedirs(kørsel_path)
+
+for temperatur in ['frossen', 'optøet']:
+    group = stjerner[temperatur]
+    runs_in_group, fortræningsudgaver, temperaturer_lp, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
     eftertræningsmængder = viz0.get_eftertræningsmængder(group, runs)
-    assert len(temperaturer) == 1
-    temperatur = list(temperaturer)[0]
-    kørsel_path = os.path.join(ROOT, group)
-    os.makedirs(kørsel_path)
+    assert len(temperaturer_lp) == 1
+    assert list(temperaturer_lp)[0] == temperatur
+    # kørsel_path = os.path.join(ROOT, f'{}'
 
-    runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur, fortræningsudgave=None, seed=None), runs_in_group))
-    df = viz0.get_df(runs_filtered)
+    runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur,
+                                                           fortræningsudgave='3D-EMGP-lokalt', seed=None), runs_in_group))
+    df_linje = viz0.get_df(runs_filtered)
+    if df is None:
+        df = {col: [] for col in df_linje.columns}
+        df = pd.DataFrame(data=df)
+    df = pd.concat([df, pd.DataFrame(data=df_linje)], ignore_index=True)
+print(df)
+plot(df)
 
-    plot(df, fortræningsudgaver)
+
+    # plot(df_linje, fortræningsudgaver)

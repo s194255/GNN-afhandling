@@ -95,13 +95,14 @@ def kernel_baseline():
     return lambda x: b*x**a
 
 def get_df(runs):
-    not_met_cols = ['seed', 'fortræningsudgave']
+    not_met_cols = ['seed', 'fortræningsudgave', 'temperatur']
     resultater = {nøgle: [] for nøgle in list(METRICS)+not_met_cols}
     resultater = pd.DataFrame(resultater)
     for run in runs:
         resultat = {nøgle: [værdi] for nøgle, værdi in run.summary.items() if nøgle in METRICS}
         resultat['seed'] = get_seed(run)
         resultat['fortræningsudgave'] = get_fortræningsudgave(run)
+        resultat['temperatur'] = get_temperatur(run)
 
         resultater = pd.concat([resultater, pd.DataFrame(data=resultat)], ignore_index=True)
     sel_cols = [col for col in resultater.columns if col not in not_met_cols]

@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from src.visualization.farver import farver
 import pandas as pd
 from tqdm import tqdm
-from matplotlib.ticker import ScalarFormatter, MultipleLocator
-import viz0
+from matplotlib.ticker import ScalarFormatter
+from src.visualization import viz0
 
 TITLER = {'frossen': "Frossen rygrad",
           'optøet': "Optøet rygrad"}

@@ -1,12 +1,9 @@
 import shutil
 import os
-import matplotlib.pyplot as plt
 # from src.visualization.farver import farver
-from matplotlib.ticker import ScalarFormatter
 import src.visualization.farver as far
 from tqdm import tqdm
-import viz0
-import numpy as np
+from src.visualization import viz0
 import pandas as pd
 
 TITLER = {'frossen': "Frossen rygrad",

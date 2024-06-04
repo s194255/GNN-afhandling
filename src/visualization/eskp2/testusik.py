@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from src.visualization.farver import farver
-import viz0
+from src.visualization import viz0
 import pandas as pd
 from tqdm import tqdm
 
