@@ -1,12 +1,12 @@
 datasæt:
-  batch_size: 512
+  batch_size: 128
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 5
+  n_trin: 1
   spænd:
-    - 30
-    - 500
+    - 265
+    - 265
   val_reduced: true
   name: QM9
 Downstream:
@@ -47,20 +47,11 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - uden
+  - s194255/afhandling/model-8dxl194x:v0
 temperaturer:
-  - frossen
-seeds:
-  - null
-  - null
-  - null
-  - null
-  - null
-  - null
-  - null
-  - null
-  - null
-  - null
+  - optøet
+seeds: 40
 run_baseline: false
-gruppenavn: eksp4
+gruppenavn: eksp3
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 1
+kørselsid: 0

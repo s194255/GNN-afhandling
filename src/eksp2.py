@@ -57,6 +57,12 @@ class Eksp2:
             debugify_config(self.config)
         self.init_kørselsid()
         _, self.qm9Bygger2Hoved, _, _ = r.get_selvvejledt_fra_wandb(self.config, self.config['data_path'])
+        if type(self.config['seeds']) == int:
+            self.seeds = [None]*self.config['seeds']
+        elif type(self.config['seeds']) == list:
+            self.seeds = self.config['seeds']
+        else:
+            raise NotImplementedError
 
     def init_kørselsid(self) -> None:
         if self.config['kørselsid'] == None:
@@ -153,7 +159,7 @@ class Eksp2:
         wandb.finish()
 
     def main(self):
-        løkke = product(self.config['temperaturer'], self.config['seeds'], range(self.qm9Bygger2Hoved.n_trin), self.config['udgaver'])
+        løkke = product(self.config['temperaturer'], self.seeds, range(self.qm9Bygger2Hoved.n_trin), self.config['udgaver'])
         for temperatur, seed, i, udgave in løkke:
             self.eftertræn(udgave, temperatur, seed, i)
 
