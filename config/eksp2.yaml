@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 1
+  n_trin: 5
   spænd:
-    - 265
-    - 265
+    - 30
+    - 500
   val_reduced: true
   name: QM9
 Downstream:
