@@ -28,13 +28,15 @@ forv_fortræningsudgaver = ['uden', '3D-EMGP-lokalt']
 
 def violinplots(dfs):
     col = 'test_loss_mean'
-    df = {fort: dfs[fort][col] for fort in forv_fortræningsudgaver}
+    df = {viz0.FORT_LABELLER[fort]: dfs[fort][col] for fort in forv_fortræningsudgaver}
     palette = [farveopslag[fort] for fort in forv_fortræningsudgaver]
     plt.figure(figsize=(10, 6))
     sns.violinplot(data=df, palette=palette)
 
     plt.xticks(fontsize=18)  # Endre fontstørrelsen til ønsket verdi
     plt.yticks(fontsize=18)
+    plt.ylabel('MAE', fontsize=18)
+
 
     # plt.title('Violinfigur')
     plt.savefig(os.path.join(kørsel_path, "stat_sign_violin.jpg"))
@@ -42,17 +44,17 @@ def violinplots(dfs):
 
 
 def qqplot(dfs):
-    temperaturer = list(dfs.keys())
+    forter = list(dfs.keys())
     col = 'test_loss_mean'
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 7))
 
-    for i, temperatur in enumerate(temperaturer):
-        df = dfs[temperatur]
+    for i, fort in enumerate(forter):
+        df = dfs[fort]
         data = df[col].dropna()
 
-        dot_color = far.orange
-        line_color = far.corporate_red
+        dot_color = farveopslag[fort]
+        line_color = far.black
 
         # Beregn teoretiske kvantiler og sample kvantiler
         (quantiles, values), (slope, intercept, r) = stats.probplot(data, dist="norm")
@@ -66,10 +68,11 @@ def qqplot(dfs):
         y = f(x)
         axes[i].plot(x, y, color=line_color)
 
-        axes[i].set_title(f'QQ-plot for {temperatur}', fontsize=16)
-        axes[i].tick_params(axis='both', which='major', labelsize=14)
-        axes[i].set_xlabel('Teoretiske kvantiler', fontsize=14)
-        axes[i].set_ylabel('Observerte kvantiler', fontsize=14)
+        titel = viz0.FORT_LABELLER[fort]
+        axes[i].set_title(titel, fontsize=32)
+        axes[i].tick_params(axis='both', which='major', labelsize=20)
+        axes[i].set_xlabel('Teoretiske kvantiler', fontsize=24)
+        axes[i].set_ylabel('Observerede kvantiler', fontsize=24)
 
     plt.tight_layout()
     plt.savefig(os.path.join(kørsel_path, "qq_plots.jpg"))

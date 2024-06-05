@@ -62,6 +62,7 @@ def plot(df, fortræningsudgaver):
         for j in range(len(x_values)):
             prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]]['test_loss_mean']
             n2 = len(prikker)
+            print(group, fortræningsudgave, x_values[j], n2)
             label = LABELLER[fortræningsudgave] if j==0 else None
             ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
                        color=farver[i], label=label, marker='o', edgecolor='black', alpha=1.0)
