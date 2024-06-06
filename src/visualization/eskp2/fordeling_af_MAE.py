@@ -1,58 +1,85 @@
+print("importerer")
+import copy
 import shutil
 import os
 import matplotlib.pyplot as plt
-import src.visualization.farver as farver
+from src.visualization.farver import corporate_red, blue
 from src.visualization import viz0
 from tqdm import tqdm
 import numpy as np
-from scipy.stats import norm
+from scipy.stats import norm, ttest_ind
 import statsmodels.api as sm
 import pylab as py
+from seaborn import violinplot
+print("færdig med at importere")
 
-rod = 'reports/figures/Eksperimenter/2/fordeling_af_MAE'
+rod = 'reports/figures/Eksperimenter/FrossenVOptøet/fordeling_af_MAE'
 temperaturer = ['frossen', 'optøet']
+FIGNAVN = 'fordeling_af_MAE'
+groups = ['eksp4_1']
+farveopslag = {
+    'frossen': blue,
+    'optøet': corporate_red
+}
 
 if os.path.exists(rod):
     shutil.rmtree(rod)
 
-def plothist(dfs: dict):
+
+def plot_violin(dfs: dict, ax: plt.Axes):
+    col = 'test_loss_mean'
+    temperaturer = list(dfs.keys())
+    df = {temp: dfs[temp][col] for temp in temperaturer}
+    palette = [farveopslag[temp] for temp in temperaturer]
+
+    violinplot(data=df, palette=palette, ax=ax)
+
+    ax.set_xticks(range(len(dfs.keys())))
+    ax.set_xticklabels(dfs.keys(), fontsize=13)
+    ax.set_yticks(ax.get_yticks())
+    ax.set_yticklabels(ax.get_yticks(), fontsize=13)
+    ax.set_ylabel('MAE', fontsize=15)
+    # ax.set_title('Violin', fontsize=22)
+
+def plothist(dfs: dict, ax: plt.Axes):
     temperaturer = dfs.keys()
-    plt.figure(figsize=(10, 6))
     for i, temperatur in enumerate(temperaturer):
         df = dfs[temperatur]
         col = 'test_loss_mean'
 
-        # df[col] = np.log(df[col])
-        prefix = f'{fortræningsudgave}'
-
         mean = df[col].mean()
         std_dev = df[col].std()
-        print(temperatur, mean, std_dev)
+        print(f"Antal datapunkter for {temperatur}: {len(df)}")
+        print(f"Mean for {temperatur}: {mean}")
+        print(f"Std for {temperatur}: {std_dev}")
+        print("\n")
 
         x = np.linspace(df[col].min(), df[col].max(), 100)
         fit = norm.pdf(x, mean, std_dev)
-        # fit = lognorm.pdf(x, mean, std_dev)
+        color = farveopslag[temperatur]
 
         bins = 10
-        plt.hist(df[col], bins=bins, density=True, alpha=0.9, color=farver.farver[i], edgecolor='black',
-                 label=temperatur)  # Histogram
-        # plt.scatter(x=df[col], y=[0.0005]*len(df), color=farver.blue, marker='x', s=200)
+        ax.hist(df[col], bins=bins, density=True, alpha=0.60, color=color, edgecolor='black',
+                label=temperatur)  # Histogram
 
-        # plt.plot(x, fit, farver.farver[i], label=temperatur,
-        #          linewidth=5)  # Fittet normalfordeling
+    ax.set_xlabel("MAE", fontsize=13)
+    ax.tick_params(axis='both', which='major', labelsize=13)
+    ax.tick_params(axis='both', which='minor', labelsize=13)
+    # ax.set_title('Histogram', fontsize=22)
+    ax.legend(fontsize=16)
+    ax.grid(True)
+    ax.yaxis.set_ticks([])
 
-    plt.xlabel("MAE", fontsize=18)
-    # plt.ylabel('Frekvens', fontsize=18)
-    plt.tick_params(axis='both', which='major', labelsize=16)
-    plt.tick_params(axis='both', which='minor', labelsize=14)
-    plt.title('Fordeling af MAE', fontsize=22)
-    # plt.xscale("log")
-    plt.legend(fontsize=18)
-    plt.grid(True)
-    plt.gca().yaxis.set_ticks([])
-    plt.savefig(os.path.join(kørsel_path, "fordeling_af_MAE.jpg"))
-    plt.savefig(os.path.join(kørsel_path, "fordeling_af_MAE.pdf"))
-    plt.close()
+def welsh_t_test(dfs):
+    col = 'test_loss_mean'
+    a = dfs['frossen'][col]
+    b = dfs['optøet'][col]
+    alternative = 'two-sided'
+    equal_var = False
+    t, p = ttest_ind(a, b, alternative=alternative, equal_var=equal_var)
+    # print(f"middelværdi af ingen fortræning = {np.mean(a)}")
+    # print(f"middelværdi af 3D-EMGP-lokalt = {np.mean(b)}")
+    print(f"p-værdi = {p}")
 
 def qqplot(dfs):
     temperaturer = dfs.keys()
@@ -67,11 +94,12 @@ def qqplot(dfs):
         py.savefig(os.path.join(kørsel_path, f"qq_log_{temperatur}.jpg"))
 
 
-groups, runs = viz0.get_groups_runs('eksp4')
+
+
+# groups, runs = viz0.get_groups_runs('eksp4')
 for group in tqdm(groups):
-    if group not in ['eksp4_1']:
-        continue
-    runs_in_group, fortræningsudgaver, temperaturer_lp, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
+    group_df = viz0.get_group_df(group)
+    fortræningsudgaver, temperaturer_lp, seeds = viz0.get_loop_params_group_df(group_df)
 
     assert len(fortræningsudgaver) == 1
     temperaturer_lp = [temperatur for temperatur in temperaturer if temperatur in temperaturer_lp]
@@ -81,8 +109,17 @@ for group in tqdm(groups):
 
     dfs = {}
     for i, temperatur in enumerate(temperaturer_lp):
-        runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur, fortræningsudgave, None), runs_in_group))
-        df = viz0.get_df(runs_filtered)
+        df = copy.deepcopy(group_df)
+        df = df[df['temperatur'] == temperatur]
+        df = df[df['fortræningsudgave'] == fortræningsudgave]
         dfs[temperatur] = df
-    plothist(dfs)
-    qqplot(dfs)
+
+    fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(14, 5))
+    axs = axs.ravel()
+
+    plothist(dfs, axs[0])
+    plot_violin(dfs, axs[1])
+    plt.tight_layout()
+    plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.jpg"))
+    plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.pdf"))
+    welsh_t_test(dfs)

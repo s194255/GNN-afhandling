@@ -1,12 +1,18 @@
+import pickle
+
 import wandb
 import pandas as pd
 import json
 import numpy as np
 from src.redskaber import indlæs_yaml
+import os
+from tqdm import tqdm
 
-METRICS = {'test_loss_mean', "test_loss_std", "test_loss_lower", "test_loss_upper", "eftertræningsmængde"}
+METRICS = {'test_loss_mean', "test_loss_std", "test_loss_lower", "test_loss_upper", "eftertræningsmængde", "_runtime"}
 
 JSON_KEYS = {'fortræningsudgave', 'temperatur'}
+
+CACHE = "reports/cache"
 
 def is_suitable(run, gruppenavn: str):
     group = run.group
@@ -127,3 +133,36 @@ FORT_LABELLER = {'uden': 'Ingen fortræning',
             '3D-EMGP-globalt': '3D-EMGP kun globalt',
             '3D-EMGP-begge': '3D-EMGP'
             }
+
+
+def get_group_df(group):
+    if not os.path.exists(CACHE):
+        os.makedirs(CACHE)
+    cache_path = os.path.join(CACHE, f"{group}.pickle")
+    if os.path.exists(cache_path):
+        print("bruger cache")
+        with open(cache_path, 'rb') as f:
+            cache = pickle.load(f)
+        return cache['df']
+    else:
+        print("laver nyt cache")
+        gruppenavn = group.split("_")[0]
+        runs = wandb.Api().runs("afhandling")
+        runs = list(filter(lambda w: is_suitable(w, gruppenavn), runs))
+        runs_in_group, _, _, _, _ = get_loops_params(group, runs)
+        df = get_df(runs_in_group)
+        cache = {
+            'df': df
+        }
+        with open(cache_path, 'wb') as f:
+            pickle.dump(cache, f)
+        return df
+
+def get_loop_params_group_df(group_df):
+    fortræningsudgaver_usorteret = group_df['fortræningsudgave'].unique()
+    fortræningsudgaver = ['uden', '3D-EMGP-globalt', '3D-EMGP-begge', '3D-EMGP-lokalt', 'SelvvejledtQM9']
+    fortræningsudgaver = [f for f in fortræningsudgaver if f in fortræningsudgaver_usorteret]
+
+    temperaturer = group_df['temperatur'].unique()
+    seeds = group_df['seed'].unique()
+    return fortræningsudgaver, temperaturer, seeds
