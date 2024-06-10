@@ -34,7 +34,7 @@ def plot_kernel_baseline(ax, x_values, x, farve, df2=None):
     if df2 is not None:
         y = 100 * y / df2['test_loss_mean']
     ax.scatter(x, y, color=farve, marker="d", label="kernel baseline", s=80,
-               edgecolor=far.black)
+               edgecolor=far.black, zorder=3)
 
 
 
@@ -142,33 +142,41 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
     cols = ['normalized_test_loss']
     for c, col in enumerate(cols):
         ax = axs
-        ax.axhline(y=100, linestyle='--', color=far.purple, linewidth=3)
 
         # Plot søjlerne og prikkerne
         for i in range(num_models):
-
             fortræningsudgave = fortræningsudgaver[i]
             målinger = df1[df1['fortræningsudgave'] == fortræningsudgave][['eftertræningsmængde', col]]
             søjlehøjde = målinger.groupby('eftertræningsmængde').mean().reset_index()[col]
 
             if len(søjlehøjde) != len(x_values):
                 continue
-            bars = ax.bar(x + (i + 0.5 - num_models / 2) * bar_width, søjlehøjde,
-                          bar_width, color=farver[i], alpha=0.85)
+            bars = ax.bar(x + (i + 0.5 - num_models / 2) * bar_width, søjlehøjde, bar_width, color=farver[i],
+                          alpha=0.85, zorder=2)
             for j in range(len(x_values)):
                 prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]][col]
                 n2 = len(prikker)
                 label = LABELLER[fortræningsudgave] if j == 0 else None
-                ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
-                           color=farver[i], label=label, marker='o', edgecolor='black', alpha=1.0)
+                ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker, color=farver[i], label=label,
+                           marker='o', edgecolor='black', alpha=1.0, zorder=3)
 
-        plot_kernel_baseline(ax, x_values, x, farver[i + 1], df2)
+        if col == 'normalized_test_loss':
+            plot_kernel_baseline(ax, x_values, x, farver[i + 1], df2)
+            ax.axhline(y=100, linestyle='--', color=far.purple, linewidth=5,
+                       zorder=1)  # Tilføj zorder for at placere linjen bag prikkerne
 
-        ax.yaxis.set_major_locator(MultipleLocator(25))  # Hovedticks hver 1 enhed
-        ax.yaxis.set_minor_locator(AutoMinorLocator(5))  # Mindre ticks hver halve enhed
-        titel = f'{TITLER[temperatur]} (normaliseret)'
-        ylabel = 'Normaliseret MAE'
+            ax.yaxis.set_major_locator(MultipleLocator(25))  # Hovedticks hver 25 enheder
+            ax.yaxis.set_minor_locator(AutoMinorLocator(5))  # Mindre ticks hver 5 enheder
+            titel = f'{TITLER[temperatur]} (normaliseret)'
+            ylabel = 'Normaliseret MAE'
 
+        elif col == 'test_loss_mean':
+            plot_kernel_baseline(ax, x_values, x, farver[i + 1])
+            ax.set_yscale("log")
+            ax.yaxis.set_minor_formatter(ScalarFormatter())
+            ax.yaxis.set_major_formatter(ScalarFormatter())
+            titel = TITLER[temperatur]
+            ylabel = 'MAE'
 
         # Tilpasning af akserne og labels
         ax.set_xlabel('Datamængde', fontsize=16)
