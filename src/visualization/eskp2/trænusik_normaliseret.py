@@ -20,7 +20,7 @@ LABELLER = {'uden': 'Ingen fortræning',
             '3D-EMGP-begge': 'Begge'
             }
 
-FIGNAVN = 'trænusik2'
+FIGNAVN = 'trænusik2_normaliseret'
 ROOT = os.path.join('reports/figures/Eksperimenter/2', FIGNAVN)
 
 farver = [far.corporate_red, far.blue, far.navy_blue, far.bright_green, far.orange, far.yellow]
@@ -35,6 +35,8 @@ def plot_kernel_baseline(ax, x_values, x, farve, df2=None):
         y = 100 * y / df2['test_loss_mean']
     ax.scatter(x, y, color=farve, marker="d", label="kernel baseline", s=80,
                edgecolor=far.black)
+
+
 
 def plot_normaliseret_dobbelt(df1, fortræningsudgaver):
     # Opsætning for søjlerne
@@ -140,6 +142,7 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
     cols = ['normalized_test_loss']
     for c, col in enumerate(cols):
         ax = axs
+        ax.axhline(y=100, linestyle='--', color=far.purple, linewidth=3)
 
         # Plot søjlerne og prikkerne
         for i in range(num_models):
@@ -159,20 +162,13 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
                 ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
                            color=farver[i], label=label, marker='o', edgecolor='black', alpha=1.0)
 
-        if col == 'normalized_test_loss':
-            plot_kernel_baseline(ax, x_values, x, farver[i + 1], df2)
-            ax.yaxis.set_major_locator(MultipleLocator(25))  # Hovedticks hver 1 enhed
-            ax.yaxis.set_minor_locator(AutoMinorLocator(5))  # Mindre ticks hver halve enhed
-            titel = TITLER[temperatur]
-            ylabel = 'Normaliseret MAE'
+        plot_kernel_baseline(ax, x_values, x, farver[i + 1], df2)
 
-        elif col == 'test_loss_mean':
-            plot_kernel_baseline(ax, x_values, x, farver[i + 1])
-            ax.set_yscale("log")
-            ax.yaxis.set_minor_formatter(ScalarFormatter())
-            ax.yaxis.set_major_formatter(ScalarFormatter())
-            titel = TITLER[temperatur]
-            ylabel = 'MAE'
+        ax.yaxis.set_major_locator(MultipleLocator(25))  # Hovedticks hver 1 enhed
+        ax.yaxis.set_minor_locator(AutoMinorLocator(5))  # Mindre ticks hver halve enhed
+        titel = f'{TITLER[temperatur]} (normaliseret)'
+        ylabel = 'Normaliseret MAE'
+
 
         # Tilpasning af akserne og labels
         ax.set_xlabel('Datamængde', fontsize=16)
@@ -183,11 +179,7 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
         ax.legend(fontsize=12)
         ax.tick_params(axis='both', which='major', labelsize=16)
         ax.tick_params(axis='both', which='minor', labelsize=13)
-        # plt.tight_layout()
-        # ax.grid()
 
-    # fig.suptitle("Optøet", fontsize=25)
-    # plt.tight_layout(rect=[0, 0, 1, 0.999999999])
     plt.tight_layout()
     plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{FIGNAVN}.jpg"))
     plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{FIGNAVN}.pdf"))
