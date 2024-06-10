@@ -82,6 +82,9 @@ def get_rygrad_runid(run):
     config = json.loads(run.json_config)
     return config['rygrad runid']['value']
 
+def get_hidden_channels(run):
+    config = json.loads(run.json_config)
+    return config['args_dict']['value']['rygrad']['hidden_channels']
 
 def main_filter(run, temperatur, fortræningsudgave, seed):
     run_temperatur = get_temperatur(run)
@@ -109,6 +112,7 @@ def get_df(runs):
         resultat['seed'] = get_seed(run)
         resultat['fortræningsudgave'] = get_fortræningsudgave(run)
         resultat['temperatur'] = get_temperatur(run)
+        resultat['hidden_channels'] = get_hidden_channels(run)
 
         resultater = pd.concat([resultater, pd.DataFrame(data=resultat)], ignore_index=True)
     sel_cols = [col for col in resultater.columns if col not in not_met_cols]
