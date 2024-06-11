@@ -5,9 +5,6 @@ import src.visualization.farver as far
 from src.visualization import viz0
 from tqdm import tqdm
 import numpy as np
-from scipy.stats import norm
-import statsmodels.api as sm
-import pylab as py
 import seaborn as sns
 from scipy import stats
 
