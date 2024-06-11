@@ -11,20 +11,6 @@ import pylab as py
 import seaborn as sns
 from scipy import stats
 
-rod = 'reports/figures/Eksperimenter/3/statistisk_signifikans'
-udvalgte = ['eksp3_0']
-
-temperaturer = ['frossen', 'optøet']
-
-if os.path.exists(rod):
-    shutil.rmtree(rod)
-
-farveopslag = {
-    '3D-EMGP-lokalt': far.bright_green,
-    'uden': far.corporate_red
-}
-
-forv_fortræningsudgaver = ['uden', '3D-EMGP-lokalt']
 
 def violinplots(dfs):
     col = 'test_loss_mean'
@@ -87,16 +73,31 @@ def welsh_t_test(dfs):
     t, p = stats.ttest_ind(a, b, alternative=alternative, equal_var=equal_var)
     print(f"middelværdi af ingen fortræning = {np.mean(a)}")
     print(f"middelværdi af 3D-EMGP-lokalt = {np.mean(b)}")
+    print(f"sigma af ingen fortræning = {np.std(a)}")
+    print(f"sigma af 3D-EMGP-lokalt = {np.std(b)}")
     print(f"p-værdi = {p}")
 
 
+rod = 'reports/figures/Eksperimenter/3/statistisk_signifikans'
+groups = ['eksp3_0']
 
-groups, runs = viz0.get_groups_runs('eksp3')
+temperaturer = ['frossen', 'optøet']
+
+if os.path.exists(rod):
+    shutil.rmtree(rod)
+
+farveopslag = {
+    '3D-EMGP-lokalt': far.bright_green,
+    'uden': far.corporate_red
+}
+
+forv_fortræningsudgaver = ['uden', '3D-EMGP-lokalt']
+
+# groups, runs = viz0.get_groups_runs('eksp3')
 for group in tqdm(groups):
-    print(group)
-    if group not in udvalgte:
-        continue
-    runs_in_group, fortræningsudgaver, temperaturer_lp, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
+    group_df = viz0.get_group_df(group)
+    fortræningsudgaver, temperaturer_lp, seeds = viz0.get_loop_params_group_df(group_df)
+    # runs_in_group, fortræningsudgaver, temperaturer_lp, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
 
     assert set(fortræningsudgaver) == set(forv_fortræningsudgaver)
     assert set(temperaturer_lp) == {'optøet'}
@@ -108,8 +109,10 @@ for group in tqdm(groups):
 
     dfs = {}
     for i, fortræningsudgave in enumerate(fortræningsudgaver):
-        runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur, fortræningsudgave, None), runs_in_group))
-        df = viz0.get_df(runs_filtered)
+        # idxs = (group_df['fortræningsudgave'] == fortræningsudgave) & (group_df['temperatur'] == temperatur)
+        idxs = (group_df['fortræningsudgave'] == fortræningsudgave)
+        idxs = idxs & (group_df['temperatur'] == temperatur)
+        df = group_df[idxs]
         dfs[fortræningsudgave] = df
 
     violinplots(dfs)
