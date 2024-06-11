@@ -48,11 +48,13 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-8dxl194x:v0
+  - uden
 temperaturer:
   - optøet
 seeds:
-  - null
+  - 876
+  - 537
 run_baseline: false
 gruppenavn: eksp6
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 0
+kørselsid: 1

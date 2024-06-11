@@ -132,10 +132,10 @@ def main_filter2(run, rygrad_runid):
 
 FORT_LABELLER = {'uden': 'Ingen fortræning',
             'Selvvejledt': '3D-EMGP',
-            'SelvvejledtQM9': 'QM9 fortræning',
-            '3D-EMGP-lokalt': '3D-EMGP kun lokalt',
-            '3D-EMGP-globalt': '3D-EMGP kun globalt',
-            '3D-EMGP-begge': '3D-EMGP'
+            'SelvvejledtQM9': 'QM9-fortræning',
+            '3D-EMGP-lokalt': 'Lokalt',
+            '3D-EMGP-globalt': 'Globalt',
+            '3D-EMGP-begge': 'Begge'
             }
 
 
