@@ -3,10 +3,11 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 5
+  n_trin: 20
   spænd:
-    - 30
-    - 500
+    - 10
+    - 2000
+  space_type: geomspace
   val_reduced: true
   name: QM9
 Downstream:
@@ -46,19 +47,12 @@ Downstream:
       log_gradient: false
 rygradtype: visnet
 udgaver:
-  - uden
   - s194255/afhandling/model-8dxl194x:v0
-  - s194255/afhandling/model-u1eb0flg:v0
-  - s194255/afhandling/model-eair1kzv:v0
-  - s194255/afhandling/model-av6l2023:v0
 temperaturer:
   - optøet
 seeds:
-  - 542
-  - 310
-  - 298
-  - 76
+  - null
 run_baseline: false
-gruppenavn: eksp2
+gruppenavn: eksp6
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 83
+kørselsid: 0

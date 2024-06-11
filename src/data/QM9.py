@@ -12,6 +12,7 @@ import itertools
 from torch_geometric.data.data import BaseData
 from src.models.redskaber import RiemannGaussian
 import yaml
+import numpy as np
 
 with open("config/data_roots.yaml", encoding='utf-8') as f:
     data_roots_dict = yaml.safe_load(f)
@@ -167,18 +168,26 @@ class QM9ByggerEksp2(QM9Bygger):
                  spænd: List,
                  n_trin: int,
                  val_reduced: bool,
+                 space_type = 'linspace',
                  **kwargs):
         super().__init__(*args, **kwargs)
         self.spænd = spænd
         self.n_trin = n_trin
         self.trin = None
         self.val_reduced = val_reduced
+        self.space_type = space_type
 
 
     @property
     def eftertræningsandele(self) -> torch.Tensor:
         n = len(self.data_splits[False]['train'])
-        eftertræningsandele = torch.linspace(self.spænd[0], self.spænd[1], steps=self.n_trin) / n
+        if self.space_type == 'linspace':
+            eftertræningsandele = torch.linspace(self.spænd[0], self.spænd[1], steps=self.n_trin) / n
+        elif self.space_type == 'geomspace':
+            eftertræningsandele = np.geomspace(self.spænd[0], self.spænd[1], num=self.n_trin) / n
+            eftertræningsandele = torch.from_numpy(eftertræningsandele)
+        else:
+            raise NotImplementedError
         eftertræningsandele = eftertræningsandele.clip(min=0, max=1)
         return eftertræningsandele
 
