@@ -11,10 +11,10 @@ TITLER = {'frossen': "Frossen rygrad",
 
 LABELLER = {'uden': 'Ingen fortræning',
             'Selvvejledt': '3D-EMGP',
-            'SelvvejledtQM9': 'QM9 fortræning',
-            '3D-EMGP-lokalt': '3D-EMGP kun lokalt',
-            '3D-EMGP-globalt': '3D-EMGP kun globalt',
-            '3D-EMGP-begge': '3D-EMGP'
+            'SelvvejledtQM9': 'QM9-fortræning',
+            '3D-EMGP-lokalt': 'Lokalt',
+            '3D-EMGP-globalt': 'Globalt',
+            '3D-EMGP-begge': 'Begge'
             }
 
 FIGNAVN = 'samfattabel'
@@ -41,24 +41,27 @@ for group in tqdm(groups):
 
     runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur, fortræningsudgave=None, seed=None), runs_in_group))
     df = viz0.get_df(runs_filtered)
-    out_df = {'datamængde': []}
-    out_df = {**out_df, **{fortræningsudgave: [] for fortræningsudgave in fortræningsudgaver}}
-    out_df = pd.DataFrame(data=out_df)
 
     x_values = df['eftertræningsmængde'].unique()
     x_values.sort()
+    x_values = x_values.astype(int)
 
-    for x_value in x_values:
-        linje = {'datamængde': [x_value]}
-        for fortræningsudgave in fortræningsudgaver:
+    out_df = {'Fortræningsudgave': []}
+    out_df = {**out_df, **{x_value: [] for x_value in x_values}}
+    out_df = pd.DataFrame(data=out_df)
+
+
+    for fortræningsudgave in fortræningsudgaver:
+        linje = {'Fortræningsudgave': [LABELLER[fortræningsudgave]]}
+        for x_value in x_values:
             idxs = (df['fortræningsudgave'] == fortræningsudgave) & (df['eftertræningsmængde'] == x_value)
             målinger = df[idxs][['eftertræningsmængde', 'test_loss_mean']]
             søjlehøjde = målinger['test_loss_mean'].mean()
-            linje[fortræningsudgave] = [søjlehøjde]
+            linje[x_value] = [søjlehøjde]
         out_df = pd.concat([out_df, pd.DataFrame(data=linje)], ignore_index=True)
     print(out_df)
     # out_df = out_df.round(2)
-    latex_table = out_df.to_latex(index=False, float_format="%.2f")
+    latex_table = out_df.to_latex(index=False, float_format="%.2f", column_format="l|ccccc")
     path = os.path.join(kørsel_path, f"{temperatur}_trænusik.tex")
     with open(path, 'w', encoding='utf-8') as f:
         f.write(latex_table)
