@@ -10,7 +10,6 @@ from tqdm import tqdm
 import copy
 print("færdig med at importere ...")
 
-#%%
 
 def plot(group_df: pd.DataFrame):
     for temperatur in temperaturer:
