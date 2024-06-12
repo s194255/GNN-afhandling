@@ -6,7 +6,6 @@ import json
 import numpy as np
 from src.redskaber import indlæs_yaml
 import os
-from tqdm import tqdm
 
 METRICS = {'test_loss_mean', "test_loss_std", "test_loss_lower", "test_loss_upper", "eftertræningsmængde", "_runtime"}
 
