@@ -2,8 +2,7 @@ print("importerer ...")
 import shutil
 import os
 import matplotlib.pyplot as plt
-from src.visualization.farver import farver
-# from src.visualization import viz0
+from src.visualization.farver import farver, blue, corporate_red, bright_green
 from src.visualization.viz0 import get_group_df, get_loop_params_group_df
 import pandas as pd
 from tqdm import tqdm
@@ -13,7 +12,7 @@ print("færdig med at importere ...")
 
 def plot(group_df: pd.DataFrame):
     for temperatur in temperaturer:
-        fig, ax = plt.subplots(1, 1, figsize=(10, 6))
+        fig, ax = plt.subplots(1, 1, figsize=(48, 6))
         # fig, ax = plt.figure(figsize=(10,6))
 
         i = 0
@@ -27,9 +26,8 @@ def plot(group_df: pd.DataFrame):
             df = df.groupby(by='eftertræningsmængde').mean().reset_index()
 
             label = LABELLER[fortræningsudgave]
-            ax.plot(df["eftertræningsmængde"], df[f"test_loss_mean"], label=label, color=farver[i])
-            # ax.fill_between(df["eftertræningsmængde"], df[f"test_loss_lower"], df[f"test_loss_upper"],
-            #                 color=farver[i], alpha=0.3)
+            color = farveopslag[fortræningsudgave]
+            ax.plot(df["eftertræningsmængde"], df[f"test_loss_mean"], label=label, color=color)
             i += 1
         ax.set_xlabel("Datamængde", fontsize=22)
         ax.set_ylabel("MAE", fontsize=22)
@@ -40,7 +38,7 @@ def plot(group_df: pd.DataFrame):
 
         plt.tight_layout()
         for ext in ['jpg', 'pdf']:
-            plt.savefig(os.path.join(kørsel_path, f"{temperatur}_konvergens.{ext}"))
+            plt.savefig(os.path.join(kørsel_path, f"{temperatur}_konvergens2.{ext}"))
         plt.close()
 
 
@@ -56,9 +54,14 @@ LABELLER = {'uden': 'Ingen fortræning',
             '3D-EMGP-globalt': 'Globalt',
             '3D-EMGP-begge': 'Begge'
             }
+farveopslag = {
+    'uden': corporate_red,
+    '3D-EMGP-lokalt': bright_green
+}
 
-groups = ['eksp6_1']
-for group in tqdm(groups):
+GROUPS = ['eksp6_1']
+
+for group in tqdm(GROUPS):
     group_df = get_group_df(group)
     fortræningsudgaver, temperaturer, seeds = get_loop_params_group_df(group_df)
 

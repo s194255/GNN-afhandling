@@ -96,8 +96,8 @@ def main_filter(run, temperatur, fortræningsudgave, seed):
     return True
 
 def kernel_baseline():
-    x1, y1 = 100, 1.0*10**3
-    x2, y2 = 20*10**3, 0.12*10**3
+    x1, y1 = 100, 1.16*10**3
+    x2, y2 = 19277.496, 0.152*10**3
     a = (np.log(y2)-np.log(y1)) / (np.log(x2) - np.log(x1))
     b = y1/x1**a
     return lambda x: b*x**a
@@ -169,3 +169,40 @@ def get_loop_params_group_df(group_df):
     temperaturer = group_df['temperatur'].unique()
     seeds = group_df['seed'].unique()
     return fortræningsudgaver, temperaturer, seeds
+
+
+def set_size(fraction=1):
+    """Set figure dimensions to avoid scaling in LaTeX.
+
+    Parameters
+    ----------
+
+    fraction: float, optional
+            Fraction of the width which you wish the figure to occupy
+
+    Returns
+    -------
+    fig_dim: tuple
+            Dimensions of figure in inches
+    """
+    textwidth = 426.79135
+
+    # Width of figure (in pts)
+    fig_width_pt = textwidth * fraction
+
+    # Convert from pt to inches
+    inches_per_pt = 1 / 72.27
+
+    # Golden ratio to set aesthetic figure height
+    # https://disq.us/p/2940ij3
+    golden_ratio = (5**.5 - 1) / 2
+
+    # Figure width in inches
+    fig_width_in = fig_width_pt * inches_per_pt
+    # Figure height in inches
+    fig_height_in = fig_width_in * golden_ratio
+
+    fig_dim = (fig_width_in, fig_height_in)
+
+    return fig_dim
+
