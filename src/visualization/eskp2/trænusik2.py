@@ -23,8 +23,7 @@ FIGNAVN = 'trænusik2'
 ROOT = os.path.join('reports/figures/Eksperimenter/2', FIGNAVN)
 
 farver = [far.corporate_red, far.blue, far.navy_blue, far.bright_green, far.orange, far.yellow]
-stjerner = viz0.get_stjerner()
-print(stjerner)
+
 
 def plot_kernel_baseline(ax, x_values, x, farve):
     kernel = viz0.kernel_baseline()
@@ -47,6 +46,8 @@ def plot(df, fortræningsudgaver):
     x = np.arange(len(x_values))
 
     # Opret figuren og akserne
+    # figsize = viz0.set_size(1.0)
+    # print(figsize)
     fig, ax = plt.subplots(figsize=(9, 7))
     # fig, ax = plt.subplots()
 
@@ -90,19 +91,24 @@ def plot(df, fortræningsudgaver):
 if os.path.exists(ROOT):
     shutil.rmtree(ROOT)
 
-groups, runs = viz0.get_groups_runs('eksp2')
+stjerner = viz0.get_stjerner()
+print(stjerner)
+groups = [f'eksp2_{stjerne}' for stjerne in stjerner]
+
+# groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):
-    if stjerner != None:
-        if group not in [f'eksp2_{udvalgt}' for udvalgt in stjerner]:
-            continue
-    runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
-    eftertræningsmængder = viz0.get_eftertræningsmængder(group, runs)
+    group_df = viz0.get_group_df(group)
+    fortræningsudgaver, temperaturer, seeds = viz0.get_loop_params_group_df(group_df)
+    eftertræningsmængder = group_df['eftertræningsmængde'].unique()
     assert len(temperaturer) == 1
     temperatur = list(temperaturer)[0]
     kørsel_path = os.path.join(ROOT, group)
     os.makedirs(kørsel_path)
 
-    runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur, fortræningsudgave=None, seed=None), runs_in_group))
-    df = viz0.get_df(runs_filtered)
+    # runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur, fortræningsudgave=None, seed=None), runs_in_group))
+    idxs = group_df['temperatur'] == temperatur
+    df = group_df[idxs]
+    # df = viz0.get_df(runs_filtered)
 
-    plot(df, fortræningsudgaver)
+    with plt.rc_context({'font.family': 'sans-serif', 'font.sans-serif': ['Arial']}):
+        plot(df, fortræningsudgaver)
