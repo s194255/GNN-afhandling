@@ -1,0 +1,13 @@
+Til næste gennemkørsel af Dyst:
+
+1)
+Fortræ "global" skal have samme lr som de tre andre (den skal have 3.0e-05)
+
+2)
+Alle fortræer skal træne i 100 epoker
+
+3)
+Vægtforfald skal sættes ned til 1.0e-03 under nedstrøm
+
+4)
+Lavere vægtforfald under fortræning?
