@@ -80,7 +80,7 @@ def get_group_dfs(runid):
 
 
 def plot(data: dict):
-    fig, axs = plt.subplots(4, 2, figsize=(20, 25))  # Øget figurstørrelse for bedre plads
+    fig, axs = plt.subplots(4, 2, figsize=(20, 15))  # Øget figurstørrelse for bedre plads
     titles = ['Træningstab', 'Valideringstab']  # Tilføjet titler for subplots
 
     for i, (fortræ, df_dict) in enumerate(data.items()):
@@ -93,24 +93,24 @@ def plot(data: dict):
             df = df[[X_COL, col]].dropna(how='any')
             label = LABELLER[fortræ]
             ax.plot(df[X_COL]*e_p_s, df[col], color=farve, label=label)
-            ax.set_ylabel('MAE', fontsize=35)
-            ax.tick_params(axis='both', which='major', labelsize=35)
-            ax.tick_params(axis='both', which='minor', labelsize=32)
+            ax.set_ylabel('MAE', fontsize=30)
+            ax.tick_params(axis='both', which='major', labelsize=25)
+            ax.tick_params(axis='both', which='minor', labelsize=20)
             ax.grid(True)  # Tilføj grid for bedre læsbarhed
             ax.set_yscale('log')
             if j == 0:
-                ax.legend(fontsize=45)
+                ax.legend(fontsize=30)
 
             if i == 0:
-                ax.set_title(titles[j], fontsize=40)  # Tilføjelse af titler til subplots
+                ax.set_title(titles[j], fontsize=30)  # Tilføjelse af titler til subplots
 
             if i == len(data.items())-1:
-                ax.set_xlabel('Epoke', fontsize=40)
+                ax.set_xlabel('Epoke', fontsize=30)
             # else:
             #     ax.set_xticklabels([])
 
     plt.tight_layout()
-    plt.subplots_adjust(top=0.92)
+    # plt.subplots_adjust(top=0.92)
     # fig.suptitle('Fortræningernes træningsmetrikker', fontsize=45)  # Tilføj hovedtitel
     plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.jpg"))
     plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.pdf"))

@@ -10,4 +10,4 @@ Alle fortræer skal træne i 100 epoker
 Vægtforfald skal sættes ned til 1.0e-03 under nedstrøm
 
 4)
-Lavere vægtforfald under fortræning?
+Lavere vægtforfald under fortræning? Ja, måske bare skrue ned 1.0e-03
