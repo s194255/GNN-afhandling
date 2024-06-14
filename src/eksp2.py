@@ -100,10 +100,14 @@ class Eksp2:
                             )
         return trainer
 
-    def create_downstream(self, udgave, temperatur) -> Tuple[m.DownstreamQM9, str]:
+    def create_downstream(self, udgave, temperatur, lag) -> Tuple[m.DownstreamQM9, str]:
         args_dict = copy.deepcopy(self.config['Downstream'][temperatur]['model'])
         metadata = self.qm9Bygger2Hoved.get_metadata('train_reduced')
         name = self.config['datasæt']['name']
+        if lag is not None:
+            print(f'nu sætter jeg et lag = {lag}')
+            args_dict['hoved']['num_layers'] = lag
+
         if udgave != 'uden':
             selvvejledt, qm9bygger, _, run_id = r.get_selvvejledt_fra_wandb(self.config, udgave)
             assert self.qm9Bygger2Hoved.eq_data_split(qm9bygger)
@@ -119,7 +123,7 @@ class Eksp2:
             run_id = None
 
         return downstream, run_id
-    def eftertræn(self, udgave, temperatur, seed, i) -> None:
+    def eftertræn(self, udgave, temperatur, seed, i, lag) -> None:
         assert temperatur in ['frossen', 'optøet']
         if seed != None:
             print(f"jeg planter frøet {seed}")
@@ -127,7 +131,8 @@ class Eksp2:
         else:
             print("jeg planter ikke noget frø")
         self.qm9Bygger2Hoved.sample_train_reduced(i)
-        downstream, run_id = self.create_downstream(udgave, temperatur)
+
+        downstream, run_id = self.create_downstream(udgave=udgave, temperatur=temperatur, lag=lag)
         if temperatur == "frossen":
             downstream.frys_rygrad()
         logger_config = {'fortræningsudgave': downstream.fortræningsudgave,
@@ -159,9 +164,12 @@ class Eksp2:
         wandb.finish()
 
     def main(self):
-        løkke = product(self.config['temperaturer'], self.seeds, range(self.qm9Bygger2Hoved.n_trin), self.config['udgaver'])
-        for temperatur, seed, i, udgave in løkke:
-            self.eftertræn(udgave, temperatur, seed, i)
+
+        løkke = product(self.config['temperaturer'], self.config['lag_liste'], self.seeds,
+                        range(self.qm9Bygger2Hoved.n_trin), self.config['udgaver'])
+        for temperatur, lag, seed, i, udgave in løkke:
+            self.eftertræn(udgave=udgave, temperatur=temperatur,
+                           seed=seed, i=i, lag=lag)
 
 
 if __name__ == "__main__":

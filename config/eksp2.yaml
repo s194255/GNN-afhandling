@@ -51,6 +51,8 @@ udgaver:
   - uden
 temperaturer:
   - optøet
+lag_liste:
+  - None
 seeds:
   - 370
 run_baseline: false
