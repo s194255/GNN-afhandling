@@ -52,9 +52,14 @@ udgaver:
 temperaturer:
   - optøet
 lag_liste:
-  - None
+  - 1
+  - 2
+  - 4
+  - 8
+  - 16
 seeds:
-  - 370
+  - 803
+  - 193
 run_baseline: false
 gruppenavn: eksp7
 data_path: s194255/afhandling/model-38styzwu:v0
