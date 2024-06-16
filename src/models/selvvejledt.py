@@ -70,17 +70,32 @@ class Selvvejledt(Grundmodel):
         tabsopslag = self(data)
         tabsopslag = {nøgle: self.lambdaer[nøgle]*værdi for nøgle, værdi in tabsopslag.items()}
         loss = sum([værdi for værdi in tabsopslag.values()])
-        self.log("train_loss", loss.item(), batch_size=data.batch_size)
+        log_dict = {"train_loss": loss.item()}
+        # self.log("train_loss", loss.item(), batch_size=data.batch_size)
         for nøgle in self.hoved.tabsnøgler:
-            self.log(f"train_{nøgle}_loss", tabsopslag[nøgle].item(), batch_size=data.batch_size)
+            log_dict[f"train_{nøgle}_loss"] = tabsopslag[nøgle].item()
+            # self.log(f"train_{nøgle}_loss", tabsopslag[nøgle].item(), batch_size=data.batch_size)
+        self.log_dict(log_dict, batch_size=data.batch_size)
         return loss
 
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
             tabsopslag = self(data)
-        loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
-        self.log("val_loss", loss.item(), batch_size=data.batch_size)
+
+        tabsopslag = {nøgle: self.lambdaer[nøgle] * værdi for nøgle, værdi in tabsopslag.items()}
+        loss = sum([værdi for værdi in tabsopslag.values()])
+        log_dict = {"val_loss": loss.item()}
+        # self.log("train_loss", loss.item(), batch_size=data.batch_size)
+        for nøgle in self.hoved.tabsnøgler:
+            log_dict[f"val_{nøgle}_loss"] = tabsopslag[nøgle].item()
+            # self.log(f"train_{nøgle}_loss", tabsopslag[nøgle].item(), batch_size=data.batch_size)
+        self.log_dict(log_dict, batch_size=data.batch_size)
         return loss
+
+
+        # loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
+        # self.log("val_loss", loss.item(), batch_size=data.batch_size)
+        # return loss
 
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():

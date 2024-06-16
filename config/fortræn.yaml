@@ -13,7 +13,7 @@ rygradtype: visnet
 Selvvejledt:
   variant1:
     check_val_every_n_epoch: 1
-    log_every_n_steps: 1
+    log_every_n_steps: 10
     epoker: 100
     min_delta: 0.001
     model:
@@ -30,7 +30,7 @@ Selvvejledt:
       noise_til: 1
       n_noise_trin: 50
       log_gradient: false
-      weight_decay: 1.0e-4
+      weight_decay: 1.0e-5
     patience: 20
 SelvvejledtQM9:
   variant1:

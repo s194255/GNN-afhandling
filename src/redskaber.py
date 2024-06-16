@@ -95,7 +95,7 @@ def debugify_config(config):
     config['datasæt']['n_trin'] = 1
     for opgave in get_opgaver_in_config(config):
         for variant in config[opgave].keys():
-            config[opgave][variant]['epoker'] = 1
+            config[opgave][variant]['epoker'] = 3
             config[opgave][variant]['check_val_every_n_epoch'] = 1
             config[opgave][variant]['model']['rygrad']['hidden_channels'] = 8
 
