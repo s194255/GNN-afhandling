@@ -46,11 +46,12 @@ def plot(group_df: pd.DataFrame):
 
     x_margin = 1000
     y_margin = 1000
-    plt.gca().set_xlim([group_df['_runtime'].min() - x_margin, group_df['_runtime'].max() + x_margin])
-    plt.gca().set_ylim([group_df['test_loss_mean'].min() - y_margin, group_df['test_loss_mean'].max() + y_margin])
+    ax = plt.gca()
+    ax.set_xlim([group_df['_runtime'].min() - x_margin, group_df['_runtime'].max() + x_margin])
+    ax.set_ylim([group_df['test_loss_mean'].min() - y_margin, group_df['test_loss_mean'].max() + y_margin])
 
-    plt.gca().tick_params(axis='both', which='major', labelsize=15)
-    plt.gca().tick_params(axis='both', which='minor', labelsize=15)
+    ax.tick_params(axis='both', which='major', labelsize=15)
+    ax.tick_params(axis='both', which='minor', labelsize=15)
 
     # Tilføj grid og vis plot
     plt.grid(True)
