@@ -55,10 +55,10 @@ FORTRÆ_COLS  = {
     'SelvvejledtQM9': ['train_loss', 'val_loss']
 }
 COL_TITEL = {
-    'train_loss': 'Træningstab (samlet)',
-    'val_loss': 'Valideringstab',
-    'train_lokalt_loss': 'Lokalt tab',
-    'train_globalt_loss': 'Globalt tab',
+    'train_loss': 'Træn samlet',
+    'val_loss': 'Val samlet',
+    'train_lokalt_loss': 'Træn lokalt',
+    'train_globalt_loss': 'Træn globalt',
 }
 X_COL = 'trainer/global_step'
 
@@ -81,6 +81,11 @@ def get_group_dfs(runid):
         for col in COLS:
             df = run.history(samples=10000, keys=[X_COL, col])
             dfs[col] = df
+            try:
+                if len(df) != len(df[[X_COL, col]].dropna(how='any')):
+                    print("nan fundet under fremstilling af cache")
+            except KeyError:
+                pass
         dfs['epoch'] = run.history(samples=10000, keys=['epoch'])
         cache = {
             'dfs': dfs
@@ -90,12 +95,17 @@ def get_group_dfs(runid):
         return dfs
 
 
+# def plot_nan(df: pd.DataFrame, ax: plt.Axes):
+
+
 def make_table(data: dict):
-    new_df = {col: [] for col in COLS}
+    h = lambda col: f'{COL_TITEL[col]}'.lower()
+    new_df = {h(col): [] for col in COLS}
     new_df = {**{'fortræningsudgave': []}, **new_df}
     new_df = pd.DataFrame(data=new_df)
     for fortræ, df_dict in data.items():
-        new_df_linje = {'fortræningsudgave': [fortræ]}
+        fortræningsudgave = LABELLER[fortræ]
+        new_df_linje = {'fortræningsudgave': [fortræningsudgave]}
         for col in COLS:
             if fortræ == 'SelvvejledtQM9' and col in ['train_lokalt_loss', 'train_globalt_loss']:
                 continue
@@ -103,18 +113,26 @@ def make_table(data: dict):
             df[col] = df[col].apply(pd.to_numeric, errors='coerce')
             df = df.dropna(how='any')
             try:
-                new_df_linje[col] = [df[col].min()]
+                new_df_linje[h(col)] = [df[col].min()]
             except TypeError:
-                a = 2
+                pass
         new_df = pd.concat([new_df, pd.DataFrame(data=new_df_linje)], ignore_index=True)
+
+    formatted_df = new_df.map(lambda x: f'{x:.2e}' if isinstance(x, (float, int)) else x)
+    # formatted_df['fortræningsudgave'] = formatted_df['fortræningsudgave'].apply(lambda x: f'\\textbf{{{x}}}')
+    latex_table = formatted_df.to_latex(index=False, escape=False, column_format='l|cccc')
+    lines = latex_table.splitlines()
+    lines.insert(2, '\\midrule')
+    latex_table = '\n'.join(lines)
+
+    latex_table = f"\\begin{{small}}\n{latex_table}\n\\end{{small}}"
+    with open(os.path.join(kørsel_path, "minima.tex"), "w", encoding='utf-8') as f:
+        f.write(latex_table)
 
 
 def plot(data: dict):
-    # fig, axs = plt.subplots(4, len(COLS), figsize=(40, 30))  # Øget figurstørrelse for bedre plads
-    # titles = ['Træningstab', 'Valideringstab']  # Tilføjet titler for subplots
-
     for i, (fortræ, df_dict) in enumerate(data.items()):
-        farve = farveopslag.get(fortræ, 'blue')  # Standardfarve hvis fortræ ikke findes i farveopslag
+        farve = farveopslag.get(fortræ, 'blue')
         cols = FORTRÆ_COLS[fortræ]
         fig, axs = plt.subplots(1, len(cols), figsize=(40, 10))
         for j, col in enumerate(cols):
@@ -123,18 +141,25 @@ def plot(data: dict):
             ax = axs[j]
             df = df_dict[col]
             e_p_s = df_dict['epoch']['epoch'].max() / df[X_COL].max()
-            df = df[[X_COL, col]].dropna(how='any')
+
+
+            df[col] = df[col].apply(pd.to_numeric, errors='coerce')
+
+            col_intp = f'col_intp'
+            nan_indices =  df[col].isna()
+            df[col_intp] = df[col].interpolate()
+            if nan_indices.sum() > 0:
+                ax.scatter(df[X_COL][nan_indices]*e_p_s, df[col_intp][nan_indices],
+                           color='#f4151a', marker='x', s=150)
             label = LABELLER[fortræ]
-            ax.plot(df[X_COL]*e_p_s, df[col], color=farve, label=label)
+            ax.plot(df[X_COL] * e_p_s, df[col], color=farve, label=label)
             if j == 0:
                 ax.set_ylabel('MAE', fontsize=50)
-            ax.tick_params(axis='both', which='major', labelsize=35)
-            ax.tick_params(axis='both', which='minor', labelsize=30)
+            ax.tick_params(axis='both', which='major', labelsize=45)
+            ax.tick_params(axis='both', which='minor', labelsize=40)
             ax.grid(True)  # Tilføj grid for bedre læsbarhed
             ax.set_yscale('log')
             ax.set_xscale('log')
-            # ax.xaxis.set_minor_formatter(ScalarFormatter())
-            # ax.xaxis.set_major_formatter(ScalarFormatter())
 
             max_epoch = df[X_COL].max() * e_p_s
             xticks = np.logspace(0, np.log10(max_epoch), num=5)  # Adjust the number of ticks with 'num'
@@ -155,8 +180,12 @@ def plot(data: dict):
         plt.tight_layout()
         # plt.subplots_adjust(top=0.92)
         # fig.suptitle('Fortræningernes træningsmetrikker', fontsize=45)  # Tilføj hovedtitel
-        plt.savefig(os.path.join(kørsel_path, f"{fortræ}.jpg"))
-        plt.savefig(os.path.join(kørsel_path, f"{fortræ}.pdf"))
+        for ext in ['jpg', 'pdf']:
+            if not os.path.exists(os.path.join(kørsel_path, f'{ext}s')):
+                os.mkdir(os.path.join(kørsel_path, f'{ext}s'))
+            plt.savefig(os.path.join(kørsel_path, f'{ext}s', f"{fortræ}.{ext}"))
+        # plt.savefig(os.path.join(kørsel_path, f"{fortræ}.jpg"))
+        # plt.savefig(os.path.join(kørsel_path, f"{fortræ}.pdf"))
         plt.legend()
         plt.close()
 
@@ -176,7 +205,7 @@ for fortræ, runid in STJERNER.items():
     group_dfs = get_group_dfs(runid)
     data[fortræ] = group_dfs
 plot(data)
-# make_table(data)
+make_table(data)
 
 
 # dfs = {}

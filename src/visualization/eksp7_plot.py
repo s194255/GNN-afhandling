@@ -19,7 +19,7 @@ print("færdig med at importere")
 rod = 'reports/figures/Eksperimenter/7'
 temperaturer = ['frossen', 'optøet']
 FIGNAVN = 'effekt_v_n_lag'
-groups = ['eksp7_0']
+groups = ['eksp7_1']
 farveopslag = {
     '3D-EMGP-lokalt': bright_green,
     'uden': corporate_red
