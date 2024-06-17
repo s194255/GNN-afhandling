@@ -68,7 +68,8 @@ def get_trainer(epoker, logger=None, log_every_n_steps=None):
 
 
 def get_opgaver_in_config(config):
-    return list(set(config.keys())-(set(config.keys()) - {'Downstream', 'Selvvejledt', 'SelvvejledtQM9'}))
+    return list(set(config.keys())-(set(config.keys()) - {'Downstream', 'Selvvejledt', 'SelvvejledtQM9',
+                                                          'QM9', 'MD17'}))
 
 def load_config(path):
     with open(path, encoding='utf-8') as f:
