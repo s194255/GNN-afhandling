@@ -8,13 +8,13 @@ datasæt:
     - 500
     - 2000
   val_reduced: false
-  name: QM9
+  name: MD17
 rygradtype: visnet
 Selvvejledt:
   variant1:
     check_val_every_n_epoch: 1
     log_every_n_steps: 10
-    epoker: 100
+    epoker: 50
     min_delta: 0.001
     model:
       hovedtype: klogt_reg
@@ -30,7 +30,7 @@ Selvvejledt:
       noise_til: 1
       n_noise_trin: 50
       log_gradient: false
-      weight_decay: 1.0e-5
+      weight_decay: 1.0e-2
     patience: 20
 SelvvejledtQM9:
   variant1:
@@ -46,6 +46,6 @@ SelvvejledtQM9:
       weight_decay: 1.0e-03
       loss: L1
     seed: 42
-qm9_path: s194255/afhandling/model-38styzwu:v0
+qm9_path: s194255/afhandling/model-bepmru9f:v0
 modelklasse: Selvvejledt
 ckpt: null
