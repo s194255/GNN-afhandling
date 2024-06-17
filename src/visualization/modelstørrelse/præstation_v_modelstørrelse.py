@@ -10,6 +10,7 @@ from src.visualization.farver import corporate_red, blue, white
 from src.visualization.viz0 import get_group_df
 from tqdm import tqdm
 import numpy as np
+from matplotlib.lines import Line2D
 # from scipy.stats import norm, ttest_ind
 # import statsmodels.api as sm
 # import pylab as py
@@ -87,6 +88,7 @@ def plot(group_df: pd.DataFrame):
     plt.tight_layout()
     plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.jpg"))
     plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.pdf"))
+    plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.svg"))
     plt.close()
 
 def plot2(group_df: pd.DataFrame):

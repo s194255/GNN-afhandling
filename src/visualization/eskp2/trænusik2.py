@@ -8,8 +8,8 @@ from tqdm import tqdm
 from src.visualization import viz0
 import numpy as np
 
-TITLER = {'frossen': "Frossen rygrad",
-          'optøet': "Optøet rygrad"}
+TITLER = {'frossen': "Dyst (frossen)",
+          'optøet': "Dyst"}
 
 LABELLER = {'uden': 'Ingen fortræning',
             'Selvvejledt': '3D-EMGP',

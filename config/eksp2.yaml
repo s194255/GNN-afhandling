@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 1
+  n_trin: 5
   spænd:
-    - 265
-    - 265
+    - 30
+    - 500
   space_type: linspace
   val_reduced: true
   name: QM9
@@ -48,22 +48,13 @@ Downstream:
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-8dxl194x:v0
-  - uden
 temperaturer:
   - optøet
 lag_liste:
-  - 1
-  - 2
-  - 3
-  - 4
-  - 5
-  - 6
-  - 7
-  - 8
+  - null
 seeds:
-  - 991
-  - 985
+  - 3
 run_baseline: false
-gruppenavn: eksp7
+gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 1
+kørselsid: 0
