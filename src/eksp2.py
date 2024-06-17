@@ -25,9 +25,6 @@ DOWNSTREAMKLASSER = {
     'MD17': m.DownstreamMD17
 }
 
-
-# torch.set_float32_matmul_precision('medium')
-
 def debugify_config(config):
     config['datasæt']['debug'] = True
     config['datasæt']['batch_size'] = 4
