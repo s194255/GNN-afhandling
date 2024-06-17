@@ -105,10 +105,15 @@ class QM9Bygger(L.LightningDataModule):
         assert sum([len(self.data_splits[False][task]) for task in self.tasks]) == len(self.mother_indices)
 
     def state_dict(self):
-        state = {'data_splits': self.data_splits}
+        state = {
+            'data_splits': self.data_splits,
+            'name': self.name
+        }
         return state
 
-    def load_state_dict(self, state_dict):
+    def load_state_dict(self, state_dict: dict):
+        stdct_name = state_dict.get('name', 'QM9')
+        assert stdct_name == self.name, f'Du forsøger at læse et {stdct_name}-state_dict ind på et {self.name}-datasæt'
         self.data_splits = state_dict['data_splits']
 
     def get_dataloader(self, task, shuffle):
