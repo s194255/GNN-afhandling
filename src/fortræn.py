@@ -21,10 +21,11 @@ def main():
         r.debugify_config(config)
 
     modelklasse_str = config['modelklasse']
-    args_dict = config[modelklasse_str]['variant1']['model']
+    name = config['datasæt']['name']
+    args_dict = config[modelklasse_str][name]['model']
     datasæt_dict = config['datasæt']
     tags = ['selvvejledt', 'qm9bygger']
-    epoker = config[modelklasse_str]['variant1']['epoker']
+    epoker = config[modelklasse_str][name]['epoker']
     if config['ckpt']:
         selvvejledt, qm9bygger, artefakt_sti, _ = r.get_selvvejledt_fra_wandb(config, config['ckpt'])
         epoker += r.get_n_epoker(artefakt_sti)
@@ -37,7 +38,7 @@ def main():
 
     logger_config = {'opgave': 'fortræn'}
     logger = r.wandbLogger(log_model=True, tags=tags, logger_config=logger_config)
-    log_every_n_steps = config[modelklasse_str]['variant1']['log_every_n_steps']
+    log_every_n_steps = config[modelklasse_str][name]['log_every_n_steps']
     trainer = r.get_trainer(epoker, logger=logger, log_every_n_steps=log_every_n_steps)
     trainer.fit(model=selvvejledt, datamodule=qm9bygger, ckpt_path=artefakt_sti)
     wandb_run_id = wandb.run.id
