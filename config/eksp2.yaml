@@ -73,6 +73,6 @@ lag_liste:
 seeds:
   - 111
 run_baseline: false
-gruppenavn: eksp2_MD17
+gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 0
+kørselsid: null
