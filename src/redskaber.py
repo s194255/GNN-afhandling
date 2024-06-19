@@ -61,7 +61,6 @@ def get_trainer(epoker, logger=None, log_every_n_steps=None):
     trainer = L.Trainer(max_epochs=epoker,
                         log_every_n_steps=log_every_n_steps,
                         callbacks=callbacks,
-                        precision='16-mixed',
                         logger=logger,
                         )
     return trainer

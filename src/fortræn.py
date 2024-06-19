@@ -5,7 +5,6 @@ import os
 import shutil
 import torch
 
-torch.set_float32_matmul_precision('medium')
 
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
