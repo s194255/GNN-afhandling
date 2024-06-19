@@ -54,9 +54,9 @@ MD17:
     model:
       hovedtype: klogt
       gamma: 0.98
-      lr: 4.0e-02
+      lr: 4.0e-01
       step_size: 1
-      ønsket_lr: 2.5e-03
+      ønsket_lr: 2.5e-02
       opvarmningsperiode: 100
       frossen_opvarmningsperiode: 100
       weight_decay: 1.0e-01
