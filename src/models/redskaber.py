@@ -42,21 +42,22 @@ class RiemannGaussian(L.LightningModule):
         v = pos.shape[-1]
         center = scatter_mean(pos, batch, dim=-2)  # B * 3
         perturbed_center = scatter_mean(pos_til, batch, dim=-2)  # B * 3
-        pos_c = pos - center[batch]
-        perturbed_pos_c = pos_til - perturbed_center[batch]
-        perturbed_pos_c_left = perturbed_pos_c.repeat_interleave(v, dim=-1)
-        perturbed_pos_c_right = perturbed_pos_c.repeat([1, v])
-        pos_c_left = pos_c.repeat_interleave(v, dim=-1)
-        ptp = scatter_add(perturbed_pos_c_left * perturbed_pos_c_right, batch, dim=-2).reshape(-1, v,
-                                                                                               v)  # B * 3 * 3
-        otp = scatter_add(pos_c_left * perturbed_pos_c_right, batch, dim=-2).reshape(-1, v, v)  # B * 3 * 3
-        ptp = ptp[batch]
-        otp = otp[batch]
-        # s = - 2 * (perturbed_pos_c.unsqueeze(1) @ ptp - pos_c.unsqueeze(1) @ otp).squeeze(1) / (
-        #         torch.norm(ptp, dim=(1, 2)) + torch.norm(otp, dim=(1, 2))).unsqueeze(-1).repeat([1, 3])
-        s = (perturbed_pos_c.unsqueeze(1) @ ptp - pos_c.unsqueeze(1) @ otp).squeeze(1)
+        y = pos - center[batch]
+        y_til = pos_til - perturbed_center[batch]
+        y_til_left = y_til.repeat_interleave(v, dim=-1)
+        y_til_right = y_til.repeat([1, v])
+        y_left = y.repeat_interleave(v, dim=-1)
+
+        y_til_y_til = scatter_add(y_til_left * y_til_right, batch, dim=-2).reshape(-1, v, v)  # B * 3 * 3
+        y_til_y = scatter_add(y_left * y_til_right, batch, dim=-2).reshape(-1, v, v)  # B * 3 * 3
+
+        y_til_y_til = y_til_y_til[batch]
+        y_til_y = y_til_y[batch]
+        # s = - 2 * (y_til.unsqueeze(1) @ y_til_y_til - y.unsqueeze(1) @ y_til_y).squeeze(1) / (
+        #         torch.norm(y_til_y_til, dim=(1, 2)) + torch.norm(y_til_y, dim=(1, 2))).unsqueeze(-1).repeat([1, 3])
+        s = (y_til.unsqueeze(1) @ y_til_y_til - y.unsqueeze(1) @ y_til_y).squeeze(1)
         s = -(1/sigma**2).view(-1, 1) * s
-        alpha = (torch.norm(ptp, dim=(1, 2)) + torch.norm(otp, dim=(1, 2)))/2
+        alpha = (torch.norm(y_til_y_til, dim=(1, 2)) + torch.norm(y_til_y, dim=(1, 2)))/2
         return s, alpha
     @torch.no_grad()
     def forward(self,
