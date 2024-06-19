@@ -47,7 +47,7 @@ class QM9Bygger(L.LightningDataModule):
         if self.name == 'QM9':
             return torch_geometric.datasets.QM9(self.root)
         elif self.name == 'MD17':
-            print("nu afleverer et MD17-datasæt")
+            print("nu afleverer jeg et MD17-datasæt")
             return torch_geometric.datasets.MD17(self.root, name='benzene')
         else:
             raise NotImplementedError
