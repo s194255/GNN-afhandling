@@ -64,14 +64,14 @@ MD17:
       log_gradient: false
 rygradtype: visnet
 udgaver:
-  - uden
+  - s194255/afhandling/model-6vlzcxht:v0
 temperaturer:
   - optøet
 lag_liste:
   - null
 seeds:
-  - 3
+  - 111
 run_baseline: false
-gruppenavn: eksp2
+gruppenavn: eksp2_MD17
 data_path: s194255/afhandling/model-bepmru9f:v0
 kørselsid: 0
