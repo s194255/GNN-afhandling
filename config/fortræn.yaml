@@ -30,7 +30,7 @@ Selvvejledt:
       noise_til: 1
       n_noise_trin: 50
       log_gradient: false
-      weight_decay: 1.0e-2
+      weight_decay: 1.0e-5
     patience: 20
   MD17:
     check_val_every_n_epoch: 1
