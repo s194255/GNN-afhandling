@@ -8,7 +8,7 @@ datasæt:
     - 500
     - 2000
   val_reduced: false
-  name: MD17
+  name: QM9
 rygradtype: visnet
 Selvvejledt:
   QM9:
@@ -67,6 +67,6 @@ SelvvejledtQM9:
       weight_decay: 1.0e-03
       loss: L1
     seed: 42
-qm9_path: s194255/afhandling/model-bepmru9f:v0
+qm9_path: s194255/afhandling/model-38styzwu:v0
 modelklasse: Selvvejledt
 ckpt: null
