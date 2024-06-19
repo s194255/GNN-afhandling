@@ -59,8 +59,8 @@ MD17:
       ønsket_lr: 2.5e-03
       opvarmningsperiode: 100
       frossen_opvarmningsperiode: 100
-      weight_decay: 1.0e-01
-      loss: L1
+      weight_decay: 1.0e-03
+      loss: L2
       log_gradient: false
 rygradtype: visnet
 udgaver:
