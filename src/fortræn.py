@@ -37,7 +37,7 @@ def main():
         tags.remove('qm9bygger')
 
     logger_config = {'opgave': 'fortræn'}
-    logger = r.wandbLogger(log_model=True, tags=tags, logger_config=logger_config)
+    logger = r.wandbLogger(log_model='all', tags=tags, logger_config=logger_config)
     log_every_n_steps = config[modelklasse_str][name]['log_every_n_steps']
     trainer = r.get_trainer(epoker, logger=logger, log_every_n_steps=log_every_n_steps)
     trainer.fit(model=selvvejledt, datamodule=qm9bygger, ckpt_path=artefakt_sti)
