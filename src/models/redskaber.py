@@ -71,7 +71,8 @@ class RiemannGaussian(L.LightningModule):
             s, alpha = self.get_s(pos_til, pos, batch, sigma)
             eta = torch.randn_like(pos)
             pos_til = pos_til + (beta/alpha).view(-1, 1) * s + torch.sqrt(2*beta).view(-1, 1)*eta
-        target = (1/alpha).view(-1, 1) * s
+        s, alpha = self.get_s(pos_til, pos, batch, sigma)
+        target = (1 / alpha).view(-1, 1) * s
         return pos_til, target
 
 if __name__ == "__main__":
