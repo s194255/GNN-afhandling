@@ -5,8 +5,8 @@ datasæt:
   num_workers: 2
   n_trin: 1
   spænd:
-    - 200
-    - 200
+    - 147
+    - 147
   space_type: linspace
   val_reduced: true
   name: QM9
