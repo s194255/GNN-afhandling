@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 128
+  batch_size: 256
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
@@ -24,8 +24,8 @@ QM9:
       ønsket_lr: 2.5e-04
       opvarmningsperiode: 100
       frossen_opvarmningsperiode: 100
-      predicted_attribute: 1
-      weight_decay: 1.0e-01
+      predicted_attribute: 0
+      weight_decay: 1.0e-03
       loss: L1
       log_gradient: false
   frossen:
@@ -40,7 +40,7 @@ QM9:
       step_size: 1
       ønsket_lr: 5.0e-03
       opvarmningsperiode: 1
-      predicted_attribute: 1
+      predicted_attribute: 0
       weight_decay: 1.0e-06
       loss: L1
       frossen_opvarmningsperiode: null
@@ -64,14 +64,14 @@ MD17:
       log_gradient: false
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-q3foebgf:v10
+  - s194255/afhandling/model-eaqvwmvw:v35
 temperaturer:
-  - frossen
+  - optøet
 lag_liste:
   - null
 seeds:
-  - 133
+  - 137
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
-kørselsid: 125
+kørselsid: 126
