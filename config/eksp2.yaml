@@ -66,11 +66,11 @@ rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-uzwlpg3e:v50
 temperaturer:
-  - optøet
+  - frossen
 lag_liste:
   - null
 seeds:
-  - 131
+  - 132
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
