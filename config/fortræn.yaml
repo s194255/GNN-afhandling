@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 100
+  batch_size: 200
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
@@ -14,7 +14,7 @@ Selvvejledt:
   QM9:
     check_val_every_n_epoch: 1
     log_every_n_steps: 10
-    epoker: 50
+    epoker: 100
     min_delta: 0.001
     model:
       hovedtype: klogt_reg
@@ -27,7 +27,7 @@ Selvvejledt:
       ønsket_lr: 1.0e-04
       opvarmningsperiode: 1
       noise_fra: -2
-      noise_til: -1
+      noise_til: -0
       n_noise_trin: 50
       log_gradient: false
       weight_decay: 1.0e-7
