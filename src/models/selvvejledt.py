@@ -16,10 +16,7 @@ class Selvvejledt(Grundmodel):
     def __init__(self, *args,
                  **kwargs):
         super().__init__(*args, **kwargs)
-        lambdaer = self.args_dict['lambdaer']
-        if not lambdaer:
-            lambdaer = {'lokalt': 0.5, 'globalt': 0.5}
-        self.lambdaer = lambdaer
+        self.lambdaer = self.args_dict['lambdaer']
         self.register_buffer("noise_scales_options", torch.logspace(
             self.args_dict['noise_fra'],
             self.args_dict['noise_til'],
@@ -33,13 +30,17 @@ class Selvvejledt(Grundmodel):
             return HovedSelvvejledtKlogt(
                 **self.args_dict['hoved'],
                 hidden_channels=self.hidden_channels,
-                n_noise_trin=self.args_dict['n_noise_trin']
+                n_noise_trin=self.args_dict['n_noise_trin'],
+                beregn_lokalt=self.beregn_lokalt,
+                beregn_globalt=self.beregn_globalt,
             )
         elif self.args_dict['hovedtype'] == "klogt_reg":
             return HovedSelvvejledtKlogtReg(
                 **self.args_dict['hoved'],
                 hidden_channels=self.hidden_channels,
-                n_noise_trin=self.args_dict['n_noise_trin']
+                n_noise_trin=self.args_dict['n_noise_trin'],
+                beregn_lokalt=self.beregn_lokalt,
+                beregn_globalt=self.beregn_globalt,
             )
         elif self.args_dict['hovedtype'] == "dumt":
             return HovedSelvvejledtDumt(
@@ -62,8 +63,14 @@ class Selvvejledt(Grundmodel):
         pos_til, target = self.riemannGaussian(pos, batch, sigma)
         if self.hoved.derivative:
             pos_til.requires_grad_(True)
-        x, v, edge_attr, _ = self.rygrad(z, pos_til, batch, edge_index)
-        tabsopslag = self.hoved(z, pos_til, batch, x, v, noise_idxs, noise_scales, target)
+        x, v, _, _ = self.rygrad(z, pos_til, batch, edge_index)
+        graph_noisy = {'z': z, 'pos': pos_til, 'batch': batch, 'x': x, 'v': v}
+        if self.beregn_globalt:
+            x2, v2, _, _ = self.rygrad(z, pos, batch, edge_index)
+            graph_normal = {'z': z, 'pos': pos, 'batch': batch, 'x': x2, 'v': v2}
+        else:
+            graph_normal = None
+        tabsopslag = self.hoved(graph_noisy, graph_normal, noise_idxs, noise_scales, target)
         return tabsopslag
 
     def training_step(self, data: Data, batch_idx: int) -> torch.Tensor:
@@ -92,11 +99,6 @@ class Selvvejledt(Grundmodel):
         self.log_dict(log_dict, batch_size=data.batch_size)
         return loss
 
-
-        # loss = sum(self.lambdaer[tab] * tabsopslag[tab] for tab in tabsopslag.keys())
-        # self.log("val_loss", loss.item(), batch_size=data.batch_size)
-        # return loss
-
     def test_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
             tabsopslag = self(data)
@@ -114,17 +116,23 @@ class Selvvejledt(Grundmodel):
         return True
 
     def get_fortræningsudgave(self):
-        bruger_lokalt = self.lambdaer['lokalt'] != 0
-        bruger_globalt = self.lambdaer['globalt'] != 0
         stamme = '3D-EMGP'
-        if bruger_lokalt and bruger_globalt:
+        if self.beregn_lokalt and self.beregn_globalt:
             return f'{stamme}-begge'
-        elif bruger_lokalt and (not bruger_globalt):
+        elif self.beregn_lokalt and (not self.beregn_globalt):
             return f'{stamme}-lokalt'
-        elif (not bruger_lokalt) and bruger_globalt:
+        elif (not self.beregn_lokalt) and self.beregn_globalt:
             return f'{stamme}-globalt'
-        elif (not bruger_lokalt) and (not bruger_globalt):
+        elif (not self.beregn_lokalt) and (not self.beregn_globalt):
             return 'påskeæg'
+
+    @property
+    def beregn_lokalt(self):
+        return self.args_dict['lambdaer']['lokalt'] != 0
+
+    @property
+    def beregn_globalt(self):
+        return self.args_dict['lambdaer']['globalt'] != 0
 
 class SelvvejledtBaseline(Selvvejledt):
     def __init__(self, *args, **kwargs):

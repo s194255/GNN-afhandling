@@ -25,7 +25,7 @@ class GatedEquivariantMotor(L.LightningModule):
         self.register_buffer('means', means)
         self.register_buffer('stds', stds)
 
-    def forward(self, z, pos, batch, x, v):
+    def forward(self, batch, x, v):
         for layer in self.motor:
             x, v = layer(x, v)
         x = x * self.stds + self.means

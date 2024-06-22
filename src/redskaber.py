@@ -129,6 +129,15 @@ def get_selvvejledt_fra_artefakt_sti(config, artefakt_sti):
     qm9bygger = QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
     return selvvejledt, qm9bygger
 
+def get_qm9bygger_fra_artefakt_sti(config, artefakt_sti):
+    qm9bygger = QM9ByggerEksp2.load_from_checkpoint(artefakt_sti, **config['datasæt'])
+    return qm9bygger
+
+def get_qm9bygger_fra_wandb(config, wandb_path):
+    artefakt_sti, run_id = indlæs_wandb_path(wandb_path)
+    qm9bygger = get_qm9bygger_fra_artefakt_sti(config, artefakt_sti)
+    return qm9bygger
+
 def get_selvvejledt_fra_wandb(config, wandb_path) -> Tuple[Any, QM9ByggerEksp2, Any, Any]:
     if 's194255/afhandling' in wandb_path:
         artefakt_sti, run_id = indlæs_wandb_path(wandb_path)
