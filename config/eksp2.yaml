@@ -3,11 +3,11 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 5
+  n_trin: 20
   spænd:
     - 30
-    - 500
-  space_type: linspace
+    - 2000
+  space_type: geomspace
   val_reduced: true
   name: QM9
 QM9:
@@ -70,7 +70,7 @@ temperaturer:
 lag_liste:
   - null
 seeds:
-  - 138
+  - 139
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-38styzwu:v0
