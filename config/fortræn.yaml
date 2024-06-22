@@ -6,7 +6,7 @@ datasæt:
   n_trin: 3
   spænd:
     - 500
-    - 2000
+    - 5000
   val_reduced: false
   name: QM9
 rygradtype: visnet
@@ -14,14 +14,13 @@ Selvvejledt:
   QM9:
     check_val_every_n_epoch: 1
     log_every_n_steps: 10
-    epoker: 100
-    min_delta: 0.001
+    epoker: 150
     model:
       hovedtype: klogt
       gamma: 0.99
       lambdaer:
         lokalt: 100
-        globalt: 0
+        globalt: 20
       lr: 1.0e-04
       step_size: 1
       ønsket_lr: 1.0e-04
@@ -31,7 +30,6 @@ Selvvejledt:
       n_noise_trin: 50
       log_gradient: false
       weight_decay: 1.0e-7
-    patience: 20
   MD17:
     check_val_every_n_epoch: 1
     log_every_n_steps: 10
@@ -67,6 +65,6 @@ SelvvejledtQM9:
       weight_decay: 1.0e-03
       loss: L1
     seed: 42
-qm9_path: s194255/afhandling/model-38styzwu:v0
+qm9_path: s194255/afhandling/model-5fn77j77:v0
 modelklasse: Selvvejledt
 ckpt: null
