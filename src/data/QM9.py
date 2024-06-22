@@ -232,8 +232,8 @@ class QM9ByggerEksp2(QM9Bygger):
             test = 0.04
             train = spænd[1] / n
             val = 0.2 / 0.8 * train
-            pretrain = (1 - (test + train + val)) * 0.8
-            preval = (1 - (test + train + val)) * 0.2
+            pretrain = (1 - (test + train + val)) * 0.9
+            preval = (1 - (test + train + val)) * 0.1
             self.fordeling_cached = torch.tensor([pretrain, preval, train, val, test])
         return self.fordeling_cached
 
