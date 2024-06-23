@@ -6,7 +6,7 @@ datasæt:
   n_trin: 5
   spænd:
     - 30
-    - 700
+    - 500
   space_type: linspace
   val_reduced: true
   name: QM9
@@ -73,8 +73,8 @@ temperaturer:
 lag_liste:
   - null
 seeds:
-  - 478
+  - 511
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-5fn77j77:v0
-kørselsid: 128
+kørselsid: 129
