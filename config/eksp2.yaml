@@ -3,11 +3,11 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 20
+  n_trin: 5
   spænd:
     - 30
-    - 2000
-  space_type: geomspace
+    - 700
+  space_type: linspace
   val_reduced: true
   name: QM9
 QM9:
@@ -64,14 +64,17 @@ MD17:
       log_gradient: false
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-n7jw45gq:v100
+  - s194255/afhandling/model-yhxjxrvk:v120
+  - s194255/afhandling/model-d4e2ftz6:v90
+  - s194255/afhandling/model-gabq3exm:v67
+  - uden
 temperaturer:
   - optøet
 lag_liste:
   - null
 seeds:
-  - 139
+  - 478
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-5fn77j77:v0
-kørselsid: 127
+kørselsid: 128
