@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 120
+  batch_size: 128
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
@@ -68,5 +68,5 @@ SelvvejledtQM9:
       loss: L1
     seed: 42
 qm9_path: s194255/afhandling/model-5fn77j77:v0
-modelklasse: SelvvejledtQM9
+modelklasse: Selvvejledt
 ckpt: null
