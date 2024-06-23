@@ -52,19 +52,21 @@ Selvvejledt:
       weight_decay: 1.0e-2
     patience: 20
 SelvvejledtQM9:
-  variant1:
-    epoker: 100
+  QM9:
+    epoker: 150
+    check_val_every_n_epoch: 1
+    log_every_n_steps: 10
     model:
       hovedtype: klogt
       gamma: 0.97
-      lr: 0.25e-03
+      lr: 4.0e-03
       step_size: 1
-      ønsket_lr: 0.25e-03
+      ønsket_lr: 4.0e-03
       opvarmningsperiode: 1
-      predicted_attribute: 1
-      weight_decay: 1.0e-03
+      predicted_attribute: 0
+      weight_decay: 1.0e-07
       loss: L1
     seed: 42
 qm9_path: s194255/afhandling/model-5fn77j77:v0
-modelklasse: Selvvejledt
+modelklasse: SelvvejledtQM9
 ckpt: null

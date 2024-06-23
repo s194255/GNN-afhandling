@@ -215,3 +215,6 @@ class SelvvejledtQM9(m.DownstreamQM9):
 
     def get_fortræningsudgave(self):
         return self.__class__.__name__
+
+    def setup(self, stage: str) -> None:
+        self.frossen_opv = False
