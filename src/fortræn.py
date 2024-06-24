@@ -26,9 +26,11 @@ def main():
     datasæt_dict = config['datasæt']
     tags = ['selvvejledt', 'qm9bygger']
     epoker = config[modelklasse_str][name]['epoker']
+    logger_config = {'opgave': 'fortræn'}
     if config['ckpt']:
         selvvejledt, qm9bygger, artefakt_sti, _ = r.get_selvvejledt_fra_wandb(config, config['ckpt'])
         epoker += r.get_n_epoker(artefakt_sti)
+        logger_config['ckpt_wandb_path'] = config['ckpt']
     else:
         selvvejledt, qm9bygger = r.build_selvvejledt(args_dict=args_dict, datasæt_dict=datasæt_dict, modelklasse_str=modelklasse_str)
         artefakt_sti = None
@@ -37,8 +39,8 @@ def main():
         qm9bygger = r.get_qm9bygger_fra_wandb(config, config['qm9_path'])
         tags.remove('qm9bygger')
 
-    logger_config = {'opgave': 'fortræn'}
-    logger = r.wandbLogger(log_model='all', tags=tags, logger_config=logger_config)
+    log_model = config[modelklasse_str][name]['log_model']
+    logger = r.wandbLogger(log_model=log_model, tags=tags, logger_config=logger_config)
     log_every_n_steps = config[modelklasse_str][name]['log_every_n_steps']
     trainer = r.get_trainer(epoker, logger=logger, log_every_n_steps=log_every_n_steps)
     trainer.fit(model=selvvejledt, datamodule=qm9bygger, ckpt_path=artefakt_sti)

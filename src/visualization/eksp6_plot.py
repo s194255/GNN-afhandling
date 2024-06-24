@@ -106,7 +106,7 @@ farveopslag = {
     '3D-EMGP-lokalt': bright_green
 }
 
-GROUPS = ['eksp6_1']
+GROUPS = ['eksp2_127']
 
 for group in tqdm(GROUPS):
     group_df = get_group_df(group)
