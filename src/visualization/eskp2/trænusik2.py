@@ -25,8 +25,8 @@ ROOT = os.path.join('reports/figures/Eksperimenter/2', FIGNAVN)
 farver = [far.corporate_red, far.blue, far.navy_blue, far.bright_green, far.orange, far.yellow]
 
 
-def plot_kernel_baseline(ax, x_values, x, farve):
-    kernel = viz0.kernel_baseline()
+def plot_kernel_baseline(ax, x_values, x, farve, predicted_attribute):
+    kernel = viz0.kernel_baseline(predicted_attribute)
     # x = np.linspace(30, 500, 1000)
     y = kernel(x_values)
     ax.scatter(x, y, color=farve, marker="d", label="kernel baseline", s=80,
@@ -37,19 +37,16 @@ def plot(df, fortræningsudgaver):
     # Opsætning for søjlerne
     x_values = df['eftertræningsmængde'].unique()
     x_values.sort()
-    # x_values = x_values.astype(int)
-    # fortræningsudgaver = df['fortræningsudgave'].unique()
     num_models = len(fortræningsudgaver)
+    predicted_attribute = df['predicted_attribute'].unique()
+    assert len(predicted_attribute) == 1
+    predicted_attribute = predicted_attribute[0]
 
 
     bar_width = 0.15
     x = np.arange(len(x_values))
-
-    # Opret figuren og akserne
-    # figsize = viz0.set_size(1.0)
-    # print(figsize)
+    
     fig, ax = plt.subplots(figsize=(9, 7))
-    # fig, ax = plt.subplots()
 
     # Plot søjlerne og prikkerne
     for i in range(num_models):
@@ -68,7 +65,7 @@ def plot(df, fortræningsudgaver):
             ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
                        color=farver[i], label=label, marker='o', edgecolor='black', alpha=1.0)
 
-    plot_kernel_baseline(ax, x_values, x, farver[i+1])
+    plot_kernel_baseline(ax, x_values, x, farver[i+1], predicted_attribute)
 
     # Tilpasning af akserne og labels
     ax.set_xlabel('Datamængde', fontsize=16)
@@ -76,10 +73,10 @@ def plot(df, fortræningsudgaver):
     ax.set_title(TITLER[temperatur], fontsize=22)
     ax.set_xticks(x)
     ax.set_xticklabels(x_values.astype(int))
-    ax.set_yscale("log")
     ax.legend(fontsize=12)
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.tick_params(axis='both', which='minor', labelsize=13)
+    ax.set_yscale("log")
     ax.yaxis.set_minor_formatter(ScalarFormatter())
     ax.yaxis.set_major_formatter(ScalarFormatter())
     plt.tight_layout()
