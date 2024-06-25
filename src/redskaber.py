@@ -6,7 +6,6 @@ from lightning.pytorch.loggers.tensorboard import TensorBoardLogger
 import os
 import wandb
 from src.models.selvvejledt import Selvvejledt, SelvvejledtQM9
-from src.models.downstream import DownstreamQM9
 from src.data.QM9 import QM9ByggerEksp2
 from typing import Tuple, Any
 
@@ -43,13 +42,15 @@ def tensorBoardLogger(save_dir=None, name=None, version=None):
         name = "lightning_logs"
     return TensorBoardLogger(save_dir=save_dir, name=name, version=version)
 
-def wandbLogger(log_model=False, tags=None, group=None, logger_config=None):
+def wandbLogger(log_model=False, tags=None, group=None, logger_config=None, id=None, resume=None):
     return lightning.pytorch.loggers.WandbLogger(
         project='afhandling',
         log_model=log_model,
         tags=tags,
         group=group,
-        config=logger_config
+        config=logger_config,
+        id=id,
+        resume=resume
     )
 
 def get_trainer(epoker, logger=None, log_every_n_steps=None):
@@ -89,24 +90,17 @@ def load_config(path):
             config_dict[opgave_in_config][variant]['model']['rygrad'] = rygrad
     return config_dict
 
-def debugify_config(config):
-    config['datasæt']['debug'] = True
-    config['datasæt']['batch_size'] = 4
-    config['datasæt']['num_workers'] = 0
-    config['datasæt']['n_trin'] = 1
-    for opgave in get_opgaver_in_config(config):
-        for variant in config[opgave].keys():
-            config[opgave][variant]['epoker'] = 3
-            config[opgave][variant]['check_val_every_n_epoch'] = 1
-            config[opgave][variant]['model']['rygrad']['hidden_channels'] = 8
 
-
-def get_n_epoker(artefakt_sti):
+def get_n_epoker(artefakt_sti, run_id):
     if artefakt_sti == None:
         return 0
     else:
         state_dict = torch.load(artefakt_sti, map_location='cpu')
-        return state_dict['epoch']
+        state_dict_epoch = state_dict['epoch']
+        run = wandb.Api().run(f'afhandling/{run_id}')
+        run_epoch = run.history(keys=['epoch'])['epoch'].max()
+        assert state_dict_epoch == run_epoch, f'state epoch = {state_dict_epoch}, run epoch = {run_epoch}'
+        return state_dict_epoch
 
 def indlæs_wandb_path(selv_ckpt_path):
     api = wandb.Api()
