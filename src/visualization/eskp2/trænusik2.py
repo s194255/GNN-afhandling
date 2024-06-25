@@ -45,7 +45,7 @@ def plot(df, fortræningsudgaver):
 
     bar_width = 0.15
     x = np.arange(len(x_values))
-    
+
     fig, ax = plt.subplots(figsize=(9, 7))
 
     # Plot søjlerne og prikkerne
