@@ -8,6 +8,7 @@ import wandb
 from src.models.selvvejledt import Selvvejledt, SelvvejledtQM9
 from src.data.QM9 import QM9ByggerEksp2
 from typing import Tuple, Any
+import pandas as pd
 
 # from src import data as d
 
@@ -98,7 +99,10 @@ def get_n_epoker(artefakt_sti, run_id):
         state_dict = torch.load(artefakt_sti, map_location='cpu')
         state_dict_epoch = state_dict['epoch']
         run = wandb.Api().run(f'afhandling/{run_id}')
-        run_epoch = run.history(keys=['epoch'])['epoch'].max()
+        df = run.history(keys=['epoch', 'val_loss'], samples=100000)
+        df['val_loss'] = df['val_loss'].apply(pd.to_numeric, errors='coerce')
+        df = df.dropna(how='any')
+        run_epoch = df['epoch'].max()
         assert state_dict_epoch == run_epoch, f'state epoch = {state_dict_epoch}, run epoch = {run_epoch}'
         return state_dict_epoch
 
