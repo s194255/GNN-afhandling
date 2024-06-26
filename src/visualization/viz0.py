@@ -89,6 +89,10 @@ def get_num_layers(run):
     config = json.loads(run.json_config)
     return config['args_dict']['value']['hoved']['num_layers']
 
+def get_predicted_attribute(run):
+    config = json.loads(run.json_config)
+    return config['args_dict']['value']['predicted_attribute']
+
 def main_filter(run, temperatur, fortræningsudgave, seed):
     run_temperatur = get_temperatur(run)
     if (run_temperatur != temperatur) and (temperatur is not None):
@@ -99,9 +103,15 @@ def main_filter(run, temperatur, fortræningsudgave, seed):
         return False
     return True
 
-def kernel_baseline():
-    x1, y1 = 100, 1.16*10**3
-    x2, y2 = 19277.496, 0.152*10**3
+def kernel_baseline(predicted_attribute):
+    if predicted_attribute == 0:
+        x1, y1 = 101.85, 1.23 * 10 ** 3
+        x2, y2 = 19277.496, 0.767 * 10 ** 3
+    elif predicted_attribute == 1:
+        x1, y1 = 100, 1.16 * 10 ** 3
+        x2, y2 = 19277.496, 0.152 * 10 ** 3
+    else:
+        raise NotImplementedError
     a = (np.log(y2)-np.log(y1)) / (np.log(x2) - np.log(x1))
     b = y1/x1**a
     return lambda x: b*x**a
@@ -117,6 +127,7 @@ def get_df(runs):
         resultat['temperatur'] = get_temperatur(run)
         resultat['hidden_channels'] = get_hidden_channels(run)
         resultat['num_layers'] = get_num_layers(run)
+        resultat['predicted_attribute'] = get_predicted_attribute(run)
 
         resultater = pd.concat([resultater, pd.DataFrame(data=resultat)], ignore_index=True)
     sel_cols = [col for col in resultater.columns if col not in not_met_cols]

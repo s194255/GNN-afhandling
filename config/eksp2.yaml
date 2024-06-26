@@ -25,7 +25,7 @@ QM9:
       opvarmningsperiode: 100
       frossen_opvarmningsperiode: 100
       predicted_attribute: 0
-      weight_decay: 1.0e+00
+      weight_decay: 1.0e-06
       loss: L1
       log_gradient: false
   frossen:
@@ -74,8 +74,8 @@ temperaturer:
 lag_liste:
   - null
 seeds:
-  - 437
+  - 232
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-5fn77j77:v0
-kørselsid: 133
+kørselsid: 137
