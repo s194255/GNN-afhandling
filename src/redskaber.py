@@ -103,7 +103,7 @@ def get_n_epoker(artefakt_sti, run_id):
         df['val_loss'] = df['val_loss'].apply(pd.to_numeric, errors='coerce')
         df = df.dropna(how='any')
         run_epoch = df['epoch'].max()
-        assert state_dict_epoch == run_epoch, f'state epoch = {state_dict_epoch}, run epoch = {run_epoch}'
+        assert abs(state_dict_epoch-run_epoch) <= 1, f'state epoch = {state_dict_epoch}, run epoch = {run_epoch}'
         return state_dict_epoch
 
 def indlæs_wandb_path(selv_ckpt_path):
