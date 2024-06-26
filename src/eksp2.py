@@ -128,6 +128,8 @@ class Eksp2:
         self.qm9Bygger2Hoved.sample_train_reduced(i)
 
         config_curr = self.config[self.name][temperatur]
+        if config_curr['mixed'] == True:
+            torch.set_float32_matmul_precision('medium')
         downstream, run_id = self.create_downstream(udgave=udgave, lag=lag, config_curr=config_curr)
         if temperatur == "frossen":
             downstream.frys_rygrad()
