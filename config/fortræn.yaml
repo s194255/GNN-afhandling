@@ -70,4 +70,5 @@ SelvvejledtQM9:
     seed: 42
 qm9_path: s194255/afhandling/model-5fn77j77:v0
 modelklasse: Selvvejledt
+group: begge_0
 ckpt: null

@@ -15,6 +15,7 @@ def debugify_config(config):
     config['datasæt']['batch_size'] = 4
     config['datasæt']['num_workers'] = 0
     config['datasæt']['n_trin'] = 1
+    config['group'] = 'fortræningDebug'
     for opgave in get_opgaver_in_config(config):
         for variant in config[opgave].keys():
             config[opgave][variant]['epoker'] = 2
@@ -42,21 +43,21 @@ def main():
     epoker = config[modelklasse_str][name]['epoker']
     logger_config = {'opgave': 'fortræn'}
     if config['ckpt']:
-        selvvejledt, qm9bygger, artefakt_sti, id = r.get_selvvejledt_fra_wandb(config, config['ckpt'])
+        selvvejledt, qm9bygger, artefakt_sti, _ = r.get_selvvejledt_fra_wandb(config, config['ckpt'])
         epoker += r.get_n_epoker(artefakt_sti, id)+1
         logger_config['ckpt_wandb_path'] = config['ckpt']
-        resume = 'must'
+        # resume = 'must'
     else:
         selvvejledt, qm9bygger = r.build_selvvejledt(args_dict=args_dict, datasæt_dict=datasæt_dict, modelklasse_str=modelklasse_str)
         artefakt_sti = None
-        id, resume = None, None
     if config['qm9_path']:
         # _, qm9bygger, _, _ = r.get_selvvejledt_fra_wandb(config, config['qm9_path'])
         qm9bygger = r.get_qm9bygger_fra_wandb(config, config['qm9_path'])
         tags.remove('qm9bygger')
 
     log_model = config[modelklasse_str][name]['log_model']
-    logger = r.wandbLogger(log_model=log_model, tags=tags, logger_config=logger_config, id=id, resume=resume)
+    logger = r.wandbLogger(log_model=log_model, tags=tags,
+                           logger_config=logger_config, group=config['group'])
     log_every_n_steps = config[modelklasse_str][name]['log_every_n_steps']
     trainer = r.get_trainer(epoker, logger=logger, log_every_n_steps=log_every_n_steps)
     trainer.fit(model=selvvejledt, datamodule=qm9bygger, ckpt_path=artefakt_sti)
