@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 1
+  n_trin: 5
   spænd:
-    - 265
-    - 265
+    - 30
+    - 500
   space_type: linspace
   val_reduced: true
   name: QM9
@@ -65,13 +65,20 @@ MD17:
       log_gradient: false
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-nauougbi:v0
+  - s194255/afhandling/model-yv2fp0x8:v0
+  - s194255/afhandling/model-by37rvha:v0
+  - s194255/afhandling/model-ez3wssr5:v0
+  - s194255/afhandling/model-uvv3hn84:v144
+  - uden
 temperaturer:
   - optøet
 lag_liste:
   - null
-seeds: 9
+seeds:
+  - 332
+  - 274
+  - 664
 run_baseline: false
-gruppenavn: støjniveau
+gruppenavn: eksp2
 data_path: s194255/afhandling/model-5fn77j77:v0
 kørselsid: 0
