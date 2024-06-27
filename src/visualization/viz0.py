@@ -4,8 +4,14 @@ import wandb
 import pandas as pd
 import json
 import numpy as np
-from src.redskaber import indlæs_yaml
+# from src.redskaber import indlæs_yaml
 import os
+import yaml
+
+def indlæs_yaml(sti):
+    with open(sti, encoding='utf-8') as f:
+        config_dict = yaml.safe_load(f)
+    return config_dict
 
 METRICS = {'test_loss_mean', "test_loss_std", "test_loss_lower", "test_loss_upper", "eftertræningsmængde", "_runtime"}
 
@@ -93,6 +99,10 @@ def get_predicted_attribute(run):
     config = json.loads(run.json_config)
     return config['args_dict']['value']['predicted_attribute']
 
+def get_weight_decay(run):
+    config = json.loads(run.json_config)
+    return config['args_dict']['value']['weight_decay']
+
 def main_filter(run, temperatur, fortræningsudgave, seed):
     run_temperatur = get_temperatur(run)
     if (run_temperatur != temperatur) and (temperatur is not None):
@@ -128,6 +138,7 @@ def get_df(runs):
         resultat['hidden_channels'] = get_hidden_channels(run)
         resultat['num_layers'] = get_num_layers(run)
         resultat['predicted_attribute'] = get_predicted_attribute(run)
+        resultat['weight_decay'] = get_weight_decay(run)
 
         resultater = pd.concat([resultater, pd.DataFrame(data=resultat)], ignore_index=True)
     sel_cols = [col for col in resultater.columns if col not in not_met_cols]
