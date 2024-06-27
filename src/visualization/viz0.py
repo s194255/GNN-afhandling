@@ -127,7 +127,7 @@ def kernel_baseline(predicted_attribute):
     return lambda x: b*x**a
 
 def get_df(runs):
-    not_met_cols = ['seed', 'fortræningsudgave', 'temperatur']
+    not_met_cols = ['seed', 'fortræningsudgave', 'temperatur', 'rygrad runid']
     resultater = {nøgle: [] for nøgle in list(METRICS)+not_met_cols}
     resultater = pd.DataFrame(resultater)
     for run in runs:
@@ -139,6 +139,7 @@ def get_df(runs):
         resultat['num_layers'] = get_num_layers(run)
         resultat['predicted_attribute'] = get_predicted_attribute(run)
         resultat['weight_decay'] = get_weight_decay(run)
+        resultat['rygrad runid'] = get_rygrad_runid(run)
 
         resultater = pd.concat([resultater, pd.DataFrame(data=resultat)], ignore_index=True)
     sel_cols = [col for col in resultater.columns if col not in not_met_cols]
