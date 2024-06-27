@@ -65,7 +65,7 @@ MD17:
       log_gradient: false
 rygradtype: visnet
 udgaver:
-  - s194255/afhandling/model-ez3wssr5:v0
+  - s194255/afhandling/model-nauougbi:v0
 temperaturer:
   - optøet
 lag_liste:
