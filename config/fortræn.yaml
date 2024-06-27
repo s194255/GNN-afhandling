@@ -14,7 +14,7 @@ Selvvejledt:
   QM9:
     check_val_every_n_epoch: 1
     log_every_n_steps: 10
-    epoker: 150
+    epoker: 200
     log_model: True
     model:
       hovedtype: klogt
