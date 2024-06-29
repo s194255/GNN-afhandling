@@ -28,8 +28,9 @@ def debugify_config(config):
     config['datasæt']['debug'] = True
     config['datasæt']['batch_size'] = 4
     config['datasæt']['num_workers'] = 0
-    config['datasæt']['n_trin'] = 2
+    # config['datasæt']['n_trin'] = 2
     config['kørselsid'] = None
+    config['gruppenavn'] = 'debug'
     for opgave in r.get_opgaver_in_config(config):
         for variant in config[opgave].keys():
             config[opgave][variant]['epoker'] = 1
