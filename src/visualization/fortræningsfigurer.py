@@ -39,10 +39,10 @@ farveopslag = {
 
 
 STJERNER = {
-    '3D-EMGP-lokalt': '8dxl194x',
-    '3D-EMGP-globalt': 'u1eb0flg',
-    '3D-EMGP-begge': 'eair1kzv',
-    'SelvvejledtQM9': 'av6l2023'
+    '3D-EMGP-lokalt': 'd4e2ftz6',
+    '3D-EMGP-globalt': 'yhxjxrvk',
+    '3D-EMGP-begge': 'gabq3exm',
+    'SelvvejledtQM9': 'uvv3hn84'
 }
 
 CACHE = "reports/cache/fortræning"
@@ -99,6 +99,7 @@ def get_group_dfs(runid):
 
 
 def make_table(data: dict):
+    cutoff = 150
     h = lambda col: f'{COL_TITEL[col]}'.lower()
     new_df = {h(col): [] for col in COLS}
     new_df = {**{'fortræningsudgave': []}, **new_df}
@@ -110,6 +111,8 @@ def make_table(data: dict):
             if fortræ == 'SelvvejledtQM9' and col in ['train_lokalt_loss', 'train_globalt_loss']:
                 continue
             df = df_dict[col]
+            e_p_s = df_dict['epoch']['epoch'].max() / df[X_COL].max()
+            df.drop(df[df[X_COL] > cutoff * e_p_s ** (-1)].index, inplace=True)
             df[col] = df[col].apply(pd.to_numeric, errors='coerce')
             df = df.dropna(how='any')
             try:
@@ -118,7 +121,7 @@ def make_table(data: dict):
                 pass
         new_df = pd.concat([new_df, pd.DataFrame(data=new_df_linje)], ignore_index=True)
 
-    formatted_df = new_df.map(lambda x: f'{x:.2e}' if isinstance(x, (float, int)) else x)
+    formatted_df = new_df.map(lambda x: f'{x:.2f}' if isinstance(x, (float, int)) else x)
     # formatted_df['fortræningsudgave'] = formatted_df['fortræningsudgave'].apply(lambda x: f'\\textbf{{{x}}}')
     latex_table = formatted_df.to_latex(index=False, escape=False, column_format='l|cccc')
     lines = latex_table.splitlines()
@@ -131,6 +134,7 @@ def make_table(data: dict):
 
 
 def plot(data: dict):
+    cutoff = 150
     for i, (fortræ, df_dict) in enumerate(data.items()):
         farve = farveopslag.get(fortræ, 'blue')
         cols = FORTRÆ_COLS[fortræ]
@@ -141,12 +145,12 @@ def plot(data: dict):
             ax = axs[j]
             df = df_dict[col]
             e_p_s = df_dict['epoch']['epoch'].max() / df[X_COL].max()
-
+            df.drop(df[df[X_COL] > cutoff*e_p_s**(-1)].index, inplace=True)
 
             df[col] = df[col].apply(pd.to_numeric, errors='coerce')
 
             col_intp = f'col_intp'
-            nan_indices =  df[col].isna()
+            nan_indices = df[col].isna()
             df[col_intp] = df[col].interpolate()
             if nan_indices.sum() > 0:
                 ax.scatter(df[X_COL][nan_indices]*e_p_s, df[col_intp][nan_indices],
@@ -155,18 +159,22 @@ def plot(data: dict):
             ax.plot(df[X_COL] * e_p_s, df[col], color=farve, label=label)
             if j == 0:
                 ax.set_ylabel('MAE', fontsize=50)
-            ax.tick_params(axis='both', which='major', labelsize=45)
-            ax.tick_params(axis='both', which='minor', labelsize=40)
             ax.grid(True)  # Tilføj grid for bedre læsbarhed
             ax.set_yscale('log')
             ax.set_xscale('log')
 
+            ax.tick_params(axis='both', which='major', labelsize=45)
+            ax.tick_params(axis='both', which='minor', labelsize=40)
+            ax.tick_params(axis='x', labelrotation=45)
             max_epoch = df[X_COL].max() * e_p_s
             xticks = np.logspace(0, np.log10(max_epoch), num=5)  # Adjust the number of ticks with 'num'
             rounded_xticks = np.round(xticks).astype(int)
             ax.set_xticks(rounded_xticks)
             ax.set_xticklabels(rounded_xticks)
-
+            y_ticks = np.geomspace(df[col].min(), df[col].max(), num=5)
+            ax.set_yticks(y_ticks)
+            ax.yaxis.set_major_formatter(ScalarFormatter())
+            ax.minorticks_off()
 
 
             # ax.set_xticklabels(np.linspace(0, 50, 10))
@@ -178,14 +186,10 @@ def plot(data: dict):
             ax.set_xlabel('Epoke', fontsize=50)
 
         plt.tight_layout()
-        # plt.subplots_adjust(top=0.92)
-        # fig.suptitle('Fortræningernes træningsmetrikker', fontsize=45)  # Tilføj hovedtitel
         for ext in ['jpg', 'pdf']:
             if not os.path.exists(os.path.join(kørsel_path, f'{ext}s')):
                 os.mkdir(os.path.join(kørsel_path, f'{ext}s'))
             plt.savefig(os.path.join(kørsel_path, f'{ext}s', f"{fortræ}.{ext}"))
-        # plt.savefig(os.path.join(kørsel_path, f"{fortræ}.jpg"))
-        # plt.savefig(os.path.join(kørsel_path, f"{fortræ}.pdf"))
         plt.legend()
         plt.close()
 
@@ -206,13 +210,3 @@ for fortræ, runid in STJERNER.items():
     data[fortræ] = group_dfs
 plot(data)
 make_table(data)
-
-
-# dfs = {}
-# for temperatur in temperaturer:
-#     group = stjerner[temperatur]
-#     runs_in_group, fortræningsudgaver, temperaturer_lp, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
-#     runs_in_group = list(filter(lambda run: viz0.get_eftertræningsmængde(run) == 500, runs_in_group))
-#     run = random.choice(runs_in_group)
-#     dfs[temperatur] = run.history()
-# plot(dfs)
