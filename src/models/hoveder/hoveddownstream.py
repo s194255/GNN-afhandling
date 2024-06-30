@@ -30,7 +30,7 @@ class PredictRegular(L.LightningModule):
         )
 
     def forward(self, z, pos, batch, x, v):
-        x = self.motor(z, pos, batch, x, v)
+        x = self.motor(batch, x, v)
         return x.squeeze(1)
 
 
