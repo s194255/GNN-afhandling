@@ -3,7 +3,7 @@ import shutil
 import os
 import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
-from src.visualization.farver import farver, blue, corporate_red, bright_green
+from src.visualization.farver import farver, blue, corporate_red, bright_green, navy_blue
 from src.visualization.viz0 import get_group_df, get_loop_params_group_df, set_size
 import pandas as pd
 from tqdm import tqdm
@@ -30,9 +30,7 @@ def find_skærngspunkter(curves: dict, ax: plt.Axes)  -> list:
 
             løsning = (f1.coef[1] - f2.coef[1]) / (f2.coef[0] - f1.coef[0])
             løsning = 0.98*løsning
-
             løsninger.append(løsning)
-
 
     return løsninger
 
@@ -41,16 +39,14 @@ def plot(group_df: pd.DataFrame):
         for temperatur in temperaturer:
             golden_ratio = (5 ** .5 - 1) / 2
             width = 10
-            height = width*golden_ratio
+            height = width * golden_ratio
             fig, ax = plt.subplots(1, 1, figsize=(width, height))
-            # fig, ax = plt.figure(figsize=(10,6))
 
             i = 0
             curves = {}
             for fortræningsudgave in fortræningsudgaver:
                 df = copy.deepcopy(group_df)
                 df = df[df['fortræningsudgave'] == fortræningsudgave]
-                # df = df[df['seed'] == seed]
                 df = df[df['temperatur'] == temperatur]
 
                 df = df[['eftertræningsmængde', 'test_loss_mean']]
@@ -58,30 +54,28 @@ def plot(group_df: pd.DataFrame):
 
                 label = LABELLER[fortræningsudgave]
                 color = farveopslag[fortræningsudgave]
-                ax.plot(df["eftertræningsmængde"], df[f"test_loss_mean"], label=label, color=color,
+                ax.plot(df["eftertræningsmængde"], df["test_loss_mean"], label=label, color=color,
                         marker='o', zorder=2, linewidth=3)
                 i += 1
                 curves[fortræningsudgave] = df
 
-            skæringspunkter = find_skærngspunkter(curves, ax)
-            for skæringspunkt in skæringspunkter:
-                ax.axvline(skæringspunkt, color=blue, linestyle='--', zorder=1, linewidth=3)
             ax.set_xlabel("Datamængde", fontsize=22)
             ax.set_ylabel("MAE", fontsize=22)
             ax.set_yscale("log")
             ax.set_xscale("log")
-            ax.yaxis.set_minor_formatter(ScalarFormatter())
+
+            y_ticks = np.geomspace(df['test_loss_mean'].min(), df['test_loss_mean'].max(), num=15)
+            ax.set_yticks(y_ticks)
+
             ax.yaxis.set_major_formatter(ScalarFormatter())
             ax.legend(fontsize=18)
-            # plt.setp(ax.get_xticklabels(), rotation=45, ha='right')
-            ax.tick_params(axis='x', labelrotation=45, which='minor')
-            ax.tick_params(axis='x', labelrotation=45, which='major')
+
+            ax.tick_params(axis='x', labelrotation=45)
             ticks = list(group_df['eftertræningsmængde'].unique())
             ax.set_xticks(ticks)
-            # ax.xaxis.set_minor_formatter(ScalarFormatter())
             ax.xaxis.set_major_formatter(ScalarFormatter())
             ax.tick_params(axis='both', which='major', labelsize=16)
-            ax.tick_params(axis='both', which='minor', labelsize=13)
+            ax.minorticks_off()
             ax.grid()
 
             plt.tight_layout()
@@ -103,10 +97,11 @@ LABELLER = {'uden': 'Ingen fortræning',
             }
 farveopslag = {
     'uden': corporate_red,
-    '3D-EMGP-lokalt': bright_green
+    '3D-EMGP-lokalt': bright_green,
+    '3D-EMGP-begge': navy_blue,
 }
 
-GROUPS = ['eksp2_127']
+GROUPS = ['eksp6_0']
 
 for group in tqdm(GROUPS):
     group_df = get_group_df(group)

@@ -76,9 +76,9 @@ def plot(df, fortræningsudgaver):
     ax.legend(fontsize=12)
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.tick_params(axis='both', which='minor', labelsize=13)
-    ax.set_yscale("log")
-    ax.yaxis.set_minor_formatter(ScalarFormatter())
-    ax.yaxis.set_major_formatter(ScalarFormatter())
+    # ax.set_yscale("log")
+    # ax.yaxis.set_minor_formatter(ScalarFormatter())
+    # ax.yaxis.set_major_formatter(ScalarFormatter())
     plt.tight_layout()
 
     plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{FIGNAVN}.jpg"))
