@@ -11,6 +11,7 @@ from scipy import stats
 
 def violinplots(dfs):
     col = 'test_loss_mean'
+    # df = {viz0.FORT_LABELLER[fort]: np.log(dfs[fort][col]) for fort in forv_fortræningsudgaver}
     df = {viz0.FORT_LABELLER[fort]: dfs[fort][col] for fort in forv_fortræningsudgaver}
     palette = [farveopslag[fort] for fort in forv_fortræningsudgaver]
     plt.figure(figsize=(10, 6))
@@ -35,6 +36,7 @@ def qqplot(dfs):
     for i, fort in enumerate(forter):
         df = dfs[fort]
         data = df[col].dropna()
+        # data = np.log(data)
 
         dot_color = farveopslag[fort]
         line_color = far.black
@@ -60,19 +62,60 @@ def qqplot(dfs):
     plt.tight_layout()
     plt.savefig(os.path.join(kørsel_path, "qq_plots.jpg"))
     plt.savefig(os.path.join(kørsel_path, "qq_plots.pdf"))
+    plt.close()
 
 def welsh_t_test(dfs):
     col = 'test_loss_mean'
     a = dfs['uden'][col]
-    b = dfs['3D-EMGP-lokalt'][col]
+    b = dfs['3D-EMGP-begge'][col]
     alternative = 'greater'
     equal_var = False
     t, p = stats.ttest_ind(a, b, alternative=alternative, equal_var=equal_var)
     print(f"middelværdi af ingen fortræning = {np.mean(a)}")
-    print(f"middelværdi af 3D-EMGP-lokalt = {np.mean(b)}")
+    print(f"middelværdi af 3D-EMGP-begge = {np.mean(b)}")
     print(f"sigma af ingen fortræning = {np.std(a)}")
-    print(f"sigma af 3D-EMGP-lokalt = {np.std(b)}")
+    print(f"sigma af 3D-EMGP-begge = {np.std(b)}")
     print(f"p-værdi = {p}")
+    print("\n")
+
+
+
+
+def bootstrap_t_test(a, b, num_bootstrap=10**6):
+    def bootstrap(data, num_bootstrap):
+        samples = np.random.choice(data, size=(num_bootstrap, len(data)), replace=True)
+        # Beregn middelværdierne for hver stikprøve
+        means = samples.mean(axis=1)
+        return means
+
+    a_bs = bootstrap(a, num_bootstrap)
+    b_bs = bootstrap(b, num_bootstrap)
+
+    diffs = a_bs - b_bs
+    # plt.hist(diffs)
+    # plt.show()
+    print(diffs.min())
+
+    p_value = np.mean(diffs < 0)
+    observed_diff = np.mean(a) - np.mean(b)
+
+    return observed_diff, p_value
+
+
+def bootstrap_analysis(dfs):
+    col = 'test_loss_mean'
+    a = dfs['uden'][col].values
+    b = dfs['3D-EMGP-begge'][col].values
+
+
+    observed_diff, p_value = bootstrap_t_test(a, b)
+
+    print(f"Middelværdi af ingen fortræning = {np.mean(a)}")
+    print(f"Middelværdi af 3D-EMGP-begge = {np.mean(b)}")
+    print(f"Sigma af ingen fortræning = {np.std(a)}")
+    print(f"Sigma af 3D-EMGP-begge = {np.std(b)}")
+    print(f"Observeret forskel = {observed_diff}")
+    print(f"p-værdi = {p_value}")
 
 
 rod = 'reports/figures/Eksperimenter/3/statistisk_signifikans'
@@ -85,16 +128,16 @@ if os.path.exists(rod):
 
 farveopslag = {
     '3D-EMGP-lokalt': far.bright_green,
-    'uden': far.corporate_red
+    'uden': far.corporate_red,
+    '3D-EMGP-begge': far.navy_blue,
 }
 
-forv_fortræningsudgaver = ['uden', '3D-EMGP-lokalt']
+forv_fortræningsudgaver = ['uden', '3D-EMGP-begge']
 
 # groups, runs = viz0.get_groups_runs('eksp3')
 for group in tqdm(groups):
     group_df = viz0.get_group_df(group)
     fortræningsudgaver, temperaturer_lp, seeds = viz0.get_loop_params_group_df(group_df)
-    # runs_in_group, fortræningsudgaver, temperaturer_lp, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
 
     assert set(fortræningsudgaver) == set(forv_fortræningsudgaver)
     assert set(temperaturer_lp) == {'optøet'}
@@ -115,5 +158,6 @@ for group in tqdm(groups):
     violinplots(dfs)
     qqplot(dfs)
     welsh_t_test(dfs)
+    bootstrap_analysis(dfs)
 
 
