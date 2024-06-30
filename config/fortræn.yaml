@@ -20,7 +20,7 @@ Selvvejledt:
       hovedtype: klogt_reg
       gamma: 0.99
       lambdaer:
-        lokalt: 100
+        lokalt: 0
         globalt: 20
       lr: 1.0e-04
       step_size: 1
