@@ -3,11 +3,11 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 25
+  n_trin: 1
   spænd:
-    - 10
-    - 5000
-  space_type: geomspace
+    - 265
+    - 265
+  space_type: linspace
   val_reduced: true
   name: QM9
 QM9:
@@ -71,10 +71,8 @@ temperaturer:
   - optøet
 lag_liste:
   - null
-seeds:
-  - 199
-  - 818
+seeds: 20
 run_baseline: false
-gruppenavn: eksp6
+gruppenavn: eksp3
 data_path: s194255/afhandling/model-5fn77j77:v0
 kørselsid: 0
