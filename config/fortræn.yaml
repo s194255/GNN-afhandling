@@ -17,10 +17,10 @@ Selvvejledt:
     epoker: 20
     log_model: True
     model:
-      hovedtype: klogt_reg
+      hovedtype: dumt
       gamma: 0.99
       lambdaer:
-        lokalt: 0
+        lokalt: 100
         globalt: 20
       lr: 1.0e-04
       step_size: 1
@@ -70,5 +70,5 @@ SelvvejledtQM9:
     seed: 42
 qm9_path: s194255/afhandling/model-5fn77j77:v0
 modelklasse: Selvvejledt
-group: RegVsClass_0
+group: KlogVsDumt_0
 ckpt: null
