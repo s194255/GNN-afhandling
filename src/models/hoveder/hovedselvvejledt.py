@@ -2,7 +2,7 @@ import lightning as L
 import torch
 from torch import Tensor
 from torch.autograd import grad
-from src.models.hoveder.fælles import GatedEquivariantMotor
+from src.models.hoveder.fælles import GatedEquivariantMotor, LinearMotor
 
 
 class HovedSelvvejledtKlogt(L.LightningModule):
@@ -23,7 +23,16 @@ class HovedSelvvejledtKlogt(L.LightningModule):
         self.beregn_globalt = beregn_globalt
 
 
-        self.lokal_motor = GatedEquivariantMotor(
+        self.lokal_motor = self.create_lokal_motor()
+
+        self.global_motor = self.create_global_motor()
+        self.derivative = True
+        self.criterion_globalt = torch.nn.CrossEntropyLoss()
+        self.criterion_lokalt = torch.nn.MSELoss(reduction='none')
+        self.reset_parameters()
+
+    def create_lokal_motor(self):
+        return GatedEquivariantMotor(
             hidden_channels=self.hidden_channels,
             out_channels=1,
             means=torch.zeros(size=(1,)),
@@ -31,11 +40,6 @@ class HovedSelvvejledtKlogt(L.LightningModule):
             num_layers=self.num_layers,
             reduce_op=self.reduce_op
         )
-        self.global_motor = self.create_global_motor()
-        self.derivative = True
-        self.criterion_globalt = torch.nn.CrossEntropyLoss()
-        self.criterion_lokalt = torch.nn.MSELoss(reduction='none')
-        self.reset_parameters()
 
     def create_global_motor(self):
         return GatedEquivariantMotor(
@@ -120,8 +124,24 @@ class HovedSelvvejledtKlogtReg(HovedSelvvejledtKlogt):
 
 
 class HovedSelvvejledtDumt(HovedSelvvejledtKlogt):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        raise NotImplementedError
+    def create_global_motor(self):
+        return LinearMotor(
+            hidden_channels=self.hidden_channels * 2,
+            out_channels=self.n_noise_trin,
+            means=torch.zeros(size=(self.n_noise_trin,)),
+            stds=torch.ones(size=(self.n_noise_trin,)),
+            num_layers=self.num_layers,
+            reduce_op=self.reduce_op
+        )
+
+    def create_lokal_motor(self):
+        return LinearMotor(
+            hidden_channels=self.hidden_channels,
+            out_channels=1,
+            means=torch.zeros(size=(1,)),
+            stds=torch.ones(size=(1,)),
+            num_layers=self.num_layers,
+            reduce_op=self.reduce_op
+        )
 
 

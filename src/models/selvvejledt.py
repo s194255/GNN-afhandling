@@ -26,28 +26,19 @@ class Selvvejledt(Grundmodel):
         self.riemannGaussian = RiemannGaussian()
 
     def create_hoved(self):
+        args = {
+            'n_noise_trin': self.args_dict['n_noise_trin'],
+            'hidden_channels': self.hidden_channels,
+            'beregn_lokalt': self.beregn_lokalt,
+            'beregn_globalt': self.beregn_globalt
+        }
+        args = {**args, **self.args_dict['hoved']}
         if self.args_dict['hovedtype'] == "klogt":
-            return HovedSelvvejledtKlogt(
-                **self.args_dict['hoved'],
-                hidden_channels=self.hidden_channels,
-                n_noise_trin=self.args_dict['n_noise_trin'],
-                beregn_lokalt=self.beregn_lokalt,
-                beregn_globalt=self.beregn_globalt,
-            )
+            return HovedSelvvejledtKlogt(**args)
         elif self.args_dict['hovedtype'] == "klogt_reg":
-            return HovedSelvvejledtKlogtReg(
-                **self.args_dict['hoved'],
-                hidden_channels=self.hidden_channels,
-                n_noise_trin=self.args_dict['n_noise_trin'],
-                beregn_lokalt=self.beregn_lokalt,
-                beregn_globalt=self.beregn_globalt,
-            )
+            return HovedSelvvejledtKlogtReg(**args)
         elif self.args_dict['hovedtype'] == "dumt":
-            return HovedSelvvejledtDumt(
-                **self.args_dict['hoved'],
-                hidden_channels=self.hidden_channels,
-                n_noise_trin=self.args_dict['n_noise_trin']
-            )
+            return HovedSelvvejledtDumt(**args)
         else:
             raise NotImplementedError
 

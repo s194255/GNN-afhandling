@@ -1,8 +1,2 @@
 reduce_op: sum
-lokalt:
-  atomref: null
-  max_z: 100
-  std: 1.0
-  mean: 0.0
-globalt:
-  num_layers: 1
+num_layers: 1

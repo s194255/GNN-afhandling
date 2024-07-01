@@ -56,8 +56,13 @@ class LinearMotor(L.LightningModule):
         self.register_buffer('means', means)
         self.register_buffer('stds', stds)
 
-    def forward(self, z, pos, batch, x, v):
+    def forward(self, batch, x, v):
         x = scatter(x, batch, dim=0, reduce=self.reduce_op)
         x = self.motor(x)
         x = x * self.stds + self.means
         return x
+
+    def reset_parameters(self):
+        for layer in self.motor:
+            if isinstance(layer, torch.nn.Linear):
+                layer.reset_parameters()
