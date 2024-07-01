@@ -81,7 +81,7 @@ def welsh_t_test(dfs):
 
 
 
-def bootstrap_t_test(a, b, num_bootstrap=10**6):
+def bootstrap_t_test(a, b, num_bootstrap=10**7):
     def bootstrap(data, num_bootstrap):
         samples = np.random.choice(data, size=(num_bootstrap, len(data)), replace=True)
         # Beregn middelværdierne for hver stikprøve
