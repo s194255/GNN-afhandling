@@ -15,7 +15,8 @@ def debugify_config(config):
     config['datasæt']['batch_size'] = 4
     config['datasæt']['num_workers'] = 0
     config['datasæt']['n_trin'] = 1
-    config['group'] = 'fortræningDebug'
+    if config['qm9_path'] is not None:
+        config['group'] = 'fortræningDebug'
     for opgave in get_opgaver_in_config(config):
         for variant in config[opgave].keys():
             config[opgave][variant]['epoker'] = 2
@@ -50,7 +51,7 @@ def main():
     else:
         selvvejledt, qm9bygger = r.build_selvvejledt(args_dict=args_dict, datasæt_dict=datasæt_dict, modelklasse_str=modelklasse_str)
         artefakt_sti = None
-    if config['qm9_path']:
+    if config['qm9_path'] is not None:
         # _, qm9bygger, _, _ = r.get_selvvejledt_fra_wandb(config, config['qm9_path'])
         qm9bygger = r.get_qm9bygger_fra_wandb(config, config['qm9_path'])
         tags.remove('qm9bygger')
