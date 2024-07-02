@@ -78,7 +78,7 @@ seeds:
   - 665
   - 204
   - 505
-  - 910,
+  - 910
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-5fn77j77:v0
