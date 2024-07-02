@@ -79,7 +79,8 @@ def plot(df, fortræningsudgaver):
     plot_kernel_baseline(ax, x_values, x, far.yellow, predicted_attribute)
 
     # Tilpasning af akserne og labels
-    ax.set_xlabel('Datamængde', fontsize=16)
+    # ax.set_xlabel('Datamængde', fontsize=16)
+    ax.set_xlabel(r'$N_{træn}$', fontsize=16)
     ax.set_ylabel('MAE', fontsize=16)
     ax.set_title(TITLER[temperatur], fontsize=22)
     ax.set_xticks(x)

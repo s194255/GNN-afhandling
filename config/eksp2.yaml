@@ -67,13 +67,19 @@ rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-ez3wssr5:v0
   - uden
+  - s194255/afhandling/model-yv2fp0x8:v0
+  - s194255/afhandling/model-by37rvha:v0
+  - s194255/afhandling/model-uvv3hn84:v144
 temperaturer:
   - optøet
 lag_liste:
   - null
 seeds:
-  - 462
+  - 665
+  - 204
+  - 505
+  - 910,
 run_baseline: false
 gruppenavn: eksp2
 data_path: s194255/afhandling/model-5fn77j77:v0
-kørselsid: 1
+kørselsid: 0
