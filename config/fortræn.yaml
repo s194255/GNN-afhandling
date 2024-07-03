@@ -42,9 +42,9 @@ Selvvejledt:
       lambdaer:
         lokalt: 100
         globalt: 20
-      lr: 3.0e-05
+      lr: 1.0e-04
       step_size: 1
-      ønsket_lr: 3.0e-05
+      ønsket_lr: 1.0e-04
       opvarmningsperiode: 1
       noise_fra: -2
       noise_til: 0
