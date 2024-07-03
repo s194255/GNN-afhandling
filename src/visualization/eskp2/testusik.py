@@ -22,7 +22,7 @@ LABELLER = {'uden': 'Ingen fortræning',
             '3D-EMGP-begge': 'Begge'
             }
 
-groups = ['eksp2_88', 'eksp2_83']
+groups = ['eksp2_0']
 for group in tqdm(groups):
     group_df = viz0.get_group_df(group)
     fortræningsudgaver, temperaturer, seeds = viz0.get_loop_params_group_df(group_df)

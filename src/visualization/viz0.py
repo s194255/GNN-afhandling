@@ -178,7 +178,7 @@ def get_group_df(group):
     else:
         print("laver nyt cache")
         gruppenavn = group.split("_")[0]
-        runs = wandb.Api().runs("afhandling")
+        runs = wandb.Api(timeout=29).runs("afhandling")
         runs = list(filter(lambda w: is_suitable(w, gruppenavn), runs))
         runs_in_group, _, _, _, _ = get_loops_params(group, runs)
         df = get_df(runs_in_group)

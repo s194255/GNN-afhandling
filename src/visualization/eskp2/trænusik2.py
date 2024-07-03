@@ -141,12 +141,10 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
                 label = LABELLER[fortræningsudgave] if j == 0 else None
                 ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker, color=farve, label=label,
                            marker='o', edgecolor='black', alpha=1.0, zorder=3)
+        titel = f'%-vis reduktion ift. Ingen'
+        ylabel = '%'
 
-        if col == 'normalized_test_loss':
-            # ax.yaxis.set_major_locator(MultipleLocator(25))  # Hovedticks hver 25 enheder
-            # ax.yaxis.set_minor_locator(AutoMinorLocator(5))  # Mindre ticks hver 5 enheder
-            titel = f'%-vis reduktion ift. Ingen'
-            ylabel = '%'
+        ax.axhline(y=-0.355*100, color='red', linestyle='--', linewidth=2, label='Opr. forbedring')
 
         # Tilpasning af akserne og labels
         ax.set_xlabel('Datamængde', fontsize=16)
