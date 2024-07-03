@@ -1,5 +1,5 @@
 datasæt:
-  batch_size: 128
+  batch_size: 90
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 4
@@ -17,7 +17,7 @@ Selvvejledt:
     epoker: 20
     log_model: True
     model:
-      hovedtype: dumt
+      hovedtype: klogt
       gamma: 0.99
       lambdaer:
         lokalt: 100
@@ -37,20 +37,20 @@ Selvvejledt:
     epoker: 15
     log_model: True
     model:
-      hovedtype: klogt_reg
+      hovedtype: klogt
       gamma: 0.99
       lambdaer:
         lokalt: 100
-        globalt: 0
+        globalt: 20
       lr: 3.0e-05
       step_size: 1
       ønsket_lr: 3.0e-05
       opvarmningsperiode: 1
       noise_fra: -2
-      noise_til: 1
+      noise_til: 0
       n_noise_trin: 50
       log_gradient: false
-      weight_decay: 1.0e-2
+      weight_decay: 1.0e-7
 SelvvejledtQM9:
   QM9:
     epoker: 150
