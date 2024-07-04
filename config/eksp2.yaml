@@ -34,6 +34,7 @@ QM9:
     epoker: 300
     steps: -1
     gradient_clipping: null
+    mixed: true
     model:
       hovedtype: klogt
       gamma: 0.99
@@ -42,7 +43,7 @@ QM9:
       ønsket_lr: 5.0e-03
       opvarmningsperiode: 1
       predicted_attribute: 0
-      weight_decay: 1.0e-06
+      weight_decay: 1.0e-08
       loss: L1
       frossen_opvarmningsperiode: null
       log_gradient: false
