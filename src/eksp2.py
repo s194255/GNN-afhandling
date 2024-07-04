@@ -164,9 +164,9 @@ class Eksp2:
 
     def main(self):
 
-        løkke = product(self.config['temperaturer'], self.seeds, self.config['lag_liste'],
+        løkke = product(self.seeds, self.config['temperaturer'], self.config['lag_liste'],
                         range(self.qm9Bygger2Hoved.n_trin), self.config['udgaver'])
-        for temperatur, seed, lag, i, udgave in løkke:
+        for seed, temperatur, lag, i, udgave in løkke:
             self.eftertræn(udgave=udgave, temperatur=temperatur,
                            seed=seed, i=i, lag=lag)
 
