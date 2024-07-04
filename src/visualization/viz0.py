@@ -160,15 +160,6 @@ def main_filter2(run, rygrad_runid):
     return run_rygrad_runid == rygrad_runid
 
 
-FORT_LABELLER = {'uden': 'Ingen fortræning',
-            'Selvvejledt': '3D-EMGP',
-            'SelvvejledtQM9': 'QM9-fortræning',
-            '3D-EMGP-lokalt': 'Lokalt',
-            '3D-EMGP-globalt': 'Globalt',
-            '3D-EMGP-begge': 'Lokalt+Globalt'
-            }
-
-
 def get_group_df(group):
     if not os.path.exists(CACHE):
         os.makedirs(CACHE)
@@ -245,3 +236,11 @@ FARVEOPSLAG = {
     'SelvvejledtQM9': far.orange,
     'uden': far.corporate_red,
 }
+
+FORT_LABELLER = {'uden': 'Ingen fortræning',
+            'Selvvejledt': '3D-EMGP',
+            'SelvvejledtQM9': 'QM9-fortræning',
+            '3D-EMGP-lokalt': 'Lokal',
+            '3D-EMGP-globalt': 'Global',
+            '3D-EMGP-begge': 'Lokal+Global'
+            }

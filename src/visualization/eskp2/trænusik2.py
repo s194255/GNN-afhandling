@@ -211,6 +211,34 @@ def trænusik4(df, fortræer):
     plt.savefig(os.path.join(rod(group), f"{temperatur}_trænusik2.pdf"))
     plt.close()
 
+
+def samfattabelmager(df, fortræer):
+    x_values = df['eftertræningsmængde'].unique()
+    x_values.sort()
+    inder = lambda x_value: f'{int(x_value)}'
+
+    samfattabel = {'fortræningsudgave': []}
+    samfattabel = {**samfattabel, **{inder(x_value): [] for x_value in x_values}}
+    samfattabel = pd.DataFrame(data=samfattabel)
+    for fortræ in fortræer:
+        række = {'fortræningsudgave': [viz0.FORT_LABELLER[fortræ]]}
+        for x_value in x_values:
+            idxs = df['fortræningsudgave'] == fortræ
+            idxs = (idxs) & (df['eftertræningsmængde'] == x_value)
+            mean = df[idxs][['test_loss_mean']].mean()
+            std = df[idxs][['test_loss_mean']].std()
+            række[inder(x_value)] = mean
+        samfattabel = pd.concat([samfattabel, pd.DataFrame(data=række)], ignore_index=True)
+    latex_table = samfattabel.to_latex(index=False, float_format="%.2f")
+    start = latex_table.find(viz0.FORT_LABELLER['uden'])
+    end = latex_table.find(r'\end{tabular}')
+    latex_table = latex_table[start:end]
+    a = 2
+    path = os.path.join(rod(group), f"{temperatur}_trænusik.tex")
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(latex_table)
+
+
 stjerner = viz0.get_stjerner()
 print(stjerner)
 groups = [f'eksp2_{stjerne}' for stjerne in stjerner]
@@ -234,3 +262,4 @@ for group in tqdm(groups):
         # plot(df, fortræningsudgaver)
         plot_normalisere_enkelt(df, fortræningsudgaver)
         trænusik4(df, fortræningsudgaver)
+        samfattabelmager(df, fortræningsudgaver)
