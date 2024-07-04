@@ -24,8 +24,8 @@ LABELLER = {'uden': 'Ingen fortræning',
 
 
 
-FIGNAVN = 'søjle'
-ROOT = os.path.join('reports/figures/Eksperimenter/4', FIGNAVN)
+# FIGNAVN = 'søjle'
+ROOT = os.path.join('reports/figures/Eksperimenter/4')
 
 farver = [far.corporate_red, far.blue, far.yellow, far.navy_blue, far.bright_green, far.orange]
 stjerner = {
@@ -42,9 +42,9 @@ def plot_kernel_baseline(ax, x_values, x, farve):
                edgecolor=far.black)
 
 
-def plot(df):
+def plot(group_df):
     # Opsætning for søjlerne
-    x_values = df['eftertræningsmængde'].unique()
+    x_values = group_df['eftertræningsmængde'].unique()
     x_values.sort()
 
     temperaturer = ['frossen', 'optøet']
@@ -64,7 +64,7 @@ def plot(df):
 
         # fortræningsudgave = fortræningsudgaver[i]
         temperatur = temperaturer[i]
-        målinger = df[df['temperatur'] == temperatur][['eftertræningsmængde', 'test_loss_mean']]
+        målinger = group_df[group_df['temperatur'] == temperatur][['eftertræningsmængde', 'test_loss_mean']]
         søjlehøjde = målinger.groupby('eftertræningsmængde').mean().reset_index()['test_loss_mean']
         if len(søjlehøjde) != len(x_values):
             continue
@@ -93,36 +93,54 @@ def plot(df):
     ax.yaxis.set_major_formatter(ScalarFormatter())
     plt.tight_layout()
 
-    plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.jpg"))
-    plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.pdf"))
+    plt.savefig(os.path.join(rod(group), f"{temperatur}_trænusik2.jpg"))
+    plt.savefig(os.path.join(rod(group), f"{temperatur}_trænusik2.pdf"))
     plt.close()
 
 if os.path.exists(ROOT):
     shutil.rmtree(ROOT)
-
-runs = wandb.Api().runs("afhandling")
-runs = list(filter(lambda w: viz0.is_suitable(w, 'eksp2'), runs))
-df = None
-kørsel_path = os.path.join(ROOT)
-os.makedirs(kørsel_path)
-
-for temperatur in ['frossen', 'optøet']:
-    group = stjerner[temperatur]
-    runs_in_group, fortræningsudgaver, temperaturer_lp, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
-    eftertræningsmængder = viz0.get_eftertræningsmængder(group, runs)
-    assert len(temperaturer_lp) == 1
-    assert list(temperaturer_lp)[0] == temperatur
-    # kørsel_path = os.path.join(ROOT, f'{}'
-
-    runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur,
-                                                           fortræningsudgave='3D-EMGP-lokalt', seed=None), runs_in_group))
-    df_linje = viz0.get_df(runs_filtered)
-    if df is None:
-        df = {col: [] for col in df_linje.columns}
-        df = pd.DataFrame(data=df)
-    df = pd.concat([df, pd.DataFrame(data=df_linje)], ignore_index=True)
-print(df)
-plot(df)
+#
+# runs = wandb.Api().runs("afhandling")
+# runs = list(filter(lambda w: viz0.is_suitable(w, 'eksp2'), runs))
+# df = None
+# kørsel_path = os.path.join(ROOT)
+# os.makedirs(kørsel_path)
+#
+# for temperatur in ['frossen', 'optøet']:
+#     group = stjerner[temperatur]
+#     runs_in_group, fortræningsudgaver, temperaturer_lp, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
+#     eftertræningsmængder = viz0.get_eftertræningsmængder(group, runs)
+#     assert len(temperaturer_lp) == 1
+#     assert list(temperaturer_lp)[0] == temperatur
+#     # kørsel_path = os.path.join(ROOT, f'{}'
+#
+#     runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur,
+#                                                            fortræningsudgave='3D-EMGP-lokalt', seed=None), runs_in_group))
+#     df_linje = viz0.get_df(runs_filtered)
+#     if df is None:
+#         df = {col: [] for col in df_linje.columns}
+#         df = pd.DataFrame(data=df)
+#     df = pd.concat([df, pd.DataFrame(data=df_linje)], ignore_index=True)
+# print(df)
+# plot(df)
 
 
     # plot(df_linje, fortræningsudgaver)
+
+groups = ['eksp2_0']
+kørsel_path = os.path.join(ROOT)
+os.makedirs(kørsel_path)
+
+# groups, runs = viz0.get_groups_runs('eksp2')
+for group in tqdm(groups):
+    group_root = os.path.join(ROOT, group)
+    if os.path.exists(group_root):
+        shutil.rmtree(group_root)
+    os.makedirs(group_root, exist_ok=True)
+    group_df = viz0.get_group_df(group)
+    with plt.rc_context({'font.family': 'sans-serif', 'font.sans-serif': ['Arial']}):
+        # plot(df, fortræningsudgaver)
+        # plot_normalisere_enkelt(df, fortræningsudgaver)
+        # trænusik4(df, fortræningsudgaver)
+        # samfattabelmager(df, fortræningsudgaver)
+        pass

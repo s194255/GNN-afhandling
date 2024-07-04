@@ -37,7 +37,7 @@ def klogtVsDumt():
 
 def weight_decay2():
     group_df = viz0.get_group_df('eksp4_2')
-    weightdecays = group_df['weight_decay'].unique()
+    weightdecays = sorted(group_df['weight_decay'].unique())
     for weightdecay in weightdecays:
         idxs = group_df['weight_decay'] == weightdecay
         mean = group_df[idxs]['test_loss_mean'].mean()

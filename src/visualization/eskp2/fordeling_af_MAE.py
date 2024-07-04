@@ -16,26 +16,31 @@ print("færdig med at importere")
 rod = 'reports/figures/Eksperimenter/FrossenVOptøet/fordeling_af_MAE'
 temperaturer = ['frossen', 'optøet']
 FIGNAVN = 'fordeling_af_MAE'
-groups = ['eksp4_1']
+groups = ['eksp4_3']
 farveopslag = {
     'frossen': blue,
     'optøet': corporate_red
+}
+templabeller = {
+    'frossen': 'Frossen',
+    'optøet': 'Optøet',
 }
 
 if os.path.exists(rod):
     shutil.rmtree(rod)
 
+plot_hist = False
 
 def plot_violin(dfs: dict, ax: plt.Axes):
     col = 'test_loss_mean'
     temperaturer = list(dfs.keys())
-    df = {temp: dfs[temp][col] for temp in temperaturer}
+    df = {templabeller[temp]: dfs[temp][col] for temp in temperaturer}
     palette = [farveopslag[temp] for temp in temperaturer]
 
-    violinplot(data=df, palette=palette, ax=ax)
+    violinplot(data=df, palette=palette, ax=ax, inner='box')
 
-    ax.set_xticks(range(len(dfs.keys())))
-    ax.set_xticklabels(dfs.keys(), fontsize=13)
+    ax.set_xticks(range(len(df.keys())))
+    ax.set_xticklabels(df.keys(), fontsize=13)
     ax.set_yticks(ax.get_yticks())
     ax.set_yticklabels(ax.get_yticks(), fontsize=13)
     ax.set_ylabel('MAE', fontsize=15)
@@ -77,6 +82,11 @@ def welsh_t_test(dfs):
     alternative = 'two-sided'
     equal_var = False
     t, p = ttest_ind(a, b, alternative=alternative, equal_var=equal_var)
+    for t in ['frossen', 'optøet']:
+        print(f"temperatur = {t}")
+        print(f"mean = {dfs[t][col].mean()}")
+        print(f"std = {dfs[t][col].std()}")
+        print("\n")
     # print(f"middelværdi af ingen fortræning = {np.mean(a)}")
     # print(f"middelværdi af 3D-EMGP-lokalt = {np.mean(b)}")
     print(f"p-værdi = {p}")
@@ -114,11 +124,18 @@ for group in tqdm(groups):
         df = df[df['fortræningsudgave'] == fortræningsudgave]
         dfs[temperatur] = df
 
-    fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(14, 5))
-    axs = axs.ravel()
+    if plot_hist:
+        fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(14, 5))
+        axs = axs.ravel()
 
-    plothist(dfs, axs[0])
-    plot_violin(dfs, axs[1])
+        plothist(dfs, axs[0])
+        plot_violin(dfs, axs[1])
+    else:
+        fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(7, 5))
+        # axs = axs.ravel()
+
+        # plothist(dfs, )
+        plot_violin(dfs, ax)
     plt.tight_layout()
     plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.jpg"))
     plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.pdf"))
