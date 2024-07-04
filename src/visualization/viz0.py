@@ -8,6 +8,9 @@ import numpy as np
 import os
 import yaml
 
+from src.visualization import farver as far
+
+
 def indlæs_yaml(sti):
     with open(sti, encoding='utf-8') as f:
         config_dict = yaml.safe_load(f)
@@ -162,7 +165,7 @@ FORT_LABELLER = {'uden': 'Ingen fortræning',
             'SelvvejledtQM9': 'QM9-fortræning',
             '3D-EMGP-lokalt': 'Lokalt',
             '3D-EMGP-globalt': 'Globalt',
-            '3D-EMGP-begge': 'Begge'
+            '3D-EMGP-begge': 'Lokalt+Globalt'
             }
 
 
@@ -234,3 +237,11 @@ def set_size(fraction=1):
 
     return fig_dim
 
+
+FARVEOPSLAG = {
+    '3D-EMGP-lokalt': far.green,
+    '3D-EMGP-globalt': far.blue,
+    '3D-EMGP-begge': far.navy_blue,
+    'SelvvejledtQM9': far.orange,
+    'uden': far.corporate_red,
+}

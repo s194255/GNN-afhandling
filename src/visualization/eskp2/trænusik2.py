@@ -1,3 +1,4 @@
+import copy
 import shutil
 import os
 import matplotlib.pyplot as plt
@@ -8,38 +9,26 @@ from tqdm import tqdm
 from src.visualization import viz0
 import numpy as np
 import pandas as pd
+import scipy.stats as st
 
-TITLER = {'frossen': "Dyst (frossen)",
-          'optøet': "Dyst"}
+TITLER = {'frossen': "Sammenligning (frossen)",
+          'optøet': "Sammenligning"}
 
-LABELLER = {'uden': 'Ingen fortræning',
-            'Selvvejledt': '3D-EMGP',
-            'SelvvejledtQM9': 'QM9-fortræning',
-            '3D-EMGP-lokalt': 'Lokalt',
-            '3D-EMGP-globalt': 'Globalt',
-            '3D-EMGP-begge': 'Begge'
-            }
-FARVEOPSLAG = {
-    '3D-EMGP-lokalt': far.bright_green,
-    '3D-EMGP-globalt': far.blue,
-    '3D-EMGP-begge': far.navy_blue,
-    'SelvvejledtQM9': far.orange,
-    'uden': far.corporate_red,
-}
+YLABEL = r'MAE $ma_0^3$'
+XLABEL = r'Datamængde ($N_{træn}$)'
 fignavn = {
     'trad': 'trænusik2',
     'norm': 'trænusik2_normaliseret'
 }
 rod = lambda x: os.path.join('reports/figures/Eksperimenter/2', x)
-
-# farver = [far.corporate_red, far.blue, far.navy_blue, far.bright_green, far.orange, far.yellow]
-
+KERNELBASELINEFARVE = far.black
 
 def plot_kernel_baseline(ax, x_values, x, farve, predicted_attribute):
     kernel = viz0.kernel_baseline(predicted_attribute)
     # x = np.linspace(30, 500, 1000)
     y = kernel(x_values)
-    ax.scatter(x, y, color=farve, marker="d", label="kernel baseline", s=80,
+    idxs = x_values >= 100
+    ax.scatter(x[idxs], y[idxs], color=farve, marker="d", label="kernel baseline", s=80,
                edgecolor=far.black)
 
 
@@ -58,7 +47,6 @@ def plot(df, fortræningsudgaver):
 
     fig, ax = plt.subplots(figsize=(9, 7))
 
-    # Plot søjlerne og prikkerne
     for i in range(num_models):
 
         fortræningsudgave = fortræningsudgaver[i]
@@ -66,36 +54,30 @@ def plot(df, fortræningsudgaver):
         søjlehøjde = målinger.groupby('eftertræningsmængde').mean().reset_index()['test_loss_mean']
         if len(søjlehøjde) != len(x_values):
             continue
-        farve = FARVEOPSLAG[fortræningsudgave]
+        farve = viz0.FARVEOPSLAG[fortræningsudgave]
         bars = ax.bar(x + (i + 0.5 - num_models / 2) * bar_width, søjlehøjde,
                       bar_width, color=farve, alpha=0.85)
         for j in range(len(x_values)):
             prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]]['test_loss_mean']
             n2 = len(prikker)
-            label = LABELLER[fortræningsudgave] if j==0 else None
+            label = viz0.FORT_LABELLER[fortræningsudgave] if j==0 else None
             ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
                        color=farve, label=label, marker='o', edgecolor='black', alpha=1.0)
 
-    plot_kernel_baseline(ax, x_values, x, far.yellow, predicted_attribute)
+    plot_kernel_baseline(ax, x_values, x, KERNELBASELINEFARVE, predicted_attribute)
 
-    # Tilpasning af akserne og labels
-    # ax.set_xlabel('Datamængde', fontsize=16)
-    ax.set_xlabel(r'$N_{træn}$', fontsize=16)
-    ax.set_ylabel('MAE', fontsize=16)
+    ax.set_xlabel(XLABEL, fontsize=16)
+    ax.set_ylabel(YLABEL, fontsize=16)
     ax.set_title(TITLER[temperatur], fontsize=22)
     ax.set_xticks(x)
     ax.set_xticklabels(x_values.astype(int))
     ax.legend(fontsize=12)
     ax.tick_params(axis='both', which='major', labelsize=16)
     ax.tick_params(axis='both', which='minor', labelsize=13)
-    # ax.set_yscale("log")
-    # ax.yaxis.set_minor_formatter(ScalarFormatter())
-    # ax.yaxis.set_major_formatter(ScalarFormatter())
     plt.tight_layout()
 
-    kørsel_path = kørsel_paths['trad']
-    plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{fignavn['trad']}.jpg"))
-    plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{fignavn['trad']}.pdf"))
+    plt.savefig(os.path.join(rod(group), f"{temperatur}_{fignavn['trad']}.jpg"))
+    plt.savefig(os.path.join(rod(group), f"{temperatur}_{fignavn['trad']}.pdf"))
     plt.close()
 
 def plot_normalisere_enkelt(df1, fortræningsudgaver):
@@ -103,6 +85,7 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
     x_values = df1['eftertræningsmængde'].unique()
     x_values.sort()
     # fortræningsudgaver = list(set(fortræningsudgaver) - {'uden'})
+    fortræningsudgaver =  copy.deepcopy(fortræningsudgaver)
     fortræningsudgaver.remove('uden')
     num_models = len(fortræningsudgaver)
 
@@ -132,13 +115,13 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
 
             if len(søjlehøjde) != len(x_values):
                 continue
-            farve = FARVEOPSLAG[fortræningsudgave]
+            farve = viz0.FARVEOPSLAG[fortræningsudgave]
             bars = ax.bar(x + (i + 0.5 - num_models / 2) * bar_width, søjlehøjde, bar_width, color=farve,
                           alpha=0.85, zorder=2)
             for j in range(len(x_values)):
                 prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]][col]
                 n2 = len(prikker)
-                label = LABELLER[fortræningsudgave] if j == 0 else None
+                label = viz0.FORT_LABELLER[fortræningsudgave] if j == 0 else None
                 ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker, color=farve, label=label,
                            marker='o', edgecolor='black', alpha=1.0, zorder=3)
         titel = f'%-vis reduktion ift. Ingen'
@@ -147,7 +130,7 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
         ax.axhline(y=-0.355*100, color='red', linestyle='--', linewidth=2, label='Opr. forbedring')
 
         # Tilpasning af akserne og labels
-        ax.set_xlabel('Datamængde', fontsize=16)
+        ax.set_xlabel(XLABEL, fontsize=16)
         ax.set_ylabel(ylabel, fontsize=16)
         ax.set_title(titel, fontsize=22)
         ax.set_xticks(x)
@@ -158,37 +141,96 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
         ax.tick_params(axis='both', which='minor', labelsize=13)
 
     plt.tight_layout()
-    kørsel_path = kørsel_paths['norm']
-    plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{fignavn['norm']}.jpg"))
-    plt.savefig(os.path.join(kørsel_path, f"{temperatur}_{fignavn['norm']}.pdf"))
+    plt.savefig(os.path.join(rod(group), f"{temperatur}_{fignavn['norm']}.jpg"))
+    plt.savefig(os.path.join(rod(group), f"{temperatur}_{fignavn['norm']}.pdf"))
     plt.close()
 
-for x in fignavn.values():
-    if os.path.exists(rod(x)):
-        shutil.rmtree(rod(x))
+
+def trænusik4(df, fortræer):
+    # Opsætning for søjlerne
+    x_values = df['eftertræningsmængde'].unique()
+    x_values.sort()
+    num_models = len(fortræer)
+    predicted_attribute = df['predicted_attribute'].unique()
+    assert len(predicted_attribute) == 1
+    predicted_attribute = predicted_attribute[0]
+
+    gray = '#DADADA'
+
+    bar_width = 0.15
+    x = np.arange(len(x_values))
+
+    fig, ax = plt.subplots(figsize=(9, 7))
+
+    for i in range(num_models):
+
+        fortræ = fortræer[i]
+        målinger = df[df['fortræningsudgave'] == fortræ][['eftertræningsmængde', 'test_loss_mean']]
+        means = målinger.groupby('eftertræningsmængde').mean().reset_index()['test_loss_mean']
+        if len(means) != len(x_values):
+            continue
+        farve = viz0.FARVEOPSLAG[fortræ]
+        label = viz0.FORT_LABELLER[fortræ]
+        bars = ax.bar(x + (i + 0.5 - num_models / 2) * bar_width, means,
+                      bar_width, color=farve, alpha=1.0, label=label)
+        conf_intervals = []
+        for j in range(len(x_values)):
+            prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]]['test_loss_mean']
+            n2 = len(prikker)
+            label = viz0.FORT_LABELLER[fortræ] if j==0 else None
+            ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
+                       color=gray, marker='.', alpha=1.0,
+                       # s=20,
+                       # edgecolor=farve
+                       )
+            conf_interval = st.norm.interval(confidence=0.90, loc=np.mean(prikker), scale=st.sem(prikker))
+            conf_intervals.append(conf_interval)
+
+        conf_intervals = np.array(conf_intervals)
+        lower_errors = means - conf_intervals[:, 0]
+        upper_errors = conf_intervals[:, 1] - means
+        error_bars = [lower_errors, upper_errors]
+
+        ax.errorbar(x + (i + 0.5 - num_models / 2) * bar_width, means, yerr=error_bars, fmt='none',
+                    ecolor='black', elinewidth=1.5, capsize=5,
+                    capthick=1.5, zorder=2)
+
+    plot_kernel_baseline(ax, x_values, x, KERNELBASELINEFARVE, predicted_attribute)
+
+    ax.set_xlabel(XLABEL, fontsize=16)
+    ax.set_ylabel(YLABEL, fontsize=16)
+    ax.set_title(TITLER[temperatur], fontsize=22)
+    ax.set_xticks(x)
+    ax.set_xticklabels(x_values.astype(int))
+    ax.legend(fontsize=12)
+    ax.tick_params(axis='both', which='major', labelsize=16)
+    ax.tick_params(axis='both', which='minor', labelsize=13)
+    plt.tight_layout()
+
+    plt.savefig(os.path.join(rod(group), f"{temperatur}_trænusik2.jpg"))
+    plt.savefig(os.path.join(rod(group), f"{temperatur}_trænusik2.pdf"))
+    plt.close()
 
 stjerner = viz0.get_stjerner()
 print(stjerner)
 groups = [f'eksp2_{stjerne}' for stjerne in stjerner]
+groups = ['eksp2_0']
 
 # groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):
+    if os.path.exists(rod(group)):
+        shutil.rmtree(rod(group))
+    os.makedirs(rod(group), exist_ok=True)
     group_df = viz0.get_group_df(group)
     fortræningsudgaver, temperaturer, seeds = viz0.get_loop_params_group_df(group_df)
     eftertræningsmængder = group_df['eftertræningsmængde'].unique()
     assert len(temperaturer) == 1
     temperatur = list(temperaturer)[0]
 
-    kørsel_paths = {}
-    for k, v in fignavn.items():
-        kørsel_paths[k] = os.path.join(rod(v), group)
-        os.makedirs(kørsel_paths[k])
-
-    # runs_filtered = list(filter(lambda w: viz0.main_filter(w, temperatur, fortræningsudgave=None, seed=None), runs_in_group))
     idxs = group_df['temperatur'] == temperatur
     df = group_df[idxs]
-    # df = viz0.get_df(runs_filtered)
 
     with plt.rc_context({'font.family': 'sans-serif', 'font.sans-serif': ['Arial']}):
-        plot(df, fortræningsudgaver)
+        # plot(df, fortræningsudgaver)
         plot_normalisere_enkelt(df, fortræningsudgaver)
+        trænusik4(df, fortræningsudgaver)
