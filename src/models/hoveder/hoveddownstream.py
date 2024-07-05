@@ -143,7 +143,7 @@ class HovedDownstreamKlogtMD17(L.LightningModule):
         if dy is None:
             raise RuntimeError(
                 "Autograd returned None for the force prediction.")
-        return dy
+        return -dy
 
 
 class HovedDownstreamDumt(L.LightningModule):
