@@ -53,15 +53,16 @@ MD17:
     epoker: 300
     steps: -1
     gradient_clipping: null
+    mixed: true
     model:
       hovedtype: klogt
       gamma: 0.98
-      lr: 4.0e-01
+      lr: 4.0e-03
       step_size: 1
-      ønsket_lr: 2.5e-03
+      ønsket_lr: 2.5e-04
       opvarmningsperiode: 100
       frossen_opvarmningsperiode: 100
-      weight_decay: 1.0e-03
+      weight_decay: 1.0e-06
       loss: L2
       log_gradient: false
 rygradtype: visnet
