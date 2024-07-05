@@ -138,8 +138,8 @@ class QM9Bygger(L.LightningDataModule):
             means = dataset.y[idxs].mean(dim=0)
             stds = dataset.y[idxs].std(dim=0)
         elif self.name == 'MD17':
-            means = torch.tensor([0.0])
-            stds = torch.tensor([1.0])
+            means = dataset.energy[idxs].mean()
+            stds = dataset.energy[idxs].std()
         else:
             raise NotImplementedError
         return {'means': means, 'stds': stds}

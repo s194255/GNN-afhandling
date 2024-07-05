@@ -20,6 +20,10 @@ class Downstream(Grundmodel):
         super().__init__(*args, **kwargs)
         self.criterion = self.create_criterion()
         self.fortræningsudgave = 'uden'
+        self.enhedsfaktor = self.create_enhedsfaktor()
+
+    def create_enhedsfaktor(self) -> float:
+        raise NotImplementedError
 
     def create_criterion(self) -> dict:
         criterion = {
@@ -88,13 +92,13 @@ class Downstream(Grundmodel):
     def test_step(self, data: Data, batch_idx: int) -> None:
         pred = self(data)
         target = self.get_target(data)
-        self.metric.update(1000 * pred, 1000 * target)
+        self.metric.update(self.enhedsfaktor * pred, self.enhedsfaktor * target)
 
     def step(self, task, data, batch_idx):
         on_epoch = {'train': None, 'val': None, 'test': True}
         pred = self(data)
         target = self.get_target(data)
-        loss = 1000*self.criterion[task](pred, target)
+        loss = self.enhedsfaktor*self.criterion[task](pred, target)
         self.log(
             f"{task}_loss", loss.item(),
             batch_size=data.batch_size,
@@ -159,6 +163,9 @@ class DownstreamQM9(Downstream):
     def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
         return data.y[:, self.target_idx]
 
+    def create_enhedsfaktor(self) -> float:
+        return 1000
+
 class DownstreamMD17(Downstream):
     def forward(
             self,
@@ -174,8 +181,8 @@ class DownstreamMD17(Downstream):
         assert self.args_dict['hovedtype'] == "klogt"
         return HovedDownstreamKlogtMD17(
             **self.args_dict['hoved'],
-            means=torch.tensor(0.0),
-            stds=torch.tensor(1.0),
+            means=self.metadata['means'],
+            stds=self.metadata['stds'],
             hidden_channels=self.hidden_channels,
         )
 
@@ -194,6 +201,9 @@ class DownstreamMD17(Downstream):
     def test_step(self, data: Data, batch_idx: int) -> None:
         with torch.enable_grad():
             super().test_step(data, batch_idx)
+
+    def create_enhedsfaktor(self) -> float:
+        return 1
 
 class DownstreamQM9BaselineMean(DownstreamQM9):
 
