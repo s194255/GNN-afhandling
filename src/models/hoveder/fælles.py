@@ -28,8 +28,8 @@ class GatedEquivariantMotor(L.LightningModule):
     def forward(self, batch, x, v):
         for layer in self.motor:
             x, v = layer(x, v)
-        x = x * self.stds + self.means
         x = scatter(x, batch, dim=0, reduce=self.reduce_op)
+        x = x * self.stds + self.means
         return x
 
     def reset_parameters(self):
