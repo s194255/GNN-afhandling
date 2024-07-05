@@ -6,7 +6,7 @@ from torch import Tensor
 from torch_geometric.data import Data
 
 from src.models.grund import Grundmodel
-from src.models.hoveder.hoveddownstream import HovedDownstreamKlogt, HovedDownstreamDumt, HovedDownstreamKlogtMD17
+from src.models.hoveder.hoveddownstream import HovedDownstreamKlogt, HovedDownstreamDumt, HovedDownstreamKlogtMD17, GatedEquivariantMotor, PredictRegular
 from src.data.QM9 import QM9ByggerEksp2
 import torchmetrics
 import lightning as L
@@ -179,7 +179,13 @@ class DownstreamMD17(Downstream):
 
     def create_hoved(self):
         assert self.args_dict['hovedtype'] == "klogt"
-        return HovedDownstreamKlogtMD17(
+        # return HovedDownstreamKlogtMD17(
+        #     **self.args_dict['hoved'],
+        #     means=self.metadata['means'],
+        #     stds=self.metadata['stds'],
+        #     hidden_channels=self.hidden_channels,
+        # )
+        return PredictRegular(
             **self.args_dict['hoved'],
             means=self.metadata['means'],
             stds=self.metadata['stds'],
@@ -192,7 +198,7 @@ class DownstreamMD17(Downstream):
         return nye_args.union(super().krævne_args)
 
     def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
-        return data['force']
+        return data['energy']
     
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
