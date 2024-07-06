@@ -127,8 +127,6 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
         titel = f'%-vis reduktion ift. Ingen'
         ylabel = '%'
 
-        ax.axhline(y=-0.355*100, color='red', linestyle='--', linewidth=2, label='Opr. forbedring')
-
         # Tilpasning af akserne og labels
         ax.set_xlabel(XLABEL, fontsize=16)
         ax.set_ylabel(ylabel, fontsize=16)
