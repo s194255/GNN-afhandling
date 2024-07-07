@@ -100,11 +100,18 @@ def get_num_layers(run):
 
 def get_predicted_attribute(run):
     config = json.loads(run.json_config)
-    return config['args_dict']['value']['predicted_attribute']
+    try:
+        return config['args_dict']['value']['predicted_attribute']
+    except KeyError:
+        return 'MD17'
 
 def get_weight_decay(run):
     config = json.loads(run.json_config)
     return config['args_dict']['value']['weight_decay']
+
+def get_name(run):
+    config = json.loads(run.json_config)
+    return config['name']['value']
 
 def main_filter(run, temperatur, fortræningsudgave, seed):
     run_temperatur = get_temperatur(run)
@@ -130,8 +137,9 @@ def kernel_baseline(predicted_attribute):
     return lambda x: b*x**a
 
 def get_df(runs):
-    not_met_cols = ['seed', 'fortræningsudgave', 'temperatur', 'rygrad runid']
-    resultater = {nøgle: [] for nøgle in list(METRICS)+not_met_cols}
+    nan_allowed_cols = ['seed', 'fortræningsudgave', 'temperatur',
+                        'rygrad runid', 'predicted_attribute', 'name']
+    resultater = {nøgle: [] for nøgle in list(METRICS)+nan_allowed_cols}
     resultater = pd.DataFrame(resultater)
     for run in runs:
         resultat = {nøgle: [værdi] for nøgle, værdi in run.summary.items() if nøgle in METRICS}
@@ -143,11 +151,12 @@ def get_df(runs):
         resultat['predicted_attribute'] = get_predicted_attribute(run)
         resultat['weight_decay'] = get_weight_decay(run)
         resultat['rygrad runid'] = get_rygrad_runid(run)
+        resultat['name'] = get_name(run)
 
         resultater = pd.concat([resultater, pd.DataFrame(data=resultat)], ignore_index=True)
-    sel_cols = [col for col in resultater.columns if col not in not_met_cols]
-    resultater[sel_cols] = resultater[sel_cols].apply(pd.to_numeric, errors='coerce')
-    resultater = resultater.dropna(how='any', subset=sel_cols)
+    nan_illegal_cols = [col for col in resultater.columns if col not in nan_allowed_cols]
+    resultater[nan_illegal_cols] = resultater[nan_illegal_cols].apply(pd.to_numeric, errors='coerce')
+    resultater = resultater.dropna(how='any', subset=nan_illegal_cols)
     return resultater
 
 def get_stjerner():

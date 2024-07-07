@@ -24,6 +24,8 @@ rod = lambda x: os.path.join('reports/figures/Eksperimenter/2', x)
 KERNELBASELINEFARVE = far.black
 
 def plot_kernel_baseline(ax, x_values, x, farve, predicted_attribute):
+    if predicted_attribute == 'MD17':
+        return
     kernel = viz0.kernel_baseline(predicted_attribute)
     # x = np.linspace(30, 500, 1000)
     y = kernel(x_values)
@@ -239,8 +241,8 @@ def samfattabelmager(df, fortræer):
 
 stjerner = viz0.get_stjerner()
 print(stjerner)
-groups = [f'eksp2_{stjerne}' for stjerne in stjerner]
-groups = ['eksp2_0']
+# groups = [f'eksp2_{stjerne}' for stjerne in stjerner]
+groups = ['eksp2_0', 'eksp2_2']
 
 # groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):

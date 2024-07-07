@@ -15,7 +15,7 @@ args = parser.parse_args()
 
 n = args.n
 
-pool = range(0, 1002)
+pool = range(0, 100002)
 
 if args.group != 'null':
     group_df = get_group_df(args.group)
@@ -24,7 +24,7 @@ if args.group != 'null':
     pool = list(set(pool) - set(seeds))
 
 # Træk n tilfældige heltal mellem 0 og 1001 uden tilbagelægning
-random_numbers = random.sample(range(0, 1002), n)
+random_numbers = random.sample(pool, n)
 
 # Udskriv de tilfældige tal
 print("De tilfældige tal er:", random_numbers)
