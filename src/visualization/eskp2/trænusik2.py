@@ -242,7 +242,7 @@ def samfattabelmager(df, fortræer):
 stjerner = viz0.get_stjerner()
 print(stjerner)
 # groups = [f'eksp2_{stjerne}' for stjerne in stjerner]
-groups = ['eksp2_0', 'eksp2_2']
+groups = ['eksp2_0', 'eksp2-md17_0']
 
 # groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):

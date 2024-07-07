@@ -66,8 +66,8 @@ def plot(group_df: pd.DataFrame):
 
             y_ticks = np.geomspace(df['test_loss_mean'].min(), df['test_loss_mean'].max(), num=15)
             ax.set_yticks(y_ticks)
-
             ax.yaxis.set_major_formatter(ScalarFormatter())
+
             ax.legend(fontsize=18)
 
             ax.tick_params(axis='x', labelrotation=45)

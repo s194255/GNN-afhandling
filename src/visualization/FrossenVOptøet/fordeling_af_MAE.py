@@ -86,6 +86,7 @@ def welsh_t_test(dfs):
         print(f"temperatur = {t}")
         print(f"mean = {dfs[t][col].mean()}")
         print(f"std = {dfs[t][col].std()}")
+        print(f"runtime = {dfs[t]['_runtime'].mean()}")
         print("\n")
     # print(f"middelværdi af ingen fortræning = {np.mean(a)}")
     # print(f"middelværdi af 3D-EMGP-lokalt = {np.mean(b)}")

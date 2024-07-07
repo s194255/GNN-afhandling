@@ -3,7 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import pandas as pd
 # from src.visualization.farver import farver
-from matplotlib.ticker import ScalarFormatter
+from matplotlib.ticker import ScalarFormatter, FuncFormatter
 import src.visualization.farver as far
 from tqdm import tqdm
 from src.visualization import viz0
@@ -25,14 +25,14 @@ def plot_faser(dfs: dict):
         e_p_s = df['epoch'].max() / df[x_col].max()
         data = df[[x_col, col]].dropna(how='any')
         x, y = data[x_col] * e_p_s, data[col]
-
+        label = LABELLER[temperatur]
 
         # Plot data
-        ax.plot(x, y, color=farve, label=f'{temperatur}', linewidth=4)
+        ax.plot(x, y, color=farve, label=label, linewidth=4)
 
         # Generel plot indstillinger
         ax.set_xlabel('Epoke', fontsize=16)
-        ax.set_ylabel('MAE', fontsize=16)
+        ax.set_ylabel('Læringsrate', fontsize=16)
         ax.tick_params(axis='both', which='major', labelsize=16)
         ax.tick_params(axis='both', which='minor', labelsize=14)
         ax.grid(True)  # Tilføj grid for bedre læsbarhed
@@ -66,20 +66,28 @@ def plot_faser(dfs: dict):
             ax.text(x_skille + (max(x) - x_skille) / 2, y_cord, 'fase 2', ha='center', va='center',
                     fontsize=20, color='#B24E36', zorder=2)
 
+        def custom_formatter(x, pos):
+            return f'{x:.1e}'
+
+        y_ticks = np.geomspace(df[col].min(), df[col].max(), num=5)
+        ax.set_yticks(y_ticks)
+        ax.yaxis.set_major_formatter(FuncFormatter(custom_formatter))
+
+        ax.minorticks_off()
 
         ax.legend(fontsize=28)
 
     plt.tight_layout()
 
-    fignavn = 'faser'
-    rod = os.path.join('reports/figures/Eksperimenter/FrossenVOptøet', fignavn)
+    # fignavn = 'faser'
+    # rod = os.path.join('reports/figures/Eksperimenter/FrossenVOptøet', fignavn)
+    #
+    # if os.path.exists(rod):
+    #     shutil.rmtree(rod)
+    # os.makedirs(rod)
 
-    if os.path.exists(rod):
-        shutil.rmtree(rod)
-    os.makedirs(rod)
-
-    plt.savefig(os.path.join(rod, f"{fignavn}.jpg"))
-    plt.savefig(os.path.join(rod, f"{fignavn}.pdf"))
+    plt.savefig(os.path.join(grupperod, f"faser.jpg"))
+    plt.savefig(os.path.join(grupperod, f"faser.pdf"))
     # plt.show()
     plt.close()
 
@@ -112,9 +120,11 @@ def plot(dfs: dict):
     plt.tight_layout()
     plt.subplots_adjust(top=0.92)
     fig.suptitle('Træningsmetrikker over epoker', fontsize=28)  # Tilføj hovedtitel
-    plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.jpg"))
-    plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.pdf"))
+    # plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.jpg"))
+    # plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.pdf"))
     plt.legend()
+    plt.savefig(os.path.join(grupperod, f"træningskurve.jpg"))
+    plt.savefig(os.path.join(grupperod, f"træningskurve.pdf"))
     plt.close()
 
 
@@ -122,18 +132,11 @@ def plot(dfs: dict):
 TITLER = {'frossen': "Frossen rygrad",
           'optøet': "Optøet rygrad"}
 
-LABELLER = {'uden': 'Ingen fortræning',
-            'Selvvejledt': '3D-EMGP',
-            'SelvvejledtQM9': 'QM9 fortræning',
-            '3D-EMGP-lokalt': '3D-EMGP kun lokalt',
-            '3D-EMGP-globalt': '3D-EMGP kun globalt',
-            '3D-EMGP-begge': '3D-EMGP'
-            }
+LABELLER = {
+    'frossen': 'Frossen',
+    'optøet': 'Optøet'
+}
 temperaturer = ['frossen', 'optøet']
-
-
-FIGNAVN = 'træningskurve'
-ROOT = os.path.join('reports/figures/Eksperimenter/FrossenVOptøet', FIGNAVN)
 
 farveopslag = {
     'optøet': far.corporate_red,
@@ -144,24 +147,49 @@ stjerner = {
     'frossen': 'eksp2_88'
 }
 
+ROOT = os.path.join('reports/figures/Eksperimenter/FrossenVOptøet')
 
-if os.path.exists(ROOT):
-    shutil.rmtree(ROOT)
-
+groups = ['eksp4_3']
 runs = wandb.Api().runs("afhandling")
-runs = list(filter(lambda w: viz0.is_suitable(w, 'eksp2'), runs))
-df = None
-kørsel_path = os.path.join(ROOT)
-os.makedirs(kørsel_path)
+# runs = list(filter(lambda w: viz0.is_suitable(w, 'eksp2'), runs))
 
+for group in groups:
+    grupperod = os.path.join(ROOT, group)
+    os.makedirs(grupperod, exist_ok=True)
 
-dfs = {}
-for temperatur in temperaturer:
-    group = stjerner[temperatur]
-    runs_in_group, fortræningsudgaver, temperaturer_lp, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
-    runs_in_group = list(filter(lambda run: viz0.get_eftertræningsmængde(run) == 500, runs_in_group))
-    run = random.choice(runs_in_group)
-    print(temperatur, run.id)
-    dfs[temperatur] = run.history()
-plot(dfs)
-plot_faser(dfs)
+    runs_in_group, fortræningsudgaver, _, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
+    temper = ['frossen', 'optøet']
+    # runs_in_group = list(filter(lambda run: viz0.get_eftertræningsmængde(run) == 500, runs_in_group))
+    dfs = {}
+    for temp in temper:
+        temp_runs = list(filter(lambda run: viz0.get_temperatur(run) == temp, runs_in_group))
+        run = random.choice(temp_runs)
+        dfs[temp] = run.history(samples=10000)
+    plot_faser(dfs)
+    plot(dfs)
+    # run = random.choice(runs_in_group)
+    # plot_faser(group_df)
+
+# FIGNAVN = 'træningskurve'
+# ROOT = os.path.join('reports/figures/Eksperimenter/FrossenVOptøet', FIGNAVN)
+#
+# if os.path.exists(ROOT):
+#     shutil.rmtree(ROOT)
+#
+# runs = wandb.Api().runs("afhandling")
+# runs = list(filter(lambda w: viz0.is_suitable(w, 'eksp2'), runs))
+# df = None
+# kørsel_path = os.path.join(ROOT)
+# os.makedirs(kørsel_path)
+#
+#
+# dfs = {}
+# for temperatur in temperaturer:
+#     group = stjerner[temperatur]
+#     runs_in_group, fortræningsudgaver, temperaturer_lp, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
+#     runs_in_group = list(filter(lambda run: viz0.get_eftertræningsmængde(run) == 500, runs_in_group))
+#     run = random.choice(runs_in_group)
+#     print(temperatur, run.id)
+#     dfs[temperatur] = run.history()
+# plot(dfs)
+# plot_faser(dfs)
