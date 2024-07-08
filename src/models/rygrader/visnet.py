@@ -1005,58 +1005,58 @@ class Atomref(torch.nn.Module):
         return x + self.atomref(z)
 
 
-class ViSNet(L.LightningModule):
-    def __init__(
-        self,
-        lmax: int = 1,
-        vecnorm_type: Optional[str] = None,
-        trainable_vecnorm: bool = False,
-        num_heads: int = 8,
-        num_layers: int = 6,
-        hidden_channels: int = 128,
-        num_rbf: int = 32,
-        trainable_rbf: bool = False,
-        max_z: int = 100,
-        cutoff: float = 5.0,
-        max_num_neighbors: int = 32,
-        vertex: bool = False,
-    ) -> None:
-        super().__init__()
-
-        self.motor = ViSNetBlock(
-            lmax=lmax,
-            vecnorm_type=vecnorm_type,
-            trainable_vecnorm=trainable_vecnorm,
-            num_heads=num_heads,
-            num_layers=num_layers,
-            hidden_channels=hidden_channels,
-            num_rbf=num_rbf,
-            trainable_rbf=trainable_rbf,
-            max_z=max_z,
-            cutoff=cutoff,
-            max_num_neighbors=max_num_neighbors,
-            vertex=vertex,
-        )
-        self.distance = Distance(cutoff, max_num_neighbors=max_num_neighbors)
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        r"""Resets the parameters of the module."""
-        self.motor.reset_parameters()
-
-
-    def forward(
-        self,
-        z: Tensor,
-        pos: Tensor,
-        batch: Tensor,
-    ) -> Tuple[Tensor, Optional[Tensor]]:
-        if self.derivative:
-            pos.requires_grad_(True)
-        edge_index, edge_weight, edge_vec = self.distance(pos, batch)
-        x, v, edge_attr = self.motor(z, pos, batch,
-                                     edge_index, edge_weight, edge_vec)
-        return x, v, edge_attr
+# class ViSNet(L.LightningModule):
+#     def __init__(
+#         self,
+#         lmax: int = 1,
+#         vecnorm_type: Optional[str] = None,
+#         trainable_vecnorm: bool = False,
+#         num_heads: int = 8,
+#         num_layers: int = 6,
+#         hidden_channels: int = 128,
+#         num_rbf: int = 32,
+#         trainable_rbf: bool = False,
+#         max_z: int = 100,
+#         cutoff: float = 5.0,
+#         max_num_neighbors: int = 32,
+#         vertex: bool = False,
+#     ) -> None:
+#         super().__init__()
+#
+#         self.motor = ViSNetBlock(
+#             lmax=lmax,
+#             vecnorm_type=vecnorm_type,
+#             trainable_vecnorm=trainable_vecnorm,
+#             num_heads=num_heads,
+#             num_layers=num_layers,
+#             hidden_channels=hidden_channels,
+#             num_rbf=num_rbf,
+#             trainable_rbf=trainable_rbf,
+#             max_z=max_z,
+#             cutoff=cutoff,
+#             max_num_neighbors=max_num_neighbors,
+#             vertex=vertex,
+#         )
+#         self.distance = Distance(cutoff, max_num_neighbors=max_num_neighbors)
+#         self.reset_parameters()
+#
+#     def reset_parameters(self):
+#         r"""Resets the parameters of the module."""
+#         self.motor.reset_parameters()
+#
+#
+#     def forward(
+#         self,
+#         z: Tensor,
+#         pos: Tensor,
+#         batch: Tensor,
+#     ) -> Tuple[Tensor, Optional[Tensor]]:
+#         if self.derivative:
+#             pos.requires_grad_(True)
+#         edge_index, edge_weight, edge_vec = self.distance(pos, batch)
+#         x, v, edge_attr = self.motor(z, pos, batch,
+#                                      edge_index, edge_weight, edge_vec)
+#         return x, v, edge_attr
 
 class VisNetRygrad(L.LightningModule):
     args = {'lmax': 1,

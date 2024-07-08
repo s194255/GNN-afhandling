@@ -163,13 +163,16 @@ class Eksp2:
         wandb.finish()
 
     def main(self):
-
-        løkke = product(self.seeds, self.config['temperaturer'], self.config['lag_liste'],
-                        range(self.qm9Bygger2Hoved.n_trin), self.config['udgaver'])
-        for seed, temperatur, lag, i, udgave in løkke:
-            self.eftertræn(udgave=udgave, temperatur=temperatur,
-                           seed=seed, i=i, lag=lag)
-
+        løkkedata = {
+            'seed': self.seeds,
+            'temperatur': self.config['temperaturer'],
+            'lag': self.config['lag_liste'],
+            'i': range(self.qm9Bygger2Hoved.n_trin),
+            'udgave': self.config['udgaver']
+        }
+        løkke = (dict(zip(løkkedata.keys(), values)) for values in product(*løkkedata.values()))
+        for kombi in løkke:
+            self.eftertræn(**kombi)
 
 if __name__ == "__main__":
     args = parserargs()
