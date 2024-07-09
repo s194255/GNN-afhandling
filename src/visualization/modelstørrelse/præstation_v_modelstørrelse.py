@@ -22,7 +22,7 @@ print("færdig med at importere")
 rod = 'reports/figures/Eksperimenter/modelstørrelse/modelstørrelse'
 temperaturer = ['frossen', 'optøet']
 FIGNAVN = 'modelstørrelse'
-groups = ['eksp5_0']
+groups = ['eksp5_1']
 farveopslag = {
     'frossen': blue,
     'optøet': corporate_red
@@ -36,7 +36,9 @@ def plot(group_df: pd.DataFrame):
     golden_ratio = (5 ** .5 - 1) / 2
     w = 14
     h = 6
-    plt.figure(figsize=(w, h))
+    plt.figure(figsize=(w, w*golden_ratio))
+    group_df = group_df[['hidden_channels', 'test_loss_mean', '_runtime']]
+    group_df = group_df.groupby('hidden_channels').mean().reset_index()
     plt.plot(group_df['_runtime'], group_df['test_loss_mean'],
              marker='o', color=corporate_red, linewidth=3, markersize=40)
 
@@ -49,38 +51,53 @@ def plot(group_df: pd.DataFrame):
                  f"{row['hidden_channels']:.0f}",
                  fontsize=18, ha='center', va='center', color=white)
 
-    log_log = True
+    log_log = False
     ax = plt.gca()
     if log_log:
-        x_margin = 100
-        y_margin = 100
         ax.set_xscale("log")
         ax.set_yscale("log")
-        ax.set_xlim([max(group_df['_runtime'].min() - x_margin, 1), group_df['_runtime'].max() + 100*x_margin])
-        ax.set_ylim([group_df['test_loss_mean'].min() - y_margin, group_df['test_loss_mean'].max() + 50*y_margin])
+
+        x_margin = 0.3
+        y_margin = 0.3
+        ax.set_xlim([np.exp(np.log(group_df['_runtime'].min()) - x_margin),
+                     np.exp(np.log(group_df['_runtime'].max()) + x_margin)])
+
+        ax.set_ylim([np.exp(np.log(group_df['test_loss_mean'].min()) - y_margin),
+                     np.exp(np.log(group_df['test_loss_mean'].max()) + y_margin)])
+
+        # ax.set_ylim([group_df['test_loss_mean'].min() - y_margin, group_df['test_loss_mean'].max() + 50*y_margin])
 
         x_ticks = group_df['_runtime'].unique()
         ax.set_xticks(x_ticks)
-        x_ticks = list(map(lambda x: f'{x:.2e}', x_ticks))
+        x_ticks = list(map(lambda x: f'{x:.0f}', x_ticks))
         ax.set_xticklabels(x_ticks, fontsize=13)
 
         y_ticks = np.geomspace(group_df['test_loss_mean'].min(), group_df['test_loss_mean'].max(), 10)
         ax.set_yticks(y_ticks)
-        y_ticks = list(map(lambda x: f'{x:.2f}', y_ticks))
+        y_ticks = list(map(lambda x: f'{x:.0f}', y_ticks))
         ax.set_yticklabels(y_ticks, fontsize=13)
 
         ax.tick_params(axis='both', which='major', labelsize=16)
         ax.tick_params(axis='both', which='minor', labelsize=14)
         ax.tick_params(axis='x', labelrotation=-20, which='minor')
         ax.tick_params(axis='x', labelrotation=-20, which='major')
+        ax.minorticks_off()
     else:
-        x_margin = 1000
-        y_margin = 1000
+        x_margin = 100
+        y_margin = 100
         ax.set_xlim([group_df['_runtime'].min() - x_margin, group_df['_runtime'].max() + x_margin])
         ax.set_ylim([group_df['test_loss_mean'].min() - y_margin, group_df['test_loss_mean'].max() + y_margin])
 
+        y_ticks = np.linspace(group_df['test_loss_mean'].min(), group_df['test_loss_mean'].max(), 15)
+        ax.set_yticks(y_ticks)
+
+        x_ticks = np.linspace(group_df['_runtime'].min(), group_df['_runtime'].max(), 20)
+        ax.set_xticks(x_ticks)
+
         ax.tick_params(axis='both', which='major', labelsize=15)
         ax.tick_params(axis='both', which='minor', labelsize=15)
+        ax.tick_params(axis='x', labelrotation=-20, which='minor')
+        ax.tick_params(axis='x', labelrotation=-20, which='major')
 
 
     # Tilføj grid og vis plot
@@ -91,24 +108,20 @@ def plot(group_df: pd.DataFrame):
     plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.svg"))
     plt.close()
 
-def plot2(group_df: pd.DataFrame):
-    fig, axs = plt.subplots(1, 2, figsize=(14, 6))
-    for i,col in enumerate(['hidden_channels', '_runtime']):
-        axs[i].plot(group_df[col], group_df['test_loss_mean'],
-                    marker='o', color=corporate_red, linewidth=3)
-
-        axs[i].set_xlabel('Hidden Channels', fontsize=14)
-        axs[i].set_ylabel('Test Loss Mean', fontsize=14)
-
-        if i == 0:
-            axs[i].set_xticks(group_df[col])
-        axs[i].grid(True)
-
-
-    # Tilføj grid og vis plot
-    plt.grid(True)
-    plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.jpg"))
-    plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.pdf"))
+def tabel(group_df: pd.DataFrame):
+    hcs = sorted(group_df['hidden_channels'].unique())
+    for hc in hcs:
+        idxs = group_df['hidden_channels'] == hc
+        mean = group_df[idxs]['test_loss_mean'].mean()
+        std = group_df[idxs]['test_loss_mean'].std()
+        runtime = group_df[idxs]['_runtime'].mean()
+        n = len(group_df[idxs]['test_loss_mean'])
+        print(f"hidden_channels = {hc}")
+        print(f"mean = {mean}")
+        print(f"std = {std}")
+        print(f"runtime = {runtime}")
+        print(f"n = {n}")
+        print("\n")
 
 
 for group in tqdm(groups):
@@ -117,4 +130,5 @@ for group in tqdm(groups):
 
     group_df = get_group_df(group)
     plot(group_df)
+    tabel(group_df)
 
