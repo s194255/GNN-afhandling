@@ -94,14 +94,6 @@ for group in tqdm(groups):
             ax.tick_params(axis='both', which='major', labelsize=26)
             ax.tick_params(axis='both', which='minor', labelsize=13)
 
-            # y_ticks = np.geomspace(group_df[group_df['seed'] == seed]['test_loss_mean'].min(),
-            #                        group_df[group_df['seed'] == seed]['test_loss_mean'].max(), num=10)
-            # ax.set_yticks(y_ticks)
-            # ax.yaxis.set_major_formatter(ScalarFormatter())
-            # ax.yaxis.set_minor_formatter(ScalarFormatter())
-            # ax.yaxis.set_major_formatter(ScalarFormatter())
-            # ax.grid(True)
-
             x_ticks = group_df[group_df['seed'] == seed]['eftertræningsmængde'].unique()
             ax.set_xticks(x_ticks)
 
