@@ -51,6 +51,43 @@ def weight_decay2():
         print(f"n = {n}")
         print("\n")
 
+def chance_for_forbedring():
+    num_bootstrap = 10000
+    group_df = viz0.get_group_df('eksp2_0')
+    ems = sorted(group_df['eftertræningsmængde'].unique())
+    for em in ems:
+        print(f"datamængde = {em}")
+        idxs = group_df['eftertræningsmængde'] == em
+        uden = (idxs) & (group_df['fortræningsudgave'] == 'uden')
+        begge = (idxs) & (group_df['fortræningsudgave'] == '3D-EMGP-begge')
+        # begge = (idxs) & (group_df['fortræningsudgave'] == 'SelvvejledtQM9')
+        assert len(group_df[uden]) == len(group_df[begge])
+        assert len(group_df[uden]) == 32
+        n = len(group_df[uden])
+
+        # bootstrap
+        samples_uden = np.random.choice(group_df[uden]['test_loss_mean'],
+                                        size=(num_bootstrap, n), replace=True)
+        samples_begge = np.random.choice(group_df[begge]['test_loss_mean'],
+                                        size=(num_bootstrap, n), replace=True)
+        samples = samples_uden - samples_begge
+
+        tal = np.mean(samples > 0)
+        print(tal)
+
+
+        #normal
+        samples_uden = np.random.normal(loc=group_df[uden]['test_loss_mean'].mean(),
+                                        scale=group_df[uden]['test_loss_mean'].mean(),
+                                        size=(num_bootstrap*32))
+        samples_begge = np.random.normal(loc=group_df[begge]['test_loss_mean'].mean(),
+                                        scale=group_df[begge]['test_loss_mean'].mean(),
+                                        size=(num_bootstrap * 32))
+        samples = samples_uden - samples_begge
+
+        tal = np.mean(samples > 0)
+        print(tal)
+        print("\n")
 
 
 # kørselid = [0, 1, 2, 3, 4, 5, 6, 7]
@@ -80,8 +117,9 @@ def weight_decay2():
 #     group_dfs.append(group_df)
 
 # regVsClass()
-klogtVsDumt()
+# klogtVsDumt()
 # weight_decay2()
+chance_for_forbedring()
 
 
 
