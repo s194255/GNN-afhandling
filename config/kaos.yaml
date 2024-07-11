@@ -1,0 +1,12 @@
+gamma:
+  bredde: 0.01
+  type: lin
+lr:
+  bredde: 2
+  type: log
+ønsket_lr:
+  bredde: 1
+  type: log
+weight_decay:
+  bredde: 3
+  type: log

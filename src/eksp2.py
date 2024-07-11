@@ -50,6 +50,7 @@ class Eksp2:
         self.udgaver = ['uden', 'med']
         self.args = args
         self.config = src.redskaber.load_config(args.eksp2_path)
+        self.kaos_config_path = 'config/kaos.yaml'
         if args.debug:
             debugify_config(self.config)
         self.init_kørselsid()
@@ -119,7 +120,23 @@ class Eksp2:
             run_id = None
 
         return downstream, run_id
-    def eftertræn(self, udgave, temperatur, seed, i, lag) -> None:
+
+    def skab_kaos(self, config_curr):
+        print("nu skaber jeg kaos")
+        kaos_conf = src.redskaber.indlæs_yaml(self.kaos_config_path)
+        for param in kaos_conf.keys():
+            cur_val = config_curr['model'][param]
+            br = kaos_conf[param]['bredde']
+            eps = 2*torch.rand(1)[0]-torch.tensor(1)
+            if kaos_conf[param]['type'] == 'log':
+                new_val = 10**(torch.log10(torch.tensor(cur_val)) + eps*br)
+            elif kaos_conf[param]['type'] == 'lin':
+                new_val = cur_val + eps*br
+            else:
+                raise NotImplementedError
+            config_curr['model'][param] = new_val.item()
+        return config_curr
+    def eftertræn(self, udgave, temperatur, seed, i, lag, kaos) -> None:
         assert temperatur in ['frossen', 'optøet']
         if seed != None:
             print(f"jeg planter frøet {seed}")
@@ -131,6 +148,8 @@ class Eksp2:
         config_curr = self.config[self.name][temperatur]
         if config_curr['mixed'] == True:
             torch.set_float32_matmul_precision('medium')
+        if kaos:
+            config_curr = self.skab_kaos(config_curr)
         downstream, run_id = self.create_downstream(udgave=udgave, lag=lag, config_curr=config_curr)
         if temperatur == "frossen":
             downstream.frys_rygrad()
@@ -167,8 +186,9 @@ class Eksp2:
             'seed': self.seeds,
             'temperatur': self.config['temperaturer'],
             'lag': self.config['lag_liste'],
+            'kaos': self.config['kaos'],
             'i': range(self.qm9Bygger2Hoved.n_trin),
-            'udgave': self.config['udgaver']
+            'udgave': self.config['udgaver'],
         }
         løkke = (dict(zip(løkkedata.keys(), values)) for values in product(*løkkedata.values()))
         for kombi in løkke:
