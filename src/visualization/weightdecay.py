@@ -6,6 +6,46 @@ import os
 import pickle
 from itertools import product
 
+def kaos():
+    group_df = viz0.get_group_df('kaos_0')
+    seeds = group_df['seed'].unique()
+    fortræer = group_df['fortræningsudgave'].unique()
+    col = 'test_loss_mean'
+    for seed, fortræ in product(seeds, fortræer):
+        idxs = group_df['fortræningsudgave'] == fortræ
+        idxs = (idxs) & (group_df['seed'] == seed)
+
+        mean = group_df[idxs][col].mean()
+        std = group_df[idxs][col].std()
+        n = len(group_df[idxs][col])
+        print(f"fortræ = {fortræ}")
+        print(f"seed = {seed}")
+        print(f"mean = {mean}")
+        print(f"std = {std}")
+        print(f"std/mean = {std / mean}")
+        print(f"n = {n}")
+        print("\n")
+
+    def compare_groups(group):
+        uden = group[group['fortræningsudgave'] == 'uden'][col].item()
+        med = group[group['fortræningsudgave'] == '3D-EMGP-begge'][col].item()
+        return med < uden
+
+    wins = group_df.groupby('seed').apply(compare_groups, include_groups=False)
+
+    # Beregn gennemsnittet af resultaterne
+    mean_wins = wins.mean()
+    print(mean_wins)
+
+    # wins = []
+    # for seed in seeds:
+    #     idxs = group_df['seed'] == seed
+    #
+    #     uden = (idxs) & (group_df['fortræningsudgave'] == 'uden')
+    #     med = (idxs) & (group_df['fortræningsudgave'] == '3D-EMGP-begge')
+    #     wins.append(group_df[med][col].item() < group_df[uden][col].item())
+    # print(np.mean(np.array(wins)))
+
 
 def nedtaktLilleVsStort():
     group_df = viz0.get_group_df('StortVsLille_1')
@@ -105,8 +145,8 @@ def weight_decay2():
 # weight_decay2()
 # chance_for_forbedring()
 
-nedtaktLilleVsStort()
-
+# nedtaktLilleVsStort()
+kaos()
 
 
 

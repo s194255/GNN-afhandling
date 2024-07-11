@@ -65,6 +65,7 @@ MD17:
       weight_decay: 1.0e-08
       loss: L2
       log_gradient: false
+      predicted_attribute: force
 rygradtype: visnet
 udgaver:
   - s194255/afhandling/model-ez3wssr5:v0
