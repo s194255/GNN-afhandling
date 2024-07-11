@@ -31,6 +31,53 @@ def getGM(group_df, idxs, fortræ):
     grid_search.fit(X)
     return grid_search
 
+def plot_hist2(group_df, ems, gmm_dict):
+    fig, axs = plt.subplots(nrows=2, ncols=3, figsize=(3/5*30, 2*6))
+    axs = axs.ravel()
+    for j, em in enumerate(ems):
+        ax = axs[j]
+        level = 0
+        idxs = group_df['eftertræningsmængde'] == em
+        linspacesart = group_df[idxs]['test_loss_mean'].min()-20
+        for i, fortræ in enumerate(['uden', '3D-EMGP-begge']):
+            gmm = gmm_dict[em][fortræ]
+            color = viz0.FARVEOPSLAG[fortræ]
+            idxs2 = (idxs) & (group_df['fortræningsudgave'] == fortræ)
+            data = group_df[idxs2]['test_loss_mean']
+            x = np.linspace(linspacesart, max(data), 1000).reshape(-1, 1)
+            logprob = gmm.score_samples(x)
+            pdf = np.exp(logprob)
+
+            # ax.hist(data, bins=20, density=True, alpha=0.8, color=color, label='observeret')
+            hist, bins = np.histogram(data, bins=20, density=True)
+            bin_centers = (bins[:-1] + bins[1:]) / 2
+
+            # Plot histogrammet
+            barlabel = viz0.FORT_LABELLER[fortræ]
+            ax.bar(bin_centers, hist, width=np.diff(bins), align='center', alpha=0.8, color=color, label=barlabel,
+                   bottom=level)
+            plot_label = 'GMM-fit' if (i==0) else None
+            ax.plot(x, pdf+level, linewidth=4, label=plot_label, color=far.black)
+            hævelevel = max(np.max(hist), np.max(pdf))
+            level += 1.2*hævelevel
+        ax.set_xlabel('MAE', fontsize=18)
+        ax.set_ylabel('Tæthed', fontsize=18)
+        title = r'$N_{træn}$ = ' + f'{int(em)}'
+        ax.set_title(title, fontsize=24)
+        ax.tick_params(axis='y', which='both', left=False, labelleft=False)
+        if j == 4:
+            ax.legend(fontsize=20)
+        ax.tick_params(axis='both', which='major', labelsize=18)
+        ax.tick_params(axis='both', which='minor', labelsize=18)
+
+    for k in range(len(ems), len(axs)):
+        fig.delaxes(axs[k])
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(group_root, "hist_gmm.jpg"))
+    plt.savefig(os.path.join(group_root, "hist_gmm.pdf"))
+    plt.close()
+
 def plot_hist(group_df, idxs, gmm_dict):
     fig, axs = plt.subplots(nrows=1, ncols=2, figsize=(20, 6))
     for i, fortræ in enumerate(['uden', '3D-EMGP-begge']):
@@ -98,19 +145,20 @@ def plot_sandsy_forbedring(forb_df: pd.DataFrame):
 def skab_sandsy_forbedring(group_df: pd.DataFrame):
     ems = sorted(group_df['eftertræningsmængde'].unique())
     plot_em = ems[-1]
-    n_samples = 10**6
+    n_samples = 10**7
     forb_df = pd.DataFrame(data={'eftertræningsmængde': [], 'sandsy_forbedring': []})
+    gmm_dict = {}
     for em in ems:
         print(f"datamængde = {em}")
         idxs = group_df['eftertræningsmængde'] == em
         samples = {}
-        gmm_dict = {}
+        gmm_dict[em] = {}
         for fortræ in ['uden', '3D-EMGP-begge']:
             gs = getGM(group_df, idxs, fortræ)
             print(f"{fortræ} bedste paramer = {gs.best_params_}")
             sample = gs.best_estimator_.sample(n_samples=n_samples)[0].squeeze(1)
             samples[fortræ] = sample
-            gmm_dict[fortræ] = gs.best_estimator_
+            gmm_dict[em][fortræ] = gs.best_estimator_
 
         diff = samples['uden'] - samples['3D-EMGP-begge']
         sandsy_forbedring = np.mean(diff > 0)
@@ -124,15 +172,18 @@ def skab_sandsy_forbedring(group_df: pd.DataFrame):
         }
         forb_df = pd.concat([forb_df, pd.DataFrame(data=række)], ignore_index=True)
         if plot_em == em:
+            pass
             # plot_violin2(group_df, idxs, samples)
-            plot_hist(group_df, idxs, gmm_dict)
+            # plot_hist(group_df, idxs, gmm_dict)
 
+    plot_hist2(group_df, ems, gmm_dict)
     plot_sandsy_forbedring(forb_df)
 
 ROOT = 'reports/figures/Eksperimenter/sandsy_forbedring'
 
 
-groups = ['eksp2_0', 'sandsyForbedring_0']
+# groups = ['eksp2_0', 'sandsyForbedring_0']
+groups = ['sandsyForbedring_0']
 for group in groups:
     group_root = os.path.join(ROOT, group)
     os.makedirs(group_root, exist_ok=True)
