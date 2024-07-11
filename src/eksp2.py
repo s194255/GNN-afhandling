@@ -145,7 +145,7 @@ class Eksp2:
             print("jeg planter ikke noget frø")
         self.qm9Bygger2Hoved.sample_train_reduced(i)
 
-        config_curr = self.config[self.name][temperatur]
+        config_curr = copy.deepcopy(self.config[self.name][temperatur])
         if config_curr['mixed'] == True:
             torch.set_float32_matmul_precision('medium')
         if kaos:
