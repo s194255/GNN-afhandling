@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import ScalarFormatter
 from src.visualization.farver import farver, blue, corporate_red, bright_green, navy_blue
 from src.visualization.viz0 import get_group_df, get_loop_params_group_df, set_size
+import src.visualization.viz0 as viz0
 import pandas as pd
 from tqdm import tqdm
 import copy
@@ -52,14 +53,14 @@ def plot(group_df: pd.DataFrame):
                 df = df[['eftertræningsmængde', 'test_loss_mean']]
                 df = df.groupby(by='eftertræningsmængde').mean().reset_index()
 
-                label = LABELLER[fortræningsudgave]
-                color = farveopslag[fortræningsudgave]
+                label = viz0.FORT_LABELLER[fortræningsudgave]
+                color = viz0.FARVEOPSLAG[fortræningsudgave]
                 ax.plot(df["eftertræningsmængde"], df["test_loss_mean"], label=label, color=color,
                         marker='o', zorder=2, linewidth=3)
                 i += 1
                 curves[fortræningsudgave] = df
 
-            ax.set_xlabel("Datamængde", fontsize=22)
+            ax.set_xlabel(r'Datamængde ($N_{træn}$)', fontsize=22)
             ax.set_ylabel("MAE", fontsize=22)
             ax.set_yscale("log")
             ax.set_xscale("log")
@@ -88,24 +89,25 @@ ROOT = 'reports/figures/Eksperimenter/6'
 if os.path.exists(ROOT):
     shutil.rmtree(ROOT)
 
-LABELLER = {'uden': 'Ingen fortræning',
-            'Selvvejledt': '3D-EMGP',
-            'SelvvejledtQM9': 'QM9-fortræning',
-            '3D-EMGP-lokalt': 'Lokalt',
-            '3D-EMGP-globalt': 'Globalt',
-            '3D-EMGP-begge': 'Begge'
-            }
-farveopslag = {
-    'uden': corporate_red,
-    '3D-EMGP-lokalt': bright_green,
-    '3D-EMGP-begge': navy_blue,
-}
+# LABELLER = {'uden': 'Ingen fortræning',
+#             'Selvvejledt': '3D-EMGP',
+#             'SelvvejledtQM9': 'QM9-fortræning',
+#             '3D-EMGP-lokalt': 'Lokalt',
+#             '3D-EMGP-globalt': 'Globalt',
+#             '3D-EMGP-begge': 'Begge'
+#             }
+# farveopslag = {
+#     'uden': corporate_red,
+#     '3D-EMGP-lokalt': bright_green,
+#     '3D-EMGP-begge': navy_blue,
+# }
 
 GROUPS = ['eksp6_0']
 
 for group in tqdm(GROUPS):
     group_df = get_group_df(group)
     fortræningsudgaver, temperaturer, seeds = get_loop_params_group_df(group_df)
+    viz0.sanity_check_group_df(group_df, 6)
 
     # runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
     # seeds = random.sample(list(seeds), k=4)

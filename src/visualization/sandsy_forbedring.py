@@ -43,7 +43,7 @@ def plot_hist(group_df, idxs, gmm_dict):
         logprob = gmm.score_samples(x)
         pdf = np.exp(logprob)
 
-        ax.hist(data, bins=10, density=True, alpha=0.8, color=color, label='observeret')
+        ax.hist(data, bins=20, density=True, alpha=0.8, color=color, label='observeret')
         ax.plot(x, pdf, linewidth=4, label='GMM-fit', color=far.black)
         ax.set_title(viz0.FORT_LABELLER[fortræ], fontsize=22)
         ax.set_xlabel('MAE', fontsize=18)
@@ -69,9 +69,9 @@ def plot_sandsy_forbedring(forb_df: pd.DataFrame):
             markersize=10, label='Sandsynlighed for forbedring')
 
     # Tilføj titler og labels
-    ax.set_title('Sandsynlighed for forbedring vs. Datamængde', fontsize=16)
-    ax.set_xlabel(r'Datamængde ($N_{træn}$)', fontsize=14)
-    ax.set_ylabel('Sandsynlighed for forbedring', fontsize=14)
+    # ax.set_title('Sandsynlighed for forbedring vs. Datamængde', fontsize=16)
+    ax.set_xlabel(r'Datamængde ($N_{træn}$)', fontsize=22)
+    ax.set_ylabel('Sandsynlighed for forbedring', fontsize=22)
 
     # Tilføj grid
     ax.grid(True, linestyle='--', alpha=0.6)
@@ -86,7 +86,7 @@ def plot_sandsy_forbedring(forb_df: pd.DataFrame):
     unique_xticks = forb_df['eftertræningsmængde'].unique()
     ax.set_xticks(unique_xticks)
 
-    ax.tick_params(axis='both', which='both', labelsize=14)
+    ax.tick_params(axis='both', which='both', labelsize=16)
 
     # Gem figuren i både jpg og pdf format
     filename = 'sandsyforb_vs_datamængde'

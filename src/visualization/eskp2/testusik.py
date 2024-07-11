@@ -1,16 +1,11 @@
-import random
 import shutil
 import os
 import matplotlib.pyplot as plt
-from matplotlib.ticker import ScalarFormatter
-from src.visualization.farver import farver
 from src.visualization import viz0
-import pandas as pd
 from tqdm import tqdm
 import copy
-import numpy as np
-from itertools import product
 
+from src.visualization.viz0 import sanity_check_group_df
 
 ROOT = 'reports/figures/Eksperimenter/2/testusik'
 
@@ -25,30 +20,11 @@ LABELLER = {'uden': 'Ingen fortræning',
             '3D-EMGP-begge': 'Begge'
             }
 
-def sanity_check_group_df(group_df):
-    assert len(group_df['seed'].unique()) == 32
-    fortræer = group_df['fortræningsudgave'].unique()
-    datamængder = group_df['eftertræningsmængde'].unique()
-    for fortræ, datamængde in product(fortræer, datamængder):
-        idxs = group_df['fortræningsudgave'] == fortræ
-        idxs = (idxs) & (group_df['eftertræningsmængde'] == datamængde)
-        if len(group_df[idxs]) != 32:
-            print(f"fortræ = {fortræ}, datamængde = {datamængde}  er ikke ok. Den har {len(group_df[idxs])} frø!")
-            duplicates = group_df[idxs]['seed'].value_counts()
-            duplicates = duplicates[duplicates > 1].index
-            print("Gengangere i serien:", duplicates)
-            print("\n")
-        else:
-            print(f"fortræ = {fortræ}, datamængde = {datamængde}  er ok")
-            print("\n")
-        # assert len(group_df[idxs]) == 33
-
-
 groups = ['eksp2_0']
 for group in tqdm(groups):
     group_df = viz0.get_group_df(group)
     fortræningsudgaver, temperaturer, seeds = viz0.get_loop_params_group_df(group_df)
-    sanity_check_group_df(group_df)
+    sanity_check_group_df(group_df, 32)
 
     # runs_in_group, fortræningsudgaver, temperaturer, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
 

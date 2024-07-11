@@ -1,4 +1,5 @@
 import pickle
+from itertools import product
 
 import wandb
 import pandas as pd
@@ -181,7 +182,7 @@ def get_group_df(group):
     else:
         print("laver nyt cache")
         gruppenavn = group.split("_")[0]
-        runs = wandb.Api(timeout=29).runs("afhandling")
+        runs = wandb.Api(timeout=290).runs("afhandling")
         runs = list(filter(lambda w: is_suitable(w, gruppenavn), runs))
         runs_in_group, _, _, _, _ = get_loops_params(group, runs)
         df = get_df(runs_in_group)
@@ -253,3 +254,22 @@ FORT_LABELLER = {'uden': 'Ingen fortræning',
             '3D-EMGP-globalt': 'Global',
             '3D-EMGP-begge': 'Lokal+Global'
             }
+
+
+def sanity_check_group_df(group_df, num_seeds):
+    assert len(group_df['seed'].unique()) == num_seeds
+    fortræer = group_df['fortræningsudgave'].unique()
+    datamængder = group_df['eftertræningsmængde'].unique()
+    for fortræ, datamængde in product(fortræer, datamængder):
+        idxs = group_df['fortræningsudgave'] == fortræ
+        idxs = (idxs) & (group_df['eftertræningsmængde'] == datamængde)
+        if len(group_df[idxs]) != num_seeds:
+            print(f"fortræ = {fortræ}, datamængde = {datamængde}  er ikke ok. Den har {len(group_df[idxs])} frø!")
+            duplicates = group_df[idxs]['seed'].value_counts()
+            duplicates = duplicates[duplicates > 1].index
+            print("Gengangere i serien:", duplicates)
+            print("\n")
+        else:
+            print(f"fortræ = {fortræ}, datamængde = {datamængde}  er ok")
+            print("\n")
+        # assert len(group_df[idxs]) == 33
