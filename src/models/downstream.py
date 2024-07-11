@@ -198,7 +198,6 @@ class DownstreamMD17(Downstream):
         return nye_args.union(super().krævne_args)
 
     def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
-        print(f"target shape = {data[self.predicted_attribute].shape}")
         return data[self.predicted_attribute]
     
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
