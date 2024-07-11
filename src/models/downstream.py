@@ -179,26 +179,27 @@ class DownstreamMD17(Downstream):
 
     def create_hoved(self):
         assert self.args_dict['hovedtype'] == "klogt"
-        return HovedDownstreamKlogtMD17(
-            **self.args_dict['hoved'],
-            means=self.metadata['means'],
-            stds=self.metadata['stds'],
-            hidden_channels=self.hidden_channels,
-        )
-        # return PredictRegular(
-        #     **self.args_dict['hoved'],
-        #     means=self.metadata['means'],
-        #     stds=self.metadata['stds'],
-        #     hidden_channels=self.hidden_channels,
-        # )
+        args = {
+            'means': self.metadata['means'],
+            'stds': self.metadata['stds'],
+            'hidden_channels': self.hidden_channels
+        }
+        args = {**args, **self.args_dict['hoved']}
+        if self.predicted_attribute == 'force':
+            return HovedDownstreamKlogtMD17(**args)
+        elif self.predicted_attribute == 'energy':
+            return PredictRegular(**args)
+        else:
+            raise NotImplementedError
 
     @property
     def krævne_args(self) -> set:
-        nye_args = {"hovedtype", "hoved"}
+        nye_args = {"predicted_attribute", "hovedtype", "hoved"}
         return nye_args.union(super().krævne_args)
 
     def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
-        return data['force']
+        print(f"target shape = {data[self.predicted_attribute].shape}")
+        return data[self.predicted_attribute]
     
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
@@ -210,6 +211,10 @@ class DownstreamMD17(Downstream):
 
     def create_enhedsfaktor(self) -> float:
         return 1
+
+    @property
+    def predicted_attribute(self):
+        return self.args_dict['predicted_attribute']
 
 class DownstreamQM9BaselineMean(DownstreamQM9):
 
