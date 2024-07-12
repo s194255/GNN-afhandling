@@ -256,10 +256,11 @@ FORT_LABELLER = {'uden': 'Ingen fortræning',
             }
 
 
-def sanity_check_group_df(group_df, num_seeds):
-    assert len(group_df['seed'].unique()) == num_seeds
+def sanity_check_group_df(group_df):
+    num_seeds = len(group_df['seed'].unique())
     fortræer = group_df['fortræningsudgave'].unique()
     datamængder = group_df['eftertræningsmængde'].unique()
+    seeds = group_df['seed'].unique()
     for fortræ, datamængde in product(fortræer, datamængder):
         idxs = group_df['fortræningsudgave'] == fortræ
         idxs = (idxs) & (group_df['eftertræningsmængde'] == datamængde)
@@ -272,4 +273,10 @@ def sanity_check_group_df(group_df, num_seeds):
         else:
             print(f"fortræ = {fortræ}, datamængde = {datamængde}  er ok")
             print("\n")
+    for seed in seeds:
+        forv_num_seeds = len(fortræer)*len(datamængder)
+        if sum(group_df['seed'] == seed) != forv_num_seeds:
+            print(f"FEJL!!! seed = {seed} er IKKE ok FEJL!!")
+        else:
+            print(f"seed = {seed} er ok")
         # assert len(group_df[idxs]) == 33
