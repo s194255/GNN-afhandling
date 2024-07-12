@@ -193,10 +193,33 @@ class DownstreamMD17(Downstream):
         else:
             raise NotImplementedError
 
+    def configure_optimizers(self):
+        if self.predicted_attribute == 'force':
+            return super().configure_optimizers()
+        elif self.predicted_attribute == 'energy':
+            lr = self.hparams.args_dict['lr']
+            weight_decay = self.hparams.args_dict['weight_decay']
+            optimizer = torch.optim.AdamW(self.parameters(), lr=lr, weight_decay=weight_decay)
+
+            gamma = self.hparams.args_dict['gamma']
+            patience = self.hparams.args_dict['patience']
+            scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=gamma, patience=patience)
+
+            return {
+                'optimizer': optimizer,
+                'lr_scheduler': {
+                    'scheduler': scheduler,
+                    'monitor': 'val_loss',  # Change this to your validation loss metric
+                    'interval': 'epoch',  # or 'step', depending on when you want to check the metric
+                    'frequency': 1,  # how often to check the metric
+                }
+            }
+
     @property
     def krævne_args(self) -> set:
-        nye_args = {"predicted_attribute", "hovedtype", "hoved"}
-        return nye_args.union(super().krævne_args)
+        nye_args = {"predicted_attribute", "hovedtype", "hoved", "patience"}
+        bortfaldne_args = {'step_size', 'ønsket_lr', "opvarmningsperiode"}
+        return nye_args.union(super().krævne_args) - bortfaldne_args
 
     def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
         return data[self.predicted_attribute]
