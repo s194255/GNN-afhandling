@@ -137,7 +137,7 @@ def kernel_baseline(predicted_attribute):
     b = y1/x1**a
     return lambda x: b*x**a
 
-def get_df(runs):
+def get_df(runs, remove_nan=True):
     nan_allowed_cols = ['seed', 'fortræningsudgave', 'temperatur',
                         'rygrad runid', 'predicted_attribute', 'name']
     resultater = {nøgle: [] for nøgle in list(METRICS)+nan_allowed_cols}
@@ -157,7 +157,8 @@ def get_df(runs):
         resultater = pd.concat([resultater, pd.DataFrame(data=resultat)], ignore_index=True)
     nan_illegal_cols = [col for col in resultater.columns if col not in nan_allowed_cols]
     resultater[nan_illegal_cols] = resultater[nan_illegal_cols].apply(pd.to_numeric, errors='coerce')
-    resultater = resultater.dropna(how='any', subset=nan_illegal_cols)
+    if remove_nan:
+        resultater = resultater.dropna(how='any', subset=nan_illegal_cols)
     return resultater
 
 def get_stjerner():
@@ -170,7 +171,7 @@ def main_filter2(run, rygrad_runid):
     return run_rygrad_runid == rygrad_runid
 
 
-def get_group_df(group):
+def get_group_df(group, remove_nan=True):
     if not os.path.exists(CACHE):
         os.makedirs(CACHE)
     cache_path = os.path.join(CACHE, f"{group}.pickle")
@@ -185,7 +186,7 @@ def get_group_df(group):
         runs = wandb.Api(timeout=290).runs("afhandling")
         runs = list(filter(lambda w: is_suitable(w, gruppenavn), runs))
         runs_in_group, _, _, _, _ = get_loops_params(group, runs)
-        df = get_df(runs_in_group)
+        df = get_df(runs_in_group, remove_nan)
         cache = {
             'df': df
         }
