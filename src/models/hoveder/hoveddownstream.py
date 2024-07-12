@@ -120,8 +120,10 @@ class HovedDownstreamKlogtMD17(L.LightningModule):
                  stds: torch.Tensor,
                  num_layers: int = 2,
                  reduce_op: str = "sum",
+                 calc_forces: bool = True,
                  ):
         super().__init__()
+        self.calc_forces = calc_forces
         self.motor = PredictRegular(
             hidden_channels=hidden_channels,
             means=means,
@@ -131,19 +133,23 @@ class HovedDownstreamKlogtMD17(L.LightningModule):
         )
 
     def forward(self, z, pos, batch, x, v):
-        x = self.motor(z, pos, batch, x, v)
-        grad_outputs = [torch.ones_like(x)]
-        dy = grad(
-            [x],
-            [pos],
-            grad_outputs=grad_outputs,
-            create_graph=True,
-            retain_graph=True,
-        )[0]
-        if dy is None:
-            raise RuntimeError(
-                "Autograd returned None for the force prediction.")
-        return -dy
+        energy = self.motor(z, pos, batch, x, v)
+        if self.calc_forces:
+            grad_outputs = [torch.ones_like(energy)]
+            dy = grad(
+                [energy],
+                [pos],
+                grad_outputs=grad_outputs,
+                create_graph=True,
+                retain_graph=True,
+            )[0]
+            if dy is None:
+                raise RuntimeError(
+                    "Autograd returned None for the force prediction.")
+            forces = -dy
+        else:
+            forces = None
+        return energy, forces
 
 
 class HovedDownstreamDumt(L.LightningModule):

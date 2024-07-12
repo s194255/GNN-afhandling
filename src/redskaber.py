@@ -107,7 +107,7 @@ def get_n_epoker(artefakt_sti, run_id):
         return state_dict_epoch
 
 def indlæs_wandb_path(selv_ckpt_path):
-    api = wandb.Api()
+    api = wandb.Api(timeout=60)
     artefakt = api.artifact(selv_ckpt_path)
     artefakt_sti = os.path.join(artefakt.download(), 'model.ckpt')
     try:

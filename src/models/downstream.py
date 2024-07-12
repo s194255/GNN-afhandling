@@ -172,37 +172,35 @@ class DownstreamMD17(Downstream):
             data: torch_geometric.data.Data
     ) -> Tuple[Tensor, Optional[Tensor]]:
         z, pos, batch, edge_index = data.z, data.pos, data.batch, data.edge_index
-        if self.predicted_attribute == 'force':
+        if self.calc_forces:
             pos.requires_grad_(True)
         x, v, edge_attr, _ = self.rygrad(z, pos, batch, edge_index)
-        y = self.hoved(z, pos, batch, x, v)
-        return y
+        energy, forces = self.hoved(z, pos, batch, x, v)
+        return energy, forces
 
     def create_hoved(self):
         assert self.args_dict['hovedtype'] == "klogt"
         args = {
             'means': self.metadata['means'],
             'stds': self.metadata['stds'],
-            'hidden_channels': self.hidden_channels
+            'hidden_channels': self.hidden_channels,
+            'calc_forces': self.calc_forces
         }
         args = {**args, **self.args_dict['hoved']}
-        if self.predicted_attribute == 'force':
-            return HovedDownstreamKlogtMD17(**args)
-        elif self.predicted_attribute == 'energy':
-            return PredictRegular(**args)
-        else:
-            raise NotImplementedError
+        return HovedDownstreamKlogtMD17(**args)
 
     def configure_optimizers(self):
-        if self.predicted_attribute == 'force':
+        if self.args_dict['lr_scheduler_type'] == 'warmup':
+            print("OBS bruger GAMLE optimizer/LR-SCHEDULER")
             return super().configure_optimizers()
-        elif self.predicted_attribute == 'energy':
+        elif self.args_dict['lr_scheduler_type'] == 'plateau':
             lr = self.hparams.args_dict['lr']
             weight_decay = self.hparams.args_dict['weight_decay']
             optimizer = torch.optim.AdamW(self.parameters(), lr=lr, weight_decay=weight_decay)
 
             gamma = self.hparams.args_dict['gamma']
             patience = self.hparams.args_dict['patience']
+            scheduler_freq = self.hparams.args_dict['scheduler_freq']
             scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=gamma, patience=patience)
 
             return {
@@ -211,22 +209,59 @@ class DownstreamMD17(Downstream):
                     'scheduler': scheduler,
                     'monitor': 'val_loss',  # Change this to your validation loss metric
                     'interval': 'epoch',  # or 'step', depending on when you want to check the metric
-                    'frequency': 1,  # how often to check the metric
+                    'frequency': scheduler_freq,  # how often to check the metric
                 }
             }
+        else:
+            raise NotImplementedError
+
+    def step(self, task, data, batch_idx):
+        on_epoch = {'train': None, 'val': None, 'test': True}
+
+        loss_energy = torch.tensor(0.0, device=self.device)
+        loss_forces = torch.tensor(0.0, device=self.device)
+
+        pred_energy, pred_forces = self(data)
+        if self.calc_forces:
+            target_forces = data['force']
+            loss_forces = self.enhedsfaktor * self.criterion[task](pred_forces, target_forces)
+
+        if self.calc_energy:
+            target_energy = data['energy']
+            loss_energy = self.enhedsfaktor * self.criterion[task](pred_energy, target_energy)
+
+        loss_combined = self.args_dict['lambdaer']['force'] * loss_forces + self.args_dict['lambdaer']['energy'] * loss_energy
+
+        log_dict = {
+            f"{task}_energy_loss": loss_energy,
+            f"{task}_force_loss": loss_forces,
+            f"{task}_loss": loss_combined
+        }
+        self.log_dict(log_dict, batch_size=data.batch_size)
+        return loss_combined
 
     @property
     def krævne_args(self) -> set:
-        if self.predicted_attribute == 'energy':
-            nye_args = {"predicted_attribute", "hovedtype", "hoved", "patience"}
+        if self.args_dict['lr_scheduler_type'] == 'plateau':
+            nye_args = {"lambdaer", "hovedtype", "hoved", "patience", "lr_scheduler_type", "scheduler_freq"}
             bortfaldne_args = {'step_size', 'ønsket_lr', "opvarmningsperiode"}
             return nye_args.union(super().krævne_args) - bortfaldne_args
-        elif self.predicted_attribute == 'force':
-            nye_args = {"predicted_attribute", "hovedtype", "hoved"}
+        elif self.args_dict['lr_scheduler_type'] == 'warmup':
+            nye_args = {"hovedtype", "hoved", "lambdaer", "lr_scheduler_type"}
             return nye_args.union(super().krævne_args)
+        else:
+            raise NotImplementedError
 
-    def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
-        return data[self.predicted_attribute]
+    def on_test_epoch_end(self) -> None:
+        pass
+
+    @property
+    def calc_forces(self) -> bool:
+        return self.args_dict['lambdaer']['force'] != 0
+
+    @property
+    def calc_energy(self) -> bool:
+        return self.args_dict['lambdaer']['energy'] != 0
     
     def validation_step(self, data: Data, batch_idx: int) -> torch.Tensor:
         with torch.enable_grad():
@@ -234,14 +269,10 @@ class DownstreamMD17(Downstream):
             
     def test_step(self, data: Data, batch_idx: int) -> None:
         with torch.enable_grad():
-            super().test_step(data, batch_idx)
+            self.step('test', data, batch_idx)
 
     def create_enhedsfaktor(self) -> float:
         return 1
-
-    @property
-    def predicted_attribute(self):
-        return self.args_dict['predicted_attribute']
 
 class DownstreamQM9BaselineMean(DownstreamQM9):
 
@@ -266,7 +297,8 @@ class DownstreamMD17BaselineMean(DownstreamMD17):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.register_buffer("mean", copy.deepcopy(self.metadata['means']))
-        assert self.predicted_attribute == 'energy', 'baseline virker kun for energy'
+        raise NotImplementedError
+        # assert self.predicted_attribute == 'energy', 'baseline virker kun for energy'
 
     def create_rygrad(self):
         return L.LightningModule()
