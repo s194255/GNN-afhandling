@@ -172,7 +172,8 @@ class DownstreamMD17(Downstream):
             data: torch_geometric.data.Data
     ) -> Tuple[Tensor, Optional[Tensor]]:
         z, pos, batch, edge_index = data.z, data.pos, data.batch, data.edge_index
-        pos.requires_grad_(True)
+        if self.predicted_attribute == 'force':
+            pos.requires_grad_(True)
         x, v, edge_attr, _ = self.rygrad(z, pos, batch, edge_index)
         y = self.hoved(z, pos, batch, x, v)
         return y
