@@ -217,9 +217,13 @@ class DownstreamMD17(Downstream):
 
     @property
     def krævne_args(self) -> set:
-        nye_args = {"predicted_attribute", "hovedtype", "hoved", "patience"}
-        bortfaldne_args = {'step_size', 'ønsket_lr', "opvarmningsperiode"}
-        return nye_args.union(super().krævne_args) - bortfaldne_args
+        if self.predicted_attribute == 'energy':
+            nye_args = {"predicted_attribute", "hovedtype", "hoved", "patience"}
+            bortfaldne_args = {'step_size', 'ønsket_lr', "opvarmningsperiode"}
+            return nye_args.union(super().krævne_args) - bortfaldne_args
+        elif self.predicted_attribute == 'force':
+            nye_args = {"predicted_attribute", "hovedtype", "hoved"}
+            return nye_args.union(super().krævne_args)
 
     def get_target(self, data: torch_geometric.data.Data) -> torch.Tensor:
         return data[self.predicted_attribute]
