@@ -10,6 +10,7 @@ from src.visualization import viz0
 import numpy as np
 import pandas as pd
 import scipy.stats as st
+import seaborn as sns
 
 def sejrsstatistik(group_df: pd.DataFrame):
     # # Filtrering af NaN og inf værdier
@@ -95,7 +96,7 @@ def plot_kaos(group_df: pd.DataFrame):
     fortræer = group_df['fortræningsudgave'].unique()
     seeds = group_df['seed'].unique()
     # winners = {fortræ: [] for fortræ in fortræer}
-    winners = pd.DataFrame({'winner': [], 'test_loss_mean': []})
+    winners = pd.DataFrame({'Vindere': [], 'MAE': []})
     for seed in seeds:
         idxs = group_df['seed'] == seed
         filtered_df = group_df[idxs]
@@ -103,40 +104,26 @@ def plot_kaos(group_df: pd.DataFrame):
         if filtered_df.empty:
             continue
 
-        # if filtered_df['test_loss_mean'].isna().all():
-        #     print(f"Alle værdier er NaN for seed {seed}")
-        #     continue
-
         winner_row = filtered_df.loc[filtered_df['test_loss_mean'].idxmin()]
         winner = winner_row['fortræningsudgave']
         point = winner_row['test_loss_mean']
         # winners[winner].append(point)
-        række = {'winner': [winner], 'test_loss_mean': [point]}
+        række = {'Vindere': [viz0.FORT_LABELLER[winner]], 'MAE': [point]}
         winners = pd.concat([winners, pd.DataFrame(række)])
 
     # winners = winners.replace([np.inf, -np.inf], np.nan).dropna(subset=['test_loss_mean'])
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 2))
-    for fortræ in fortræer:
-        idxs = winners['winner'] == fortræ
-        color = viz0.FARVEOPSLAG[fortræ]
-        label = viz0.FORT_LABELLER[fortræ]
-        x = winners[idxs]['test_loss_mean']
-        ax.scatter(x=x, y=[0] * len(x), color=color, label=label)
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(10, 4))
+    # sns.set(font_scale=1)
+    palette = {viz0.FORT_LABELLER[fortræ]: viz0.FARVEOPSLAG[fortræ] for fortræ in fortræer}
+    sns.stripplot(data=winners, x='MAE', jitter=True, size=15, ax=ax, log_scale=True, dodge=True,
+                  hue='Vindere', palette=palette, edgecolor='black', linewidth=1, legend='full')
 
-    # Fjerne y-aksen
-    ax.yaxis.set_visible(False)
-
-    # Indstille x-aksen til en logaritmisk skala
-    ax.set_xscale('log')
-
-    x_ticks = np.geomspace(winners['test_loss_mean'].min(), winners['test_loss_mean'].max(), num=10)
+    x_ticks = np.geomspace(winners['MAE'].min(), winners['MAE'].max(), num=10)
     ax.set_xticks(x_ticks)
     ax.xaxis.set_major_formatter(ScalarFormatter())
     ax.minorticks_off()
 
-    # Tilføje legend
-    ax.legend(title='Vindere', bbox_to_anchor=(1.05, 1), loc='upper left')
 
     plt.tight_layout()
     plt.savefig(os.path.join(gruppe_rod, "vindere.jpg"))

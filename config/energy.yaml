@@ -55,15 +55,19 @@ MD17:
     gradient_clipping: null
     mixed: true
     model:
+      lambdaer:
+        force: 0.50
+        energy: 0.50
       hovedtype: klogt
+      lr_scheduler_type: plateau
       gamma: 0.80
       lr: 1.0e-04
       patience: 3
+      scheduler_freq: 10
       frossen_opvarmningsperiode: 50
       weight_decay: 1.0e-8
       loss: L2
       log_gradient: false
-      predicted_attribute: energy
 rygradtype: visnet
 udgaver:
   - uden
