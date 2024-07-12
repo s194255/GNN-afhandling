@@ -167,9 +167,14 @@ class Eksp2:
         shutil.rmtree(os.path.join("afhandling", wandb_run_id))
         downstream.cpu()
 
-    def eftertræn_baseline(self) -> None:
-        args_dict = self.config['Downstream']['optøet']['model']
-        downstream = m.DownstreamQM9BaselineMean(
+    def eftertræn_baseline(self, i) -> None:
+        if self.config['run_baseline'] == False:
+            return
+        assert self.name == 'MD17', 'Baseline virker kun på MD17'
+        self.qm9Bygger2Hoved.sample_train_reduced(i)
+        config_curr = copy.deepcopy(self.config[self.name]['optøet'])
+        args_dict = config_curr['model']
+        downstream = m.DownstreamMD17BaselineMean(
             args_dict=args_dict,
             metadata=self.qm9Bygger2Hoved.get_metadata('train_reduced')
         )
@@ -177,7 +182,7 @@ class Eksp2:
         logger_config = {'opgave': 'eftertræn',
                          'fortræningsudgave': 'baseline'
                          }
-        trainer = self.get_trainer('optøet', tags=tags, logger_config=logger_config)
+        trainer = self.get_trainer(config_curr=config_curr, logger_config=logger_config, tags=tags)
         trainer.test(model=downstream, datamodule=self.qm9Bygger2Hoved)
         wandb.finish()
 
@@ -193,6 +198,7 @@ class Eksp2:
         løkke = (dict(zip(løkkedata.keys(), values)) for values in product(*løkkedata.values()))
         for kombi in løkke:
             self.eftertræn(**kombi)
+            self.eftertræn_baseline(kombi['i'])
 
 if __name__ == "__main__":
     args = parserargs()

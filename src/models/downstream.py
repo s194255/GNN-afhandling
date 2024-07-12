@@ -233,3 +233,22 @@ class DownstreamQM9BaselineMean(DownstreamQM9):
                 batch: Tensor):
         batch_size = len(torch.unique(batch))
         return self.mean*torch.ones(size=(batch_size,), device=self.device)
+
+class DownstreamMD17BaselineMean(DownstreamMD17):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.register_buffer("mean", copy.deepcopy(self.metadata['means']))
+        assert self.predicted_attribute == 'energy', 'baseline virker kun for energy'
+
+    def create_rygrad(self):
+        return L.LightningModule()
+
+    def create_hoved(self):
+        return L.LightningModule()
+
+    def forward(
+            self,
+            data: torch_geometric.data.Data
+    ) -> Tuple[Tensor, Optional[Tensor]]:
+        batch_size = len(torch.unique(data.batch))
+        return self.mean * torch.ones(size=(batch_size,), device=self.device)
