@@ -65,7 +65,7 @@ MD17:
       patience: 3
       scheduler_freq: 10
       frossen_opvarmningsperiode: 50
-      weight_decay: 1.0e-8
+      weight_decay: 1.0e-4
       loss: L2
       log_gradient: false
 rygradtype: visnet
