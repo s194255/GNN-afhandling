@@ -253,7 +253,10 @@ class DownstreamMD17(Downstream):
             raise NotImplementedError
 
     def on_test_epoch_end(self) -> None:
-        pass
+        log_dict = {
+            "eftertræningsmængde": self.get_eftertræningsmængde(),
+        }
+        self.log_dict(log_dict)
 
     @property
     def calc_forces(self) -> bool:
