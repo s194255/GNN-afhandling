@@ -3,10 +3,10 @@ datasæt:
   debug: false
   delmængdestørrelse: 1.0
   num_workers: 2
-  n_trin: 1
+  n_trin: 3
   spænd:
-    - 265
-    - 265
+    - 30
+    - 500
   space_type: linspace
   val_reduced: true
   name: MD17
@@ -70,15 +70,18 @@ MD17:
       log_gradient: false
 rygradtype: visnet
 udgaver:
+  - s194255/afhandling/model-ig3v4c4k:v0
+  - s194255/afhandling/model-z4au4jjl:v0
+  - s194255/afhandling/model-esk3r63t:v0
   - uden
 temperaturer:
   - optøet
 lag_liste:
   - null
-seeds: 1
+seeds: [43553]
 kaos:
   - false
 run_baseline: false
 gruppenavn: eksp2-md17
 data_path: s194255/afhandling/model-hd4qrb57:v0
-kørselsid: 1
+kørselsid: 2
