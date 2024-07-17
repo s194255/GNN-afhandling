@@ -17,7 +17,7 @@ def indlæs_yaml(sti):
         config_dict = yaml.safe_load(f)
     return config_dict
 
-METRICS = {'test_loss_mean', "test_loss_std", "test_loss_lower", "test_loss_upper", "eftertræningsmængde", "_runtime"}
+METRICS = {'test_loss_mean', "test_loss_std", "test_loss_lower", "test_loss_upper", "eftertræningsmængde", "_runtime", "test_energy_loss", "test_force_loss"}
 
 JSON_KEYS = {'fortræningsudgave', 'temperatur'}
 
@@ -288,3 +288,8 @@ def sanity_check_group_df(group_df):
         else:
             print(f"seed = {seed} er ok")
         # assert len(group_df[idxs]) == 33
+
+def remove_nan(group_df, cols):
+    group_df[cols] = group_df[cols].apply(pd.to_numeric, errors='coerce')
+    group_df = group_df.dropna(how='any', subset=cols)
+    return group_df
