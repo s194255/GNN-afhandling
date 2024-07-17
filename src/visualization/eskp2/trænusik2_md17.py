@@ -148,6 +148,8 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
 
 def trænusik4(df, fortræer):
     # Opsætning for søjlerne
+    df = copy.deepcopy(df)
+    df.loc[df['predicted_attribute'] == 'force', 'predicted_attribute'] = 'MD17'
     x_values = df['eftertræningsmængde'].unique()
     x_values.sort()
     num_models = len(fortræer)

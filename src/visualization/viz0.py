@@ -29,12 +29,14 @@ def is_suitable(run, gruppenavn: str):
         return False
     if group.split("_")[0] != gruppenavn:
         return False
-    metrics = set(run.summary.keys())
-    if len(METRICS - metrics) != 0:
+    if run.state != 'finished':
         return False
-    json_keys = set(json.loads(run.json_config).keys())
-    if len(JSON_KEYS - json_keys) != 0:
-        return False
+    # metrics = set(run.summary.keys())
+    # if len(METRICS - metrics) != 0:
+    #     return False
+    # json_keys = set(json.loads(run.json_config).keys())
+    # if len(JSON_KEYS - json_keys) != 0:
+    #     return False
     return True
 
 def get_group(run):
@@ -258,18 +260,23 @@ FORT_LABELLER = {'uden': 'Ingen fortræning',
 
 
 def sanity_check_group_df(group_df):
-    num_seeds = len(group_df['seed'].unique())
-    fortræer = group_df['fortræningsudgave'].unique()
-    datamængder = group_df['eftertræningsmængde'].unique()
     seeds = group_df['seed'].unique()
+    num_seeds = len(seeds)
+    fortræer = sorted(group_df['fortræningsudgave'].unique())
+    datamængder = sorted(group_df['eftertræningsmængde'].unique())
+    # seeds = group_df['seed'].unique()
     for fortræ, datamængde in product(fortræer, datamængder):
         idxs = group_df['fortræningsudgave'] == fortræ
         idxs = (idxs) & (group_df['eftertræningsmængde'] == datamængde)
-        if len(group_df[idxs]) != num_seeds:
-            print(f"fortræ = {fortræ}, datamængde = {datamængde}  er ikke ok. Den har {len(group_df[idxs])} frø!")
+        if len(group_df[idxs]) > num_seeds:
+            print(f"fortræ = {fortræ}, datamængde = {datamængde}  er HAR FOR MANGE FRØ. Den har {len(group_df[idxs])} frø!")
             duplicates = group_df[idxs]['seed'].value_counts()
             duplicates = duplicates[duplicates > 1].index
             print("Gengangere i serien:", duplicates)
+            print("\n")
+        elif len(group_df[idxs]) < num_seeds:
+            print(f"fortræ = {fortræ}, datamængde = {datamængde}  er MANGLER FRØ. Den har {len(group_df[idxs])} frø!")
+            print(f"manglende frø: {set(seeds) - set(group_df[idxs]['seed'])}")
             print("\n")
         else:
             print(f"fortræ = {fortræ}, datamængde = {datamængde}  er ok")
