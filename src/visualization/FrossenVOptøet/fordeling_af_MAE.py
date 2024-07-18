@@ -84,8 +84,11 @@ def welsh_t_test(dfs):
     t, p = ttest_ind(a, b, alternative=alternative, equal_var=equal_var)
     for t in ['frossen', 'optøet']:
         print(f"temperatur = {t}")
-        print(f"mean = {dfs[t][col].mean()}")
-        print(f"std = {dfs[t][col].std()}")
+        mean = dfs[t][col].mean()
+        std = dfs[t][col].std()
+        print(f"mean = {mean}")
+        print(f"std = {std}")
+        print(f"std/mean = {std/mean}")
         print(f"runtime = {dfs[t]['_runtime'].mean()}")
         print("\n")
     # print(f"middelværdi af ingen fortræning = {np.mean(a)}")

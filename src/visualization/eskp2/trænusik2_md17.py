@@ -25,16 +25,14 @@ cols_to_titles = {
     'test_force_loss': 'Kræfter',
 }
 rod = lambda x: os.path.join('reports/figures/Eksperimenter/2', x)
-KERNELBASELINEFARVE = far.black
+KERNELBASELINEFARVE = far.yellow
 
 def plot_kernel_baseline(ax, x_values, x, farve, predicted_attribute):
-    if predicted_attribute == 'MD17':
-        return
     kernel = viz0.kernel_baseline(predicted_attribute)
     # x = np.linspace(30, 500, 1000)
     y = kernel(x_values)
-    idxs = x_values >= 100
-    ax.scatter(x[idxs], y[idxs], color=farve, marker="d", label="kernel baseline", s=80,
+    idxs = x_values >= 0
+    ax.scatter(x[idxs], y[idxs], color=farve, marker="d", label="kernel baseline", s=120,
                edgecolor=far.black)
 
 def plot_normaliseret(df1, fortræningsudgaver, cols):
@@ -109,9 +107,9 @@ def trænusik4(df, fortræer, cols):
     x_values = df['eftertræningsmængde'].unique()
     x_values.sort()
     num_models = len(fortræer)
-    predicted_attribute = df['predicted_attribute'].unique()
-    assert len(predicted_attribute) == 1
-    predicted_attribute = predicted_attribute[0]
+    # predicted_attribute = df['predicted_attribute'].unique()
+    # assert len(predicted_attribute) == 1
+    # predicted_attribute = predicted_attribute[0]
 
     gray = '#DADADA'
 
@@ -132,7 +130,7 @@ def trænusik4(df, fortræer, cols):
             farve = viz0.FARVEOPSLAG[fortræ]
             label = viz0.FORT_LABELLER[fortræ]
             bars = ax.bar(x + (i + 0.5 - num_models / 2) * bar_width, means,
-                          bar_width, color=farve, alpha=0.8, label=label)
+                          bar_width, color=farve, alpha=0.85, label=label)
             conf_intervals = []
             for j in range(len(x_values)):
                 prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]][col]
@@ -155,6 +153,7 @@ def trænusik4(df, fortræer, cols):
                         ecolor='black', elinewidth=1.5, capsize=5,
                         capthick=1.5, zorder=2)
 
+        predicted_attribute = col.split("_")[1]
         plot_kernel_baseline(ax, x_values, x, KERNELBASELINEFARVE, predicted_attribute)
 
         ax.grid(alpha=0.6)
@@ -203,7 +202,7 @@ def samfattabelmager(df, fortræer, cols):
 
 
 
-groups = ['eksp2-md17_2']
+groups = ['eksp2-md17_2', 'eksp2-force_0']
 
 # groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):

@@ -133,6 +133,12 @@ def kernel_baseline(predicted_attribute):
     elif predicted_attribute == 1:
         x1, y1 = 100, 1.16 * 10 ** 3
         x2, y2 = 19277.496, 0.152 * 10 ** 3
+    elif predicted_attribute == 'force':
+        x1, y1 = 52.6233, 0.115
+        x2, y2 = 74.0002, 0.1061
+    elif predicted_attribute == 'energy':
+        x1, y1 = 53.4819, 0.0138
+        x2, y2 = 196.5387, 0.0107
     else:
         raise NotImplementedError
     a = (np.log(y2)-np.log(y1)) / (np.log(x2) - np.log(x1))

@@ -6,7 +6,7 @@ import src.visualization.farver as far
 import pandas as pd
 from matplotlib.ticker import ScalarFormatter
 # from tqdm import tqdm
-# from src.visualization import viz0
+from src.visualization import viz0
 import numpy as np
 import pickle
 # import random
@@ -37,17 +37,24 @@ farveopslag = {
     'uden': far.corporate_red
 }
 
-
-STJERNER = {
-    '3D-EMGP-lokalt': 'd4e2ftz6',
-    '3D-EMGP-globalt': 'yhxjxrvk',
-    '3D-EMGP-begge': 'gabq3exm',
-    'SelvvejledtQM9': 'uvv3hn84'
+STJERNER_OPSLAG = {
+    'QM9': {
+        '3D-EMGP-lokalt': 'd4e2ftz6',
+        '3D-EMGP-globalt': 'yhxjxrvk',
+        '3D-EMGP-begge': 'gabq3exm',
+        'SelvvejledtQM9': 'uvv3hn84'
+    },
+    'MD17': {
+        '3D-EMGP-lokalt': 'ig3v4c4k',
+        '3D-EMGP-globalt': 'z4au4jjl',
+        '3D-EMGP-begge': 'esk3r63t',
+    }
 }
 
 CACHE = "reports/cache/fortræning"
 # COLS = ['lr-AdamW', 'train_loss', 'val_loss']
-COLS = ['train_loss', 'val_loss', 'train_lokalt_loss', 'train_globalt_loss']
+# COLS = ['train_loss', 'val_loss', 'train_lokalt_loss', 'train_globalt_loss']
+COLS = ['train_lokalt_loss', 'train_globalt_loss', 'train_loss', 'val_loss']
 FORTRÆ_COLS  = {
     '3D-EMGP-lokalt': ['train_lokalt_loss', 'val_loss'],
     '3D-EMGP-globalt': ['train_globalt_loss', 'val_loss'],
@@ -55,12 +62,26 @@ FORTRÆ_COLS  = {
     'SelvvejledtQM9': ['train_loss', 'val_loss']
 }
 COL_TITEL = {
-    'train_loss': 'Træn samlet',
-    'val_loss': 'Val samlet',
-    'train_lokalt_loss': 'Træn lokalt',
-    'train_globalt_loss': 'Træn globalt',
+    'train_loss': r'$\left( \mathcal{D}_T, \mathcal{L}_{\text{lokal}} + \mathcal{L}_{\text{global}} \right)$',
+    'val_loss': r'$\left( \mathcal{D}_V, \mathcal{L}_{\text{lokal}} + \mathcal{L}_{\text{global}} \right)$',
+    'train_lokalt_loss': r'$\left( \mathcal{D}_T,\mathcal{L}_{\text{lokal}} \right)$',
+    'train_globalt_loss': r'$\left( \mathcal{D}_T,\mathcal{L}_{\text{global}} \right)$',
 }
 X_COL = 'trainer/global_step'
+
+fortræ_to_nrows = {
+    '3D-EMGP-lokalt': 1,
+    '3D-EMGP-globalt': 1,
+    '3D-EMGP-begge': 2,
+    'SelvvejledtQM9': 1,
+}
+fortræ_to_figsize = {
+    '3D-EMGP-lokalt': (40, 10),
+    '3D-EMGP-globalt': (40, 10),
+    '3D-EMGP-begge': (40, 20),
+    'SelvvejledtQM9': (40, 10),
+}
+
 
 def get_group_dfs(runid):
     cache_path = os.path.join(CACHE, f'{runid}.pickle')
@@ -98,14 +119,14 @@ def get_group_dfs(runid):
 # def plot_nan(df: pd.DataFrame, ax: plt.Axes):
 
 
-def make_table(data: dict):
+def make_table(data: dict, dataset: str):
     cutoff = 150
     h = lambda col: f'{COL_TITEL[col]}'.lower()
     new_df = {h(col): [] for col in COLS}
     new_df = {**{'fortræningsudgave': []}, **new_df}
     new_df = pd.DataFrame(data=new_df)
     for fortræ, df_dict in data.items():
-        fortræningsudgave = LABELLER[fortræ]
+        fortræningsudgave = viz0.FORT_LABELLER[fortræ]
         new_df_linje = {'fortræningsudgave': [fortræningsudgave]}
         for col in COLS:
             if fortræ == 'SelvvejledtQM9' and col in ['train_lokalt_loss', 'train_globalt_loss']:
@@ -132,13 +153,19 @@ def make_table(data: dict):
     with open(os.path.join(kørsel_path, "minima.tex"), "w", encoding='utf-8') as f:
         f.write(latex_table)
 
+    print(dataset)
+    print(formatted_df.to_latex(index=False))
+    print("\n")
 
-def plot(data: dict):
+
+def plot(data: dict, datasæt: str):
     cutoff = 150
+    # plt.rcParams['text.usetex'] = True
     for i, (fortræ, df_dict) in enumerate(data.items()):
         farve = farveopslag.get(fortræ, 'blue')
         cols = FORTRÆ_COLS[fortræ]
-        fig, axs = plt.subplots(1, len(cols), figsize=(40, 10))
+        fig, axs = plt.subplots(fortræ_to_nrows[fortræ], 2, figsize=fortræ_to_figsize[fortræ])
+        axs = axs.ravel()
         for j, col in enumerate(cols):
             if fortræ == 'SelvvejledtQM9' and col in ['train_lokalt_loss', 'train_globalt_loss']:
                 continue
@@ -155,9 +182,9 @@ def plot(data: dict):
             if nan_indices.sum() > 0:
                 ax.scatter(df[X_COL][nan_indices]*e_p_s, df[col_intp][nan_indices],
                            color='#f4151a', marker='x', s=150)
-            label = LABELLER[fortræ]
+            label = viz0.FORT_LABELLER[fortræ]
             ax.plot(df[X_COL] * e_p_s, df[col], color=farve, label=label)
-            if j == 0:
+            if j % 2 == 0:
                 ax.set_ylabel('MAE', fontsize=50)
             ax.grid(True)  # Tilføj grid for bedre læsbarhed
             ax.set_yscale('log')
@@ -182,14 +209,16 @@ def plot(data: dict):
                 ax.legend(fontsize=50)
 
             titel = COL_TITEL[col]
-            ax.set_title(titel, fontsize=50)  # Tilføjelse af titler til subplots
+            ax.set_title(titel, fontsize=60)  # Tilføjelse af titler til subplots
             ax.set_xlabel('Epoke', fontsize=50)
 
         plt.tight_layout()
+        plt.subplots_adjust(top=0.92)
+        fig.suptitle(datasæt, fontsize=70)  # Tilføj hovedtitel
         for ext in ['jpg', 'pdf']:
             if not os.path.exists(os.path.join(kørsel_path, f'{ext}s')):
                 os.mkdir(os.path.join(kørsel_path, f'{ext}s'))
-            plt.savefig(os.path.join(kørsel_path, f'{ext}s', f"{fortræ}.{ext}"))
+            plt.savefig(os.path.join(kørsel_path, f'{ext}s', f"{datasæt}_{fortræ}.{ext}"))
         plt.legend()
         plt.close()
 
@@ -204,9 +233,11 @@ if not os.path.exists(CACHE):
 kørsel_path = os.path.join(ROOT)
 os.makedirs(kørsel_path)
 
-data = {}
-for fortræ, runid in STJERNER.items():
-    group_dfs = get_group_dfs(runid)
-    data[fortræ] = group_dfs
-plot(data)
-make_table(data)
+
+for dataset, stjerner in STJERNER_OPSLAG.items():
+    data = {}
+    for fortræ, runid in stjerner.items():
+        group_dfs = get_group_dfs(runid)
+        data[fortræ] = group_dfs
+    plot(data, dataset)
+    make_table(data, dataset)
