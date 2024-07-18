@@ -142,16 +142,11 @@ farveopslag = {
     'optøet': far.corporate_red,
     'frossen': far.blue
 }
-stjerner = {
-    'optøet': 'eksp2_83',
-    'frossen': 'eksp2_88'
-}
 
 ROOT = os.path.join('reports/figures/Eksperimenter/FrossenVOptøet')
 
 groups = ['eksp4_3']
 runs = wandb.Api().runs("afhandling")
-# runs = list(filter(lambda w: viz0.is_suitable(w, 'eksp2'), runs))
 
 for group in groups:
     grupperod = os.path.join(ROOT, group)
@@ -159,7 +154,6 @@ for group in groups:
 
     runs_in_group, fortræningsudgaver, _, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
     temper = ['frossen', 'optøet']
-    # runs_in_group = list(filter(lambda run: viz0.get_eftertræningsmængde(run) == 500, runs_in_group))
     dfs = {}
     for temp in temper:
         temp_runs = list(filter(lambda run: viz0.get_temperatur(run) == temp, runs_in_group))
@@ -167,29 +161,3 @@ for group in groups:
         dfs[temp] = run.history(samples=10000)
     plot_faser(dfs)
     plot(dfs)
-    # run = random.choice(runs_in_group)
-    # plot_faser(group_df)
-
-# FIGNAVN = 'træningskurve'
-# ROOT = os.path.join('reports/figures/Eksperimenter/FrossenVOptøet', FIGNAVN)
-#
-# if os.path.exists(ROOT):
-#     shutil.rmtree(ROOT)
-#
-# runs = wandb.Api().runs("afhandling")
-# runs = list(filter(lambda w: viz0.is_suitable(w, 'eksp2'), runs))
-# df = None
-# kørsel_path = os.path.join(ROOT)
-# os.makedirs(kørsel_path)
-#
-#
-# dfs = {}
-# for temperatur in temperaturer:
-#     group = stjerner[temperatur]
-#     runs_in_group, fortræningsudgaver, temperaturer_lp, seeds, rygrad_runids = viz0.get_loops_params(group, runs)
-#     runs_in_group = list(filter(lambda run: viz0.get_eftertræningsmængde(run) == 500, runs_in_group))
-#     run = random.choice(runs_in_group)
-#     print(temperatur, run.id)
-#     dfs[temperatur] = run.history()
-# plot(dfs)
-# plot_faser(dfs)

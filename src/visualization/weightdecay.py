@@ -80,6 +80,7 @@ def regVsClass():
         print(f"loss = {v}")
         print(f"mean = {mean}")
         print(f"std = {std}")
+        print(f"std/mean = {std/mean}")
         print("\n")
 
 def klogtVsDumt():
@@ -96,6 +97,7 @@ def klogtVsDumt():
         print(f"loss = {v}")
         print(f"mean = {mean}")
         print(f"std = {std}")
+        print(f"std/mean = {std / mean}")
         print(f"n = {n}")
         print("\n")
 
@@ -141,15 +143,15 @@ def weight_decay2():
 #     group_dfs.append(group_df)
 
 # regVsClass()
-# klogtVsDumt()
+klogtVsDumt()
 # weight_decay2()
 # chance_for_forbedring()
 
 # nedtaktLilleVsStort()
-kaos()
+# kaos()
 
-group_df = viz0.get_group_df('eksp2-md17_2', remove_nan=False)
-viz0.sanity_check_group_df(group_df)
+# group_df = viz0.get_group_df('eksp2-md17_2', remove_nan=False)
+# viz0.sanity_check_group_df(group_df)
 # if create_cache:
 #     df = pd.concat(group_dfs)
 #     cache_folder = os.path.join("reports", "manuelt_arkiv")

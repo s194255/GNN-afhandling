@@ -299,3 +299,9 @@ def remove_nan(group_df, cols):
     group_df[cols] = group_df[cols].apply(pd.to_numeric, errors='coerce')
     group_df = group_df.dropna(how='any', subset=cols)
     return group_df
+
+
+predicted_attribute_to_background = {
+    'force': '#fdad85',
+    'energy': '#cce7d7',
+}

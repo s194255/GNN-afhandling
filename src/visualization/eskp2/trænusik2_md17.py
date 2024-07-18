@@ -11,6 +11,8 @@ import numpy as np
 import pandas as pd
 import scipy.stats as st
 
+# from src.visualization.viz0 import predicted_attribute_to_background
+
 TITLER = {'frossen': "Sammenligning (frossen)",
           'optøet': "Sammenligning"}
 
@@ -24,6 +26,7 @@ cols_to_titles = {
     'test_energy_loss': 'Energi',
     'test_force_loss': 'Kræfter',
 }
+
 rod = lambda x: os.path.join('reports/figures/Eksperimenter/2', x)
 KERNELBASELINEFARVE = far.yellow
 
@@ -45,6 +48,7 @@ def plot_normaliseret(df1, fortræningsudgaver, cols):
     num_models = len(fortræningsudgaver)
 
     for col in cols:
+        predicted_attribute = col.split("_")[1]
 
         df2 = df1[['eftertræningsmængde', col]][df1['fortræningsudgave'] == 'uden']
         df2 = df2.groupby(by='eftertræningsmængde').mean().reset_index()
@@ -61,6 +65,10 @@ def plot_normaliseret(df1, fortræningsudgaver, cols):
 
         # Opret figuren og aksern
         fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(9, 7))
+
+        # background
+        background = viz0.predicted_attribute_to_background[predicted_attribute]
+        ax.set_facecolor(background)
 
         # Plot søjlerne og prikkerne
         for i in range(num_models):
@@ -117,8 +125,13 @@ def trænusik4(df, fortræer, cols):
     x = np.arange(len(x_values))
 
     for col in cols:
+        predicted_attribute = col.split("_")[1]
 
         fig, ax = plt.subplots(figsize=(9, 7))
+
+        # background
+        background = viz0.predicted_attribute_to_background[predicted_attribute]
+        ax.set_facecolor(background)
 
         for i in range(num_models):
 
@@ -139,7 +152,7 @@ def trænusik4(df, fortræer, cols):
                 ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
                            color=gray, marker='.', alpha=1.0,
                            # s=20,
-                           # edgecolor=farve
+                           edgecolor=far.black
                            )
                 conf_interval = st.norm.interval(confidence=0.90, loc=np.mean(prikker), scale=st.sem(prikker))
                 conf_intervals.append(conf_interval)
@@ -153,7 +166,6 @@ def trænusik4(df, fortræer, cols):
                         ecolor='black', elinewidth=1.5, capsize=5,
                         capthick=1.5, zorder=2)
 
-        predicted_attribute = col.split("_")[1]
         plot_kernel_baseline(ax, x_values, x, KERNELBASELINEFARVE, predicted_attribute)
 
         ax.grid(alpha=0.6)
