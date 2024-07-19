@@ -14,7 +14,7 @@ import scipy.stats as st
 TITLER = {'frossen': "Sammenligning (frossen)",
           'optøet': "Sammenligning"}
 
-YLABEL = r'MAE $ma_0^3$'
+YLABEL = r'MAE'
 XLABEL = r'Datamængde ($N_{træn}$)'
 fignavn = {
     'trad': 'trænusik2',
@@ -126,7 +126,7 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
                 label = viz0.FORT_LABELLER[fortræningsudgave] if j == 0 else None
                 ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker, color=farve, label=label,
                            marker='o', edgecolor='black', alpha=1.0, zorder=3)
-        titel = f'%-vis reduktion ift. Ingen'
+        titel = '%-vis reduktion ift. ' + r'$\it{Ingen\ fortræning}$'
         ylabel = '%'
 
         # Tilpasning af akserne og labels
@@ -242,7 +242,7 @@ def samfattabelmager(df, fortræer):
 stjerner = viz0.get_stjerner()
 print(stjerner)
 # groups = [f'eksp2_{stjerne}' for stjerne in stjerner]
-groups = ['eksp2_0', 'eksp2-md17_0']
+groups = ['eksp2_0']
 
 # groups, runs = viz0.get_groups_runs('eksp2')
 for group in tqdm(groups):

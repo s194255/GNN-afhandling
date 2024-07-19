@@ -2,16 +2,12 @@ import copy
 import shutil
 import os
 import matplotlib.pyplot as plt
-# from src.visualization.farver import farver
-# from matplotlib.ticker import ScalarFormatter, MultipleLocator, AutoMinorLocator
 import src.visualization.farver as far
 from tqdm import tqdm
 from src.visualization import viz0
 import numpy as np
 import pandas as pd
 import scipy.stats as st
-
-# from src.visualization.viz0 import predicted_attribute_to_background
 
 TITLER = {'frossen': "Sammenligning (frossen)",
           'optøet': "Sammenligning"}
@@ -43,7 +39,7 @@ def plot_normaliseret(df1, fortræningsudgaver, cols):
     x_values = df1['eftertræningsmængde'].unique()
     x_values.sort()
     # fortræningsudgaver = list(set(fortræningsudgaver) - {'uden'})
-    fortræningsudgaver =  copy.deepcopy(fortræningsudgaver)
+    fortræningsudgaver = copy.deepcopy(fortræningsudgaver)
     fortræningsudgaver.remove('uden')
     num_models = len(fortræningsudgaver)
 
@@ -58,7 +54,7 @@ def plot_normaliseret(df1, fortræningsudgaver, cols):
         # Normaliser 'test_loss' i df1 med 'test_loss' fra df2
         # df1['normalized_test_loss'] = 100 * df1['test_loss_mean'] / df1['test_loss_mean_df2']
         norm_col = f'normalized_{col}'
-        df1[norm_col] = 100 * (df1[col] - df1[f'{col}_df2']) / df1[f'{col}_df2']
+        df1[norm_col] = 100 * (df1[f'{col}_df2'] - df1[col]) / df1[f'{col}_df2']
 
         bar_width = 0.15
         x = np.arange(len(x_values))
@@ -68,7 +64,9 @@ def plot_normaliseret(df1, fortræningsudgaver, cols):
 
         # background
         background = viz0.predicted_attribute_to_background[predicted_attribute]
-        ax.set_facecolor(background)
+        for key in ['top', 'bottom', 'left', 'right']:
+            ax.spines[key].set_color(background)
+            ax.spines[key].set_linewidth(4)
 
         # Plot søjlerne og prikkerne
         for i in range(num_models):
@@ -115,9 +113,6 @@ def trænusik4(df, fortræer, cols):
     x_values = df['eftertræningsmængde'].unique()
     x_values.sort()
     num_models = len(fortræer)
-    # predicted_attribute = df['predicted_attribute'].unique()
-    # assert len(predicted_attribute) == 1
-    # predicted_attribute = predicted_attribute[0]
 
     gray = '#DADADA'
 
@@ -131,7 +126,11 @@ def trænusik4(df, fortræer, cols):
 
         # background
         background = viz0.predicted_attribute_to_background[predicted_attribute]
-        ax.set_facecolor(background)
+        # ax.set_facecolor(background)
+        for key in ['top', 'bottom', 'left', 'right']:
+            ax.spines[key].set_color(background)
+            ax.spines[key].set_linewidth(4)
+
 
         for i in range(num_models):
 
@@ -185,12 +184,15 @@ def trænusik4(df, fortræer, cols):
         plt.close()
 
 
+
+
 def samfattabelmager(df, fortræer, cols):
     x_values = df['eftertræningsmængde'].unique()
     x_values.sort()
     inder = lambda x_value: f'{int(x_value)}'
 
     for col in cols:
+        predicted_attribute = predicted_attribute = col.split("_")[1]
 
         samfattabel = {'fortræningsudgave': []}
         samfattabel = {**samfattabel, **{inder(x_value): [] for x_value in x_values}}
@@ -204,7 +206,15 @@ def samfattabelmager(df, fortræer, cols):
                 std = df[idxs][[col]].std()
                 række[inder(x_value)] = mean
             samfattabel = pd.concat([samfattabel, pd.DataFrame(data=række)], ignore_index=True)
-        latex_table = samfattabel.to_latex(index=False, float_format="%.2f")
+
+        kernel = viz0.kernel_baseline(predicted_attribute)
+        y = kernel(x_values)
+        række = {'fortræningsudgave': ['kernel baseline']}
+        række = {**række, **{inder(x_values[i]): [y[i]] for i in range(len(x_values))}}
+        samfattabel = pd.concat([samfattabel, pd.DataFrame(data=række)], ignore_index=True)
+
+
+        latex_table = samfattabel.to_latex(index=False, float_format="%.3f")
         start = latex_table.find(viz0.FORT_LABELLER['uden'])
         end = latex_table.find(r'\end{tabular}')
         latex_table = latex_table[start:end]

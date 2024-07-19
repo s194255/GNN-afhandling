@@ -302,6 +302,6 @@ def remove_nan(group_df, cols):
 
 
 predicted_attribute_to_background = {
-    'force': '#fdad85',
-    'energy': '#cce7d7',
+    'force': '#FC7634',
+    'energy': '#79238E',
 }
