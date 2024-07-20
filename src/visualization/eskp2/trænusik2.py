@@ -11,8 +11,7 @@ import numpy as np
 import pandas as pd
 import scipy.stats as st
 
-TITLER = {'frossen': "Sammenligning (frossen)",
-          'optøet': "Sammenligning"}
+TITLER = {'optøet': "Dipolmoment"}
 
 YLABEL = r'MAE'
 XLABEL = r'Datamængde ($N_{træn}$)'
@@ -21,7 +20,7 @@ fignavn = {
     'norm': 'trænusik2_normaliseret'
 }
 rod = lambda x: os.path.join('reports/figures/Eksperimenter/2', x)
-KERNELBASELINEFARVE = far.black
+KERNELBASELINEFARVE = far.yellow
 
 def plot_kernel_baseline(ax, x_values, x, farve, predicted_attribute):
     if predicted_attribute == 'MD17':
@@ -29,7 +28,7 @@ def plot_kernel_baseline(ax, x_values, x, farve, predicted_attribute):
     kernel = viz0.kernel_baseline(predicted_attribute)
     # x = np.linspace(30, 500, 1000)
     y = kernel(x_values)
-    idxs = x_values >= 100
+    idxs = x_values >= 0
     ax.scatter(x[idxs], y[idxs], color=farve, marker="d", label="kernel baseline", s=80,
                edgecolor=far.black)
 
@@ -98,7 +97,7 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
 
     # Normaliser 'test_loss' i df1 med 'test_loss' fra df2
     # df1['normalized_test_loss'] = 100 * df1['test_loss_mean'] / df1['test_loss_mean_df2']
-    df1['normalized_test_loss'] = 100 * (df1['test_loss_mean'] - df1['test_loss_mean_df2']) / df1['test_loss_mean_df2']
+    df1['normalized_test_loss'] = 100 * (df1['test_loss_mean_df2'] - df1['test_loss_mean']) / df1['test_loss_mean_df2']
 
     bar_width = 0.15
     x = np.arange(len(x_values))
@@ -126,7 +125,7 @@ def plot_normalisere_enkelt(df1, fortræningsudgaver):
                 label = viz0.FORT_LABELLER[fortræningsudgave] if j == 0 else None
                 ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker, color=farve, label=label,
                            marker='o', edgecolor='black', alpha=1.0, zorder=3)
-        titel = '%-vis reduktion ift. ' + r'$\it{Ingen\ fortræning}$'
+        titel = '%-vis forbedring ift. ' + r'$\it{Ingen\ fortræning}$'
         ylabel = '%'
 
         # Tilpasning af akserne og labels
@@ -181,7 +180,7 @@ def trænusik4(df, fortræer):
             ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
                        color=gray, marker='.', alpha=1.0,
                        # s=20,
-                       # edgecolor=farve
+                       # edgecolor=far.black
                        )
             conf_interval = st.norm.interval(confidence=0.90, loc=np.mean(prikker), scale=st.sem(prikker))
             conf_intervals.append(conf_interval)
@@ -197,6 +196,7 @@ def trænusik4(df, fortræer):
 
     plot_kernel_baseline(ax, x_values, x, KERNELBASELINEFARVE, predicted_attribute)
 
+    ax.grid(alpha=0.3)
     ax.set_xlabel(XLABEL, fontsize=16)
     ax.set_ylabel(YLABEL, fontsize=16)
     ax.set_title(TITLER[temperatur], fontsize=22)
@@ -217,6 +217,10 @@ def samfattabelmager(df, fortræer):
     x_values.sort()
     inder = lambda x_value: f'{int(x_value)}'
 
+    predicted_attribute = df['predicted_attribute'].unique()
+    assert len(predicted_attribute) == 1
+    predicted_attribute = predicted_attribute[0]
+
     samfattabel = {'fortræningsudgave': []}
     samfattabel = {**samfattabel, **{inder(x_value): [] for x_value in x_values}}
     samfattabel = pd.DataFrame(data=samfattabel)
@@ -229,6 +233,14 @@ def samfattabelmager(df, fortræer):
             std = df[idxs][['test_loss_mean']].std()
             række[inder(x_value)] = mean
         samfattabel = pd.concat([samfattabel, pd.DataFrame(data=række)], ignore_index=True)
+
+    kernel = viz0.kernel_baseline(predicted_attribute)
+    y = kernel(x_values)
+    række = {'fortræningsudgave': ['kernel baseline']}
+    række = {**række, **{inder(x_values[i]): [y[i]] for i in range(len(x_values))}}
+    samfattabel = pd.concat([samfattabel, pd.DataFrame(data=række)], ignore_index=True)
+
+
     latex_table = samfattabel.to_latex(index=False, float_format="%.2f")
     start = latex_table.find(viz0.FORT_LABELLER['uden'])
     end = latex_table.find(r'\end{tabular}')

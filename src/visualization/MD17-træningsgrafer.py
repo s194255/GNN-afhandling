@@ -21,7 +21,8 @@ def plot_lr(dfs: dict):
     x_col = 'trainer/global_step'
     col = 'lr-AdamW'
     for i, (predicted_attribute, df) in enumerate(dfs.items()):
-        farve = far.corporate_red
+        # farve = far.corporate_red
+        farve = viz0.predicted_attribute_to_background[predicted_attribute]
         ax = axs[i]
         e_p_s = df['epoch'].max() / df[x_col].max()
         data = df[[x_col, col]].dropna(how='any')
@@ -34,8 +35,9 @@ def plot_lr(dfs: dict):
 
 
         # ændr baggrundsfarven
-        background = viz0.predicted_attribute_to_background[predicted_attribute]
-        ax.set_facecolor(background)
+        for key in ['top', 'bottom', 'left', 'right']:
+            ax.spines[key].set_color(viz0.predicted_attribute_to_background[predicted_attribute])
+            ax.spines[key].set_linewidth(4)
 
         # Generel plot indstillinger
         ax.set_xlabel('Epoke', fontsize=22)
@@ -67,22 +69,33 @@ def plot_lr(dfs: dict):
 def plot(dfs: dict):
     fig, axs = plt.subplots(2, 2, figsize=(18, 10))  # Øget figurstørrelse for bedre plads
     x_col = 'trainer/global_step'
-    # cols = ['lr-AdamW', 'train_loss', 'val_loss']
-    cols = ['train_loss', 'val_loss']
-    titles = ['Træningstab', 'Valideringstab']  # Tilføjet titler for subplots
+    titles = {
+        'force': [
+            r'$\mathcal{L}_{\text{kræft}}$ på $\mathcal{D}_{\text{E-Tr}}$',
+            r'$\mathcal{L}_{\text{kræft}}$ på $\mathcal{D}_{\text{E-Va}}$',
+        ],
+        'energy': [
+            r'$\mathcal{L}_{\text{energi}}$ på $\mathcal{D}_{\text{E-Tr}}$',
+            r'$\mathcal{L}_{\text{energi}}$ på $\mathcal{D}_{\text{E-Va}}$',
+        ]
+    }
+    cols = {ds: [f'{task}_{ds}_loss' for task in ['train', 'val']] for ds in ['energy', 'force']}
 
     for i, (predicted_attribute, df) in enumerate(dfs.items()):
-        farve = far.corporate_red
-        for j, col in enumerate(cols):
+        # farve = far.corporate_red
+        farve = viz0.predicted_attribute_to_background[predicted_attribute]
+        for j, col in enumerate(cols[predicted_attribute]):
             ax = axs[i, j]
-            ax.set_facecolor(viz0.predicted_attribute_to_background[predicted_attribute])
+            for key in ['top', 'bottom', 'left', 'right']:
+                ax.spines[key].set_color(viz0.predicted_attribute_to_background[predicted_attribute])
+                ax.spines[key].set_linewidth(4)
             e_p_s = df['epoch'].max() / df[x_col].max()
             data = df[[x_col, col]].dropna(how='any')
             label = predicted_attribute_to_title[predicted_attribute]
             ax.plot(data[x_col]*e_p_s, data[col], color=farve, label=label, linewidth=4)
-            ax.set_title(titles[j], fontsize=23)  # Tilføjelse af titler til subplots
+            ax.set_title(titles[predicted_attribute][j], fontsize=23)  # Tilføjelse af titler til subplots
             ax.set_xlabel('Epoke', fontsize=24)
-            ax.set_ylabel('MAE', fontsize=24)
+            ax.set_ylabel('MSE', fontsize=24)
             ax.tick_params(axis='both', which='major', labelsize=22)
             ax.tick_params(axis='both', which='minor', labelsize=20)
             ax.grid(True)  # Tilføj grid for bedre læsbarhed
@@ -125,8 +138,8 @@ ROOT = os.path.join('reports/figures/Eksperimenter/MD17eftertræn')
 CACHE = os.path.join('reports/cache/md17eftertræn')
 
 groups = {
+    'energy': 'eksp2-md17_2',
     'force': 'eksp2-force_0',
-    'energy': 'eksp2-md17_2'
 }
 predicted_attribute_to_title = {
     'force': 'Kræfter',
