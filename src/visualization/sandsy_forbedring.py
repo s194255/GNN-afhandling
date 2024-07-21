@@ -123,6 +123,9 @@ def plot_sandsy_forbedring(forb_df: pd.DataFrame):
     # Tilføj grid
     ax.grid(True, linestyle='--', alpha=0.6)
 
+    ylim = ax.get_ylim()
+    ax.set_ylim([ylim[0], ylim[1] + 0.05])
+
     # Tilføj legend
     # ax.legend(fontsize=12)
 
@@ -134,6 +137,10 @@ def plot_sandsy_forbedring(forb_df: pd.DataFrame):
     ax.set_xticks(unique_xticks)
 
     ax.tick_params(axis='both', which='both', labelsize=16)
+
+    # Annoter punkterne med deres faktiske værdier
+    for x, y in zip(forb_df['eftertræningsmængde'], forb_df['sandsy_forbedring']):
+        ax.annotate(f'{y:.0%}', xy=(x, y), xytext=(-20, 10), textcoords='offset points', fontsize=12, color='black')
 
     # Gem figuren i både jpg og pdf format
     filename = 'sandsyforb_vs_datamængde'

@@ -153,6 +153,8 @@ def trænusik4(df, fortræer):
     predicted_attribute = df['predicted_attribute'].unique()
     assert len(predicted_attribute) == 1
     predicted_attribute = predicted_attribute[0]
+    farveopslag = copy.deepcopy(viz0.FARVEOPSLAG)
+    farveopslag['3D-EMGP-begge'] = '#1c2761'
 
     gray = '#DADADA'
 
@@ -168,7 +170,7 @@ def trænusik4(df, fortræer):
         means = målinger.groupby('eftertræningsmængde').mean().reset_index()['test_loss_mean']
         if len(means) != len(x_values):
             continue
-        farve = viz0.FARVEOPSLAG[fortræ]
+        farve = farveopslag[fortræ]
         label = viz0.FORT_LABELLER[fortræ]
         bars = ax.bar(x + (i + 0.5 - num_models / 2) * bar_width, means,
                       bar_width, color=farve, alpha=1.0, label=label)
