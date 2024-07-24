@@ -113,6 +113,8 @@ def trænusik4(df, fortræer, cols):
     x_values = df['eftertræningsmængde'].unique()
     x_values.sort()
     num_models = len(fortræer)
+    farveopslag = copy.deepcopy(viz0.FARVEOPSLAG)
+    farveopslag['3D-EMGP-begge'] = '#1c2761'
 
     gray = '#DADADA'
 
@@ -139,10 +141,10 @@ def trænusik4(df, fortræer, cols):
             means = målinger.groupby('eftertræningsmængde').mean().reset_index()[col]
             if len(means) != len(x_values):
                 continue
-            farve = viz0.FARVEOPSLAG[fortræ]
+            farve = farveopslag[fortræ]
             label = viz0.FORT_LABELLER[fortræ]
             bars = ax.bar(x + (i + 0.5 - num_models / 2) * bar_width, means,
-                          bar_width, color=farve, alpha=0.85, label=label)
+                          bar_width, color=farve, alpha=1.0, label=label)
             conf_intervals = []
             for j in range(len(x_values)):
                 prikker = målinger[målinger['eftertræningsmængde'] == x_values[j]][col]
@@ -150,7 +152,7 @@ def trænusik4(df, fortræer, cols):
                 label = viz0.FORT_LABELLER[fortræ] if j==0 else None
                 ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker,
                            color=gray, marker='.', alpha=1.0,
-                           # s=20,
+                           s=150,
                            edgecolor=far.black
                            )
                 conf_interval = st.norm.interval(confidence=0.90, loc=np.mean(prikker), scale=st.sem(prikker))
@@ -162,8 +164,8 @@ def trænusik4(df, fortræer, cols):
             error_bars = [lower_errors, upper_errors]
 
             ax.errorbar(x + (i + 0.5 - num_models / 2) * bar_width, means, yerr=error_bars, fmt='none',
-                        ecolor='black', elinewidth=1.5, capsize=5,
-                        capthick=1.5, zorder=2)
+                        ecolor='black', elinewidth=3.0, capsize=10,
+                        capthick=2.0, zorder=2)
 
         plot_kernel_baseline(ax, x_values, x, KERNELBASELINEFARVE, predicted_attribute)
 
