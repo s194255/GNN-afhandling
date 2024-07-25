@@ -79,6 +79,16 @@ def plot(dfs: dict):
             r'$\mathcal{L}_{\text{energi}}$ på $\mathcal{D}_{\text{E-Va}}$',
         ]
     }
+    titles = {
+        'force': [
+            r'$\mathcal{L}_{\text{kræft}}$ på Efter-træn',
+            r'$\mathcal{L}_{\text{kræft}}$ på Efter-val',
+        ],
+        'energy': [
+            r'$\mathcal{L}_{\text{energi}}$ på Efter-træn',
+            r'$\mathcal{L}_{\text{energi}}$ på Efter-val',
+        ]
+    }
     cols = {ds: [f'{task}_{ds}_loss' for task in ['train', 'val']] for ds in ['energy', 'force']}
 
     for i, (predicted_attribute, df) in enumerate(dfs.items()):
