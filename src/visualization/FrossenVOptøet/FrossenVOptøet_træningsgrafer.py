@@ -98,7 +98,15 @@ def plot(dfs: dict):
     x_col = 'trainer/global_step'
     # cols = ['lr-AdamW', 'train_loss', 'val_loss']
     cols = ['train_loss', 'val_loss']
-    titles = ['Træningstab', 'Valideringstab']  # Tilføjet titler for subplots
+    titles = [
+        'Træningstab',
+        'Valideringstab'
+    ]
+
+    titles = [
+        r'$\mathcal{L}_{\mathfrak{p}}$ på Efter-træn',
+        r'$\mathcal{L}_{\mathfrak{p}}$ på Efter-val'
+    ]
 
     for i, (temperatur, df) in enumerate(dfs.items()):
         farve = farveopslag.get(temperatur, 'blue')  # Standardfarve hvis temperatur ikke findes i farveopslag
@@ -106,7 +114,8 @@ def plot(dfs: dict):
             ax = axs[i, j]
             e_p_s = df['epoch'].max() / df[x_col].max()
             data = df[[x_col, col]].dropna(how='any')
-            ax.plot(data[x_col]*e_p_s, data[col], color=farve, label=f'{temperatur}')
+            label = LABELLER[temperatur]
+            ax.plot(data[x_col]*e_p_s, data[col], color=farve, label=label)
             ax.set_title(titles[j], fontsize=23)  # Tilføjelse af titler til subplots
             ax.set_xlabel('Epoke', fontsize=16)
             ax.set_ylabel('MAE', fontsize=16)
@@ -118,11 +127,8 @@ def plot(dfs: dict):
                 ax.legend(fontsize=28)  # Tilføj legende kun én gang for at undgå overlap
 
     plt.tight_layout()
-    plt.subplots_adjust(top=0.92)
+    plt.subplots_adjust(top=0.90)
     fig.suptitle('Træningsmetrikker over epoker', fontsize=28)  # Tilføj hovedtitel
-    # plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.jpg"))
-    # plt.savefig(os.path.join(kørsel_path, f"{FIGNAVN}.pdf"))
-    plt.legend()
     plt.savefig(os.path.join(grupperod, f"træningskurve.jpg"))
     plt.savefig(os.path.join(grupperod, f"træningskurve.pdf"))
     plt.close()

@@ -85,7 +85,8 @@ def plot_normaliseret(df1, fortræningsudgaver, cols):
                 label = viz0.FORT_LABELLER[fortræningsudgave] if j == 0 else None
                 ax.scatter([x[j] + (i + 0.5 - num_models / 2) * bar_width] * n2, prikker, color=farve, label=label,
                            marker='o', edgecolor='black', alpha=1.0, zorder=3)
-        titel = f'{cols_to_titles[col]}: %-vis forbedring'
+        # titel = f'{cols_to_titles[col]}: %-vis forbedring'
+        titel = f'{cols_to_titles[col]}: %-vis forbedring ift. ' + r'$\it{Ingen\ fortræning}$'
         ylabel = '%'
 
         # Tilpasning af akserne og labels

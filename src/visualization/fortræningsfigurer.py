@@ -61,17 +61,11 @@ FORTRÆ_COLS  = {
     '3D-EMGP-begge': ['train_lokalt_loss', 'train_globalt_loss', 'train_loss', 'val_loss'],
     'SelvvejledtQM9': ['train_loss', 'val_loss']
 }
-# COL_TITEL = {
-#     'train_loss': r'$\left( \mathcal{D}_T, \mathcal{L}_{\text{lokal}} + \mathcal{L}_{\text{global}} \right)$',
-#     'val_loss': r'$\left( \mathcal{D}_V, \mathcal{L}_{\text{lokal}} + \mathcal{L}_{\text{global}} \right)$',
-#     'train_lokalt_loss': r'$\left( \mathcal{D}_T,\mathcal{L}_{\text{lokal}} \right)$',
-#     'train_globalt_loss': r'$\left( \mathcal{D}_T,\mathcal{L}_{\text{global}} \right)$',
-# }
 COL_TITEL = {
-    'train_loss': r'$\mathcal{L}_{EMGP}$ på For-træn-datasilo',
-    'val_loss': r'$\mathcal{L}_{EMGP}$ på For-val-datasilo',
-    'train_lokalt_loss': r'$\mathcal{L}_{lokal}$ på For-træn-datasilo',
-    'train_globalt_loss': r'$\mathcal{L}_{global}$ på For-træn-datasilo',
+    'train_loss': r'$\mathcal{L}_{EMGP}$ på For-træn',
+    'val_loss': r'$\mathcal{L}_{EMGP}$ på For-val',
+    'train_lokalt_loss': r'$\mathcal{L}_{lokal}$ på For-træn',
+    'train_globalt_loss': r'$\mathcal{L}_{global}$ på For-træn',
 }
 X_COL = 'trainer/global_step'
 

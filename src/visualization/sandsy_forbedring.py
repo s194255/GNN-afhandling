@@ -118,7 +118,7 @@ def plot_sandsy_forbedring(forb_df: pd.DataFrame):
     # Tilføj titler og labels
     # ax.set_title('Sandsynlighed for forbedring vs. Datamængde', fontsize=16)
     ax.set_xlabel(r'Datamængde ($N_{træn}$)', fontsize=22)
-    ax.set_ylabel('Sandsynlighed for forbedring', fontsize=22)
+    ax.set_ylabel(r'$P(t_m < t_u)$', fontsize=22)
 
     # Tilføj grid
     ax.grid(True, linestyle='--', alpha=0.6)
