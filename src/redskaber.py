@@ -14,7 +14,8 @@ import pandas as pd
 
 MODELKLASSER = {
     'Selvvejledt': Selvvejledt,
-    'SelvvejledtQM9': SelvvejledtQM9
+    'SelvvejledtQM9': SelvvejledtQM9,
+    'SelvvejledtPenergi': SelvvejledtPenergi
 }
 
 MODELOPGAVER = {
