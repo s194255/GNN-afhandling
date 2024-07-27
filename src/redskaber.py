@@ -5,7 +5,7 @@ import yaml
 from lightning.pytorch.loggers.tensorboard import TensorBoardLogger
 import os
 import wandb
-from src.models.selvvejledt import Selvvejledt, SelvvejledtQM9
+from src.models.selvvejledt import Selvvejledt, SelvvejledtQM9, SelvvejledtPenergi
 from src.data.QM9 import QM9ByggerEksp2
 from typing import Tuple, Any
 import pandas as pd
@@ -71,7 +71,7 @@ def get_trainer(epoker, logger=None, log_every_n_steps=None):
 
 def get_opgaver_in_config(config):
     return list(set(config.keys())-(set(config.keys()) - {'Downstream', 'Selvvejledt', 'SelvvejledtQM9',
-                                                          'QM9', 'MD17'}))
+                                                          'QM9', 'MD17', 'SelvvejledtPenergi'}))
 
 def load_config(path):
     with open(path, encoding='utf-8') as f:
@@ -150,6 +150,8 @@ def build_selvvejledt(args_dict, datasæt_dict, modelklasse_str):
         model = Selvvejledt(args_dict=args_dict)
     elif modelklasse_str == 'SelvvejledtQM9':
         model = SelvvejledtQM9(args_dict=args_dict, metadata=qm9bygger.get_metadata('pretrain'))
+    elif modelklasse_str == 'SelvvejledtPenergi':
+        model = SelvvejledtPenergi(args_dict=args_dict)
     else:
         raise NotImplementedError
     return model, qm9bygger

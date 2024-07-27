@@ -7,7 +7,8 @@ from torch_geometric.data import Data
 from src import models as m
 from src.models.grund import Grundmodel
 from src.models.hoveder.hovedselvvejledt import HovedSelvvejledtKlogt, HovedSelvvejledtDumt, HovedSelvvejledtKlogtReg
-from src.models.redskaber import RiemannGaussian
+from src.models.hoveder.hoveddownstream import HovedDownstreamKlogtMD17
+from src.models.redskaber import RiemannGaussian, RiemannGaussian2
 from torch_geometric.utils import scatter
 from lightning.pytorch.utilities import grad_norm
 
@@ -45,7 +46,7 @@ class Selvvejledt(Grundmodel):
     def forward(
             self,
             data: Data
-    ) -> Tuple[Tensor, Tensor]:
+    ) -> dict:
         z, pos, batch, edge_index = data.z, data.pos, data.batch, data.edge_index
         noise_idxs = torch.randint(low=0, high=len(self.noise_scales_options),
                                    size=torch.unique(batch).shape, device=self.device)
@@ -125,6 +126,57 @@ class Selvvejledt(Grundmodel):
     def beregn_globalt(self):
         return self.args_dict['lambdaer']['globalt'] != 0
 
+class HovedPenergi(HovedDownstreamKlogtMD17):
+    @property
+    def tabsnøgler(self):
+        return ['lokalt', 'globalt']
+class SelvvejledtPenergi(Selvvejledt):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.riemannGaussian = RiemannGaussian2()
+
+    def get_graph_rep(self, z, p, batch, edge_index):
+        x, v, _, _ = self.rygrad(z, p, batch, edge_index)
+        graph = {'z': z, 'pos': p, 'batch': batch, 'x': x, 'v': v}
+        return graph
+
+    def create_hoved(self):
+        assert self.args_dict['hovedtype'] == "klogt"
+        args = {
+            'means': torch.tensor(0),
+            'stds': torch.tensor(1),
+            'hidden_channels': self.hidden_channels*2,
+            'calc_forces': True
+        }
+        args = {**args, **self.args_dict['hoved']}
+        return HovedPenergi(**args)
+    def forward(
+            self,
+            data: Data
+    ) -> dict:
+        z, pos, batch, edge_index = data.z, data.pos, data.batch, data.edge_index
+        noise_idxs = torch.randint(low=0, high=len(self.noise_scales_options),
+                                   size=torch.unique(batch).shape, device=self.device)
+        noise_scales = torch.gather(self.noise_scales_options, 0, noise_idxs)
+        sigma = torch.gather(noise_scales, 0, batch)
+        pos_til, force_target, energy_target = self.riemannGaussian(pos, batch, sigma)
+        pos_til.requires_grad_(True)
+
+        graph_noisy = self.get_graph_rep(z, pos_til, batch, edge_index)
+        graph_normal = self.get_graph_rep(z, pos, batch, edge_index)
+
+        graph_combined = {**{'batch': graph_noisy['batch'], 'z': graph_noisy['z'], 'pos': graph_noisy['pos']},
+                          **{key: torch.cat([graph_noisy[key], graph_normal[key]], dim=-1)
+                             for key in ['x', 'v']}}
+
+        energy, force = self.hoved(**graph_combined)
+        tabsopslag = {
+            'lokalt': self.criterion(energy, energy_target),
+            'globalt': self.criterion(force, force_target)
+        }
+        return tabsopslag
+
+
 class SelvvejledtBaseline(Selvvejledt):
     def __init__(self, *args, **kwargs):
         super().__init__(*args,
@@ -157,42 +209,6 @@ class SelvvejledtBaseline(Selvvejledt):
     def krævne_args(self) -> set:
         return super().krævne_args - {'lambdaer'}
 
-class SelvvejledtContrastive(Grundmodel):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        hidden_channels = self.hparams.rygrad_args['hidden_channels']
-        self.hoved = torch.nn.Sequential(
-            torch.nn.Linear(hidden_channels, hidden_channels),
-            torch.nn.ReLU(),
-            torch.nn.Linear(hidden_channels, 2)
-        )
-        self.criterion = torch.nn.CrossEntropyLoss()
-
-    def forward(self, z: Tensor, pos: Tensor, batch: Tensor,) -> Tuple[Tensor, Tensor]:
-        x, v, edge_attr, masker = self.rygrad(z, pos, batch)
-        x = scatter(x, batch, dim=0, reduce='sum')
-        x = self.hoved(x)
-        return x
-
-    def step(self, task: str, data: Data, batch_idx: int):
-        on_epoch = {'train': None, 'val': None, 'test': True}
-        pred = self(data.z, data.pos, data.batch)
-        loss = self.criterion(pred, data.y)
-        self.log(
-            f"{task}_loss", loss.item(),
-            batch_size=data.batch_size,
-            on_epoch=on_epoch[task],
-        )
-        return loss
-    def training_step(self, data: Data, batch_idx: int):
-        return self.step('train', data, batch_idx)
-
-    def validation_step(self, data: Data, batch_idx: int):
-        return self.step('val', data, batch_idx)
-
-    def test_step(self, data: Data, batch_idx: int):
-        return self.step('test', data, batch_idx)
 
 
 class SelvvejledtQM9(m.DownstreamQM9):

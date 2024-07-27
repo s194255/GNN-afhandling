@@ -75,8 +75,63 @@ class RiemannGaussian(L.LightningModule):
         target = (1 / alpha).view(-1, 1) * s
         return pos_til, target
 
+
+class RiemannGaussian2(RiemannGaussian):
+    @torch.no_grad()
+    def centralize(self, p, batch):
+        center = scatter_mean(p, batch, dim=-2)
+        return p - center[batch]
+
+    @torch.no_grad()
+    def get_energy(self, pos_til, pos, batch, sigma):
+        v = pos.shape[-1]
+
+        y_til = self.centralize(pos_til, batch)
+        y = self.centralize(pos, batch)
+
+        y_til_left = y_til.repeat_interleave(v, dim=-1)
+        y_til_right = y_til.repeat([1, v])
+        y_left = y.repeat_interleave(v, dim=-1)
+        y_right = y.repeat([1, v])
+
+        y_til_y_til = scatter_add(y_til_left * y_til_right, batch, dim=-2).reshape(-1, v, v)
+        y_til_y_til = y_til_y_til[batch]
+
+        y_y = scatter_add(y_left * y_right, batch, dim=-2).reshape(-1, v, v)
+        y_y = y_y[batch]
+
+        diff = y_til_y_til - y_y
+        d = torch.norm(diff, dim=(1, 2))
+        energy = 1 / (4 * sigma ** 2) * d ** 2
+        energy = scatter_add(energy, batch, dim=0)
+        return energy
+
+
+
+
+
+    @torch.no_grad()
+    def forward(self,
+                pos: torch.Tensor,
+                batch: torch.Tensor,
+                sigma: torch.Tensor,
+                ):
+        pos_til = pos.clone()
+        for t in range(1, self.T + 1):
+            beta = (sigma ** 2) / (2 ** t)
+            s, alpha = self.get_s(pos_til, pos, batch, sigma)
+            eta = torch.randn_like(pos)
+            pos_til = pos_til + (beta / alpha).view(-1, 1) * s + torch.sqrt(2 * beta).view(-1, 1) * eta
+        force, alpha = self.get_s(pos_til, pos, batch, sigma)
+        force = (1 / alpha).view(-1, 1) * force
+        energy = self.get_energy(pos_til, pos, batch, sigma)
+        return pos_til, force, energy
+
+
+
+
 if __name__ == "__main__":
-    riemannGuassian = RiemannGaussian()
+    riemannGuassian = RiemannGaussian2()
     pos = torch.randn((370, 3)) * 1 + 4
     batch = torch.randint(0, 8, (370,))
     sigmas_options = [0.01, 0.1, 1.0, 10.0, 100.0]
