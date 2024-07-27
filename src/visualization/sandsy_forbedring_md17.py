@@ -39,7 +39,7 @@ def plot_sandsy_forbedring(forb_df: pd.DataFrame):
 
     nøgle_to_xytext = {
         'force': (-35, 10),
-        'energy': (0, -20)
+        'energy': (-10, -25)
     }
     nøgle_to_labels = {
         'force': 'Kræfter',
@@ -71,7 +71,7 @@ def plot_sandsy_forbedring(forb_df: pd.DataFrame):
     ax.set_ylim([ylim[0], ylim[1] + 0.05])
 
     xlim = ax.get_xlim()
-    ax.set_xlim([xlim[0]-10, xlim[1]])
+    ax.set_xlim([xlim[0]-10, xlim[1]+10])
 
     # Tilføj legend
     ax.legend(fontsize=15)
