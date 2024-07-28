@@ -42,6 +42,3 @@ Dette projekt indeholder to hovedprogrammer, som kan køres efter installationen
     python src/fortræn.py
     ```
 
-## Yderligere oplysninger
-
-For yderligere oplysninger henvises til projektets dokumentation og kildefiler.
