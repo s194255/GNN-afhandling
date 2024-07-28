@@ -1,20 +1,14 @@
-# local package
-# cuda 11.8 skal du bruge
-
-
-#
-# -e .
-# lightning[extra]
-# torch_geometric
-# pyg_lib
-# torch_cluster
-# torch_scatter
-# -f https://data.pyg.org/whl/torch-2.2.0+cu118.html
-
 -e .
-torch torchvision --index-url https://download.pytorch.org/whl/cu118
+torch==2.2.0+cu118
+torchvision==0.17.0+cu118
 lightning
-torch_geometric
-pyg_lib torch_scatter torch_sparse torch_cluster torch_spline_conv -f https://data.pyg.org/whl/torch-2.2.0+cu118.html
-
-
+torch-geometric==2.4.0
+pyg_lib
+torch_scatter
+torch_sparse
+torch_cluster
+torch_spline_conv
+-f https://data.pyg.org/whl/torch-2.2.0+cu118.html
+rdkit
+wandb
+ase
