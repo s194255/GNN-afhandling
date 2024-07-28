@@ -1,4 +1,4 @@
-# Project Title
+# Grafbaserede neurale netværk til forudsigelse af molekylære egenskaber vha. repræsentationslæring
 
 Dette projekt bruger molekylære grafneurale netværk til at prædiktere kemiske egenskaber ved hjælp af forskellige trænings- og fortræningsopgaver.
 
@@ -8,11 +8,11 @@ Følg nedenstående trin for at installere alle nødvendige pakker.
 
 1. Klon projektet fra GitHub:
     ```sh
-    git clone <your-repo-url>
-    cd <your-repo-directory>
+    git clone https://github.com/s194255/GNN-afhandling.git
+    cd GNN-afhandling
     ```
 
-2. Installer projektet i udviklingstilstand:
+2. Installer nødvendige python-pakker:
     ```sh
     pip install -r requirements.txt
     ```
@@ -21,9 +21,9 @@ Følg nedenstående trin for at installere alle nødvendige pakker.
 
 Dette projekt indeholder to hovedprogrammer, som kan køres efter installationen:
 
-1. **eksp2.py**: Dette script kører eksperiment 2.
+1. **eksp2.py**: Dette script kører eftertræning (træning på efteropgaven).
     ```sh
-    python src/eksp2.py
+    python src/eftertræn.py
     ```
 
 2. **fortræn.py**: Dette script kører fortræningsopgaven.

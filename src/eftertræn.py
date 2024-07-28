@@ -39,7 +39,7 @@ def debugify_config(config):
 
 def parserargs():
     parser = argparse.ArgumentParser(description='Beskrivelse af dit script')
-    parser.add_argument('--eksp2_path', type=str, default="config/eksp2.yaml", help='Sti til eksp2 YAML fil')
+    parser.add_argument('--eksp2_path', type=str, default="config/eftertræn.yaml", help='Sti til eksp2 YAML fil')
     parser.add_argument('--debug', action='store_true', help='Sti til eksp2 YAML fil')
     args = parser.parse_args()
     return args
